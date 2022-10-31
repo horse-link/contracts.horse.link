@@ -1,0 +1,17 @@
+name: CI
+on:
+  push:
+    branches: [master]
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run unit tests and coverage
+        run: |
+          export PRIVATE_KEY="0000000000000000000000000000000000000000000000000000000000000001"
+          yarn install
+          yarn test
+          yarn coverage
