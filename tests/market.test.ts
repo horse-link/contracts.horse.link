@@ -176,7 +176,7 @@ describe("Market", () => {
         expect(vaultBalance).to.equal(ethers.utils.parseUnits("650", USDT_DECIMALS), "Vault should have $650 USDT");
     });
 
-    /*it("should allow Carol a $200 punt at 2:1", async () => {
+    it.skip("should allow Carol a $200 punt at 2:1", async () => {
         let balance = await underlying.balanceOf(bob.address);
         expect(balance).to.equal(ethers.utils.parseUnits("1000", USDT_DECIMALS), "Should have $1,000 USDT");
 
@@ -226,7 +226,7 @@ describe("Market", () => {
         balance = await underlying.balanceOf(carol.address);
         expect(balance).to.equal(ethers.utils.parseUnits("800", USDT_DECIMALS), "Should have $800 USDT after a $200 bet");
 
-    });*/
+    });
 });
 
 
