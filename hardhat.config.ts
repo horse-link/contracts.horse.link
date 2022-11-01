@@ -14,7 +14,7 @@ import "hardhat-gas-reporter";
 
 const defaultKey =
   "0000000000000000000000000000000000000000000000000000000000000001";
-const defaultRpcUrl = "https://localhost:8545";
+const defaultRpcUrl = "http://localhost:8545";
 
 export default {
   gasReporter: {
@@ -33,6 +33,10 @@ export default {
     hardhat: {
       chainId: 1337,
       allowUnlimitedContractSize: false
+    },
+    localhost: {
+      url: defaultRpcUrl,
+      accounts: [process.env.PRIVATE_KEY || defaultKey]
     },
     kovan: {
       url: process.env.KOVAN_URL || defaultRpcUrl,
@@ -54,7 +58,7 @@ export default {
   solidity: {
     compilers: [
       {
-        version: "0.8.4",
+        version: "0.8.10",
         settings: {
           optimizer: {
             enabled: false,

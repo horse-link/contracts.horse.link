@@ -21,6 +21,9 @@ export const deploy = async () => {
   console.log(`network is ${network}`);
   const isUpgrading = process.argv.includes("upgrade-contracts");
   const deployer = await getSignerForDeployer();
+  if (!deployer?.provider) {
+    throw new Error("No deployer provider");
+  }
   console.log("using deployer index ", getSignerIndex());
   console.log(`deployer is ${await deployer.getAddress()}`);
   const gasPrice = await deployer.provider.getGasPrice();
