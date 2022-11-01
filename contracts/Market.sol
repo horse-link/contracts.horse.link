@@ -194,7 +194,7 @@ contract Market is Ownable, IMarket {
         uint256 count = _bets.length;
         _marketBets[marketId].push(count);
 
-        // _totalInPlay += payout;
+        _totalInPlay += payout;
         _totalExposure += (payout - wager);
         _inplayCount++;
 

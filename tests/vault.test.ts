@@ -27,25 +27,29 @@ describe("Vault", () => {
 
     beforeEach(async () => {
         const USDT_DECIMALS = 6;
+        const FEE = 100;
         [owner, alice, bob] = await ethers.getSigners();
         underlying = await new Token__factory(owner).deploy(
             "Mock USDT",
             "USDT",
-            6
+            USDT_DECIMALS
         );
         await underlying.deployed();
-        await underlying.mint(owner.address, ethers.utils.parseUnits("1000000", 6));
+        await underlying.mint(owner.address, ethers.utils.parseUnits("1000000", USDT_DECIMALS));
         await underlying.transfer(
             alice.address,
-            ethers.utils.parseUnits("2000", 6)
+            ethers.utils.parseUnits("2000", USDT_DECIMALS)
         );
-        await underlying.transfer(bob.address, ethers.utils.parseUnits("2000", 6));
+        await underlying.transfer(
+            bob.address,
+            ethers.utils.parseUnits("2000", USDT_DECIMALS)
+        );
 
         vault = await new Vault__factory(owner).deploy(underlying.address);
         await vault.deployed();
         market = await new Market__factory(owner).deploy(
             vault.address,
-            100,
+            FEE,
             ethers.constants.AddressZero
         );
         await vault.setMarket(market.address, ethers.constants.MaxUint256);
