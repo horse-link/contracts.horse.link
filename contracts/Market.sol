@@ -274,18 +274,6 @@ contract Market is Ownable, IMarket {
         _;
     }
 
-/*
-    function getEthSignedMessageHash(bytes32 messageHash)
-        internal
-        pure
-        returns (bytes32)
-    {
-        //Signature is produced by signing a keccak256 hash with the following format:
-        //"\x19Ethereum Signed Message\n" + len(msg) + msg
-  
-        return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", messageHash));
-    }
-*/
     function recoverSigner(bytes32 message, Signature memory signature)
         private
         pure
@@ -295,30 +283,6 @@ contract Market is Ownable, IMarket {
             abi.encodePacked("\x19Ethereum Signed Message:\n32", message)
         );
         return ecrecover(prefixedHash, signature.v, signature.r, signature.s);
-    }
-
-
-    function splitSignature(bytes memory signature)
-        private
-        pure
-        returns (uint8, bytes32, bytes32)
-    {
-        require(signature.length == 65);
-
-        bytes32 r;
-        bytes32 s;
-        uint8 v;
-
-        assembly {
-            // first 32 bytes, after the length prefix
-            r := mload(add(signature, 32))
-            // second 32 bytes
-            s := mload(add(signature, 64))
-            // final byte (first byte of the next 32 bytes)
-            v := byte(0, mload(add(signature, 96)))
-        }
-
-        return (v, r, s);
     }
 
     event Claimed(address indexed worker, uint256 amount);
