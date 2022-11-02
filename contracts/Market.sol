@@ -213,7 +213,7 @@ contract Market is Ownable, IMarket {
         uint256 odds,
         uint256 close,
         uint256 end,
-        Signature memory signature
+        Signature calldata signature
     ) external returns (uint256) {
         require(
             end > block.timestamp && block.timestamp > close,
@@ -259,7 +259,7 @@ contract Market is Ownable, IMarket {
     function settle(
         uint256 index,
         bool result,
-        Signature memory signature
+        Signature calldata signature
     ) external {
         bytes32 message = getSettleMessage(index, result); //keccak256(abi.encodePacked(index, result));
         address marketOwner = recoverSigner(message, signature);
@@ -281,7 +281,7 @@ contract Market is Ownable, IMarket {
         uint256 from,
         uint256 to,
         bytes32 marketId,
-        Signature memory signature
+        Signature calldata signature
     ) external {
         bytes32 message = keccak256(abi.encodePacked(propositionId, marketId));
         address marketOwner = recoverSigner(message, signature);
@@ -330,7 +330,7 @@ contract Market is Ownable, IMarket {
         emit Settled(id, _bets[id].payout, result, _bets[id].owner);
     }
 
-    modifier onlyMarketOwner(bytes32 messageHash, Signature memory signature) {
+    modifier onlyMarketOwner(bytes32 messageHash, Signature calldata signature) {
         //bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
         require(
             recoverSigner(messageHash, signature) == owner(),
@@ -339,7 +339,7 @@ contract Market is Ownable, IMarket {
         _;
     }
 
-    function recoverSigner(bytes32 message, Signature memory signature)
+    function recoverSigner(bytes32 message, Signature calldata signature)
         private
         pure
         returns (address)
