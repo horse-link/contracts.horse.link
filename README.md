@@ -1,5 +1,4 @@
-# solidity-template
-A template for solidity development with [hardhat](https://github.com/nomiclabs/hardhat).
+# horse.link contracts
 
 ## Scripts
 
@@ -15,16 +14,11 @@ Starts a local hardhat node with the `localhost` network.
 ## Contracts
 Contracts are located in the `/contracts` folder.
 
-***There is an example ERC20 contract in `/contracts/Token.sol`***
-
 ## Configuration
 See `/hardhat.config.ts` for hardhat configuration. Some values are fetched from environment variables, see `dev.env` for local development environment variables and copy it into `.env` before changing the values.
 
 ## Deployment
 The deployment script is located in the `/scripts/deploy` folder. Each contract to be deployed should have its own deployment module.
-
-
-***See `/scripts/deploy/contracts/Token.ts` for an example with an ERC20.***
 
 ### Contract addresses
 Deployed addresses are saved in `/contracts.json` for each network. This file should be committed so that addresses are managed by git.
