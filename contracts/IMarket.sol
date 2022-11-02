@@ -1,5 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity =0.8.10;
+struct Signature {
+    uint8 v;
+    bytes32 r;
+    bytes32 s;
+}
 
 interface IMarket {
     function getFee() external view returns (uint8);
@@ -11,7 +16,7 @@ interface IMarket {
     function getOracleAddress() external view returns (address);
     function getPotentialPayout(bytes32 propositionId, uint256 wager, uint256 odds) external view returns (uint256);
     function getVaultAddress() external view returns (address);
-    function back(bytes32 nonce, bytes32 propositionId, bytes32 marketId, uint256 wager, uint256 odds, uint256 close, uint256 end, bytes calldata signature) external returns (uint256);
-    function settle(uint256 index, bool result, bytes calldata signature) external;
-    function settleMarket(bytes32 propositionId, uint256 from, uint256 to, bytes32 marketId, bytes calldata signature) external;
+    function back(bytes32 nonce, bytes32 propositionId, bytes32 marketId, uint256 wager, uint256 odds, uint256 close, uint256 end, Signature memory sig) external returns (uint256);
+    function settle(uint256 index, bool result, Signature memory sig) external;
+    function settleMarket(bytes32 propositionId, uint256 from, uint256 to, bytes32 marketId, Signature memory sig) external;
 }

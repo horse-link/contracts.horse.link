@@ -134,8 +134,8 @@ contract Vault is Ownable, IVault, ERC20PresetMinterPauser {
         require(balance >= shares, "withdraw: You do not have enough shares");
 
         uint256 amount = _previewWithdraw(shares);
-        _totalSupply -= balance;
-        _balances[msg.sender] = 0;
+        _totalSupply -= amount;
+        _balances[msg.sender] -= shares;
         
         IERC20(_underlying).approve(_market, _totalSupply);
         IERC20(_underlying).transfer(msg.sender, amount);

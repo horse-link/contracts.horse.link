@@ -174,7 +174,7 @@ contract Market is Ownable, IMarket {
         uint256 odds,
         uint256 close,
         uint256 end,
-        bytes calldata signature
+        Signature memory signature
     ) external returns (uint256) {
         require(end > block.timestamp && block.timestamp > close, "back: Invalid date");
         
@@ -214,15 +214,19 @@ contract Market is Ownable, IMarket {
         emit Claimed(msg.sender, workerfee);
     }
 
-    function settle(uint256 index, bool result, bytes calldata signature) external {
-        bytes32 message = keccak256(abi.encodePacked(index, result));
+    function settle(uint256 index, bool result, Signature memory signature) external {
+        bytes32 message = getSettleMessage(index, result); //keccak256(abi.encodePacked(index, result));
         address marketOwner = recoverSigner(message, signature);
         require(marketOwner == owner(), "settle: Invalid signature");
 
         _settle(index, result);
     }
 
-    function settleMarket(bytes32 propositionId, uint256 from, uint256 to, bytes32 marketId, bytes calldata signature) external {
+    function getSettleMessage(uint256 index, bool result) public view returns (bytes32) {
+        return keccak256(abi.encodePacked(index, result));
+    }
+
+    function settleMarket(bytes32 propositionId, uint256 from, uint256 to, bytes32 marketId, Signature memory signature) external {
         bytes32 message = keccak256(abi.encodePacked(propositionId, marketId));
         address marketOwner = recoverSigner(message, signature);
         require(marketOwner == owner(), "settleMarket: Invalid signature");
@@ -264,37 +268,35 @@ contract Market is Ownable, IMarket {
         emit Settled(id, _bets[id].payout, result, _bets[id].owner);
     }
 
-    modifier onlyMarketOwner(bytes32 messageHash, bytes memory signature) {
-        bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
-        require(recoverSigner(ethSignedMessageHash, signature) == owner(), "onlyMarketOwner: Invalid signature");
+    modifier onlyMarketOwner(bytes32 messageHash, Signature memory signature) {
+        //bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
+        require(recoverSigner(messageHash, signature) == owner(), "onlyMarketOwner: Invalid signature");
         _;
     }
 
+/*
     function getEthSignedMessageHash(bytes32 messageHash)
         internal
         pure
         returns (bytes32)
     {
-        /*
-        Signature is produced by signing a keccak256 hash with the following format:
-        "\x19Ethereum Signed Message\n" + len(msg) + msg
-        */
+        //Signature is produced by signing a keccak256 hash with the following format:
+        //"\x19Ethereum Signed Message\n" + len(msg) + msg
+  
         return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", messageHash));
     }
-
-    function recoverSigner(bytes32 message, bytes memory signature)
+*/
+    function recoverSigner(bytes32 message, Signature memory signature)
         private
         pure
         returns (address)
     {
-        uint8 v;
-        bytes32 r;
-        bytes32 s;
-
-        (v, r, s) = splitSignature(signature);
-
-        return ecrecover(message, v, r, s);
+        bytes32 prefixedHash = keccak256(
+            abi.encodePacked("\x19Ethereum Signed Message:\n32", message)
+        );
+        return ecrecover(prefixedHash, signature.v, signature.r, signature.s);
     }
+
 
     function splitSignature(bytes memory signature)
         private
