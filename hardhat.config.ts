@@ -38,12 +38,8 @@ export default {
       url: defaultRpcUrl,
       accounts: [process.env.PRIVATE_KEY || defaultKey]
     },
-    kovan: {
-      url: process.env.KOVAN_URL || defaultRpcUrl,
-      accounts: [process.env.PRIVATE_KEY || defaultKey]
-    },
-    rinkeby: {
-      url: process.env.RINKEBY_URL || defaultRpcUrl,
+    goerli: {
+      url: process.env.GOERLI_URL || defaultRpcUrl,
       accounts: [process.env.PRIVATE_KEY || defaultKey]
     },
     mainnet: {
