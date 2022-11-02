@@ -14,10 +14,6 @@ export interface DeploymentModule {
   upgrade?: (deployer: tsEthers.Signer, addresses?: any) => void;
 }
 
-const modules: DeploymentModule[] = [
-  ERC20,
-  Vault,
-  Market
-];
+const modules: DeploymentModule[] = [ERC20, Vault, Market];
 
 export default modules;

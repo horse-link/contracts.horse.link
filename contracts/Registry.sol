@@ -6,15 +6,14 @@ import "./IVault.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 contract Registry {
-
     address[] public markets;
     IVault[] public vaults;
 
     mapping(address => IVault) private _underlying;
     mapping(address => address) private _markets;
 
-    address immutable private _owner;
-    IERC20Metadata immutable private _token;
+    address private immutable _owner;
+    IERC20Metadata private immutable _token;
     uint256 private _threshold;
 
     function marketCount() external view returns (uint256) {
@@ -30,9 +29,12 @@ contract Registry {
         _token = token;
     }
 
-    function addVault(IVault vault) external onlyTokenHolders() {
+    function addVault(IVault vault) external onlyTokenHolders {
         IERC20Metadata underlying = vault.asset();
-        require(address(_underlying[address(underlying)]) == address(0), "addVault: Vault with this underlying token already added");
+        require(
+            address(_underlying[address(underlying)]) == address(0),
+            "addVault: Vault with this underlying token already added"
+        );
 
         vaults.push(vault);
         _underlying[address(underlying)] = vault; // underlying => vault
@@ -40,8 +42,11 @@ contract Registry {
         emit VaultAdded(address(vault));
     }
 
-    function addMarket(address market) external onlyTokenHolders() {
-        require(_markets[market] == address(0), "addMarket: Market already added");
+    function addMarket(address market) external onlyTokenHolders {
+        require(
+            _markets[market] == address(0),
+            "addMarket: Market already added"
+        );
         markets.push(market);
         emit MarketAdded(market);
     }
@@ -52,12 +57,18 @@ contract Registry {
     }
 
     modifier onlyTokenHolders() {
-        require(_token.balanceOf(msg.sender) >= _threshold, "onlyTokenHolders: Caller does not hold enough tokens");
+        require(
+            _token.balanceOf(msg.sender) >= _threshold,
+            "onlyTokenHolders: Caller does not hold enough tokens"
+        );
         _;
     }
 
     modifier onlyOwner() {
-        require(msg.sender == _owner, "onlyOwner: Caller is not the contract owner");
+        require(
+            msg.sender == _owner,
+            "onlyOwner: Caller is not the contract owner"
+        );
         _;
     }
 

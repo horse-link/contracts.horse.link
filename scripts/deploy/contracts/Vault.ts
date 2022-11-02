@@ -1,19 +1,21 @@
-import { deployContract, getSignerForDeployer, verifyOnEtherscan } from "../utils";
+import {
+  deployContract,
+  getSignerForDeployer,
+  verifyOnEtherscan
+} from "../utils";
 import { Vault, Vault__factory } from "../../../build/typechain";
 import contracts from "../../../contracts.json";
 import { Contract } from "ethers";
 
 export const contractNames = () => ["vault"];
 
-type VaultConstructorArgs = [
-  string,
-];
+type VaultConstructorArgs = [string];
 const network = process.env.HARDHAT_NETWORK ?? "hardhat";
 
 export const constructorArguments = (): VaultConstructorArgs => {
-  const erc20 = contracts[network].erc20
+  const erc20 = contracts[network].erc20;
   return [erc20];
-} 
+};
 
 export const deploy = async (deployer, setAddresses) => {
   console.log("deploying Vault");

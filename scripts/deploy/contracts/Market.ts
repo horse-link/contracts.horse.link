@@ -6,11 +6,7 @@ import { BigNumberish, Contract } from "ethers";
 
 export const contractNames = () => ["market"];
 
-type MarketContractorArgs = [
-  string,
-  BigNumberish,
-  string
-];
+type MarketContractorArgs = [string, BigNumberish, string];
 
 const network = process.env.HARDHAT_NETWORK ?? "hardhat";
 
@@ -19,10 +15,10 @@ export const constructorArguments = (): MarketContractorArgs => {
   const oracle = process.env.ORACLE_ADDRESS ?? ethers.constants.AddressZero;
   const fee = process.env.FEE ?? 0;
   return [vault, fee, oracle];
-} 
+};
 
 export const deploy = async (deployer, setAddresses) => {
-  console.log("deploying Market"); 
+  console.log("deploying Market");
   const signer = deployer ?? (await getSignerForDeployer());
   const factory = new Market__factory(signer);
   const args = constructorArguments();
@@ -33,4 +29,3 @@ export const deploy = async (deployer, setAddresses) => {
   //await verifyOnEtherscan(contract.address, args);
   return contract as Contract;
 };
-
