@@ -1,16 +1,17 @@
+
+//import "@nomiclabs/hardhat-etherscan";
+//import "@nomiclabs/hardhat-waffle";
+import "@openzeppelin/hardhat-upgrades";
+import "@typechain/hardhat";
+//import "hardhat-contract-sizer";
+import "hardhat-deploy";
+import "@nomiclabs/hardhat-ethers";
+//import "hardhat-gas-reporter";
+//import "solidity-coverage";
+//import "./scripts/tasks";
+
 import { config as dotenvConfig } from "dotenv";
 dotenvConfig();
-import "@nomiclabs/hardhat-waffle";
-import "@nomiclabs/hardhat-ethers";
-import "@openzeppelin/hardhat-upgrades";
-import "@nomiclabs/hardhat-etherscan";
-import "hardhat-contract-sizer";
-import "./scripts/tasks";
-import "solidity-coverage";
-import "@typechain/hardhat";
-import "@nomiclabs/hardhat-ethers";
-import "@nomiclabs/hardhat-waffle";
-import "hardhat-gas-reporter";
 
 const defaultKey =
   "0000000000000000000000000000000000000000000000000000000000000001";
@@ -27,29 +28,36 @@ export default {
     sources: "./contracts",
     cache: "./cache",
     artifacts: "./artifacts",
-    tests: "./tests"
+    tests: "./tests",
+    deploy: "./deploy",
+    deployments: "./deployments",
+    imports: "./imports"
   },
   networks: {
     hardhat: {
       chainId: 1337,
-      allowUnlimitedContractSize: false
+      allowUnlimitedContractSize: false,
+      saveDeployment: false,
+      tags: ["local", "test"]
     },
     localhost: {
       url: defaultRpcUrl,
-      accounts: [process.env.PRIVATE_KEY || defaultKey]
+      accounts: [process.env.PRIVATE_KEY || defaultKey],
+      saveDeployment: false,
+      tags: ["local"],
     },
     goerli: {
       url: process.env.GOERLI_URL || defaultRpcUrl,
-      accounts: [process.env.PRIVATE_KEY || defaultKey]
+      accounts: [process.env.PRIVATE_KEY || defaultKey],
+      saveDeployment: true,
+      tags: ["staging"]
     },
     mainnet: {
       url: process.env.MAINNET_URL || defaultRpcUrl,
-      accounts: [process.env.PRIVATE_KEY || defaultKey]
+      accounts: [process.env.PRIVATE_KEY || defaultKey],
+      saveDeployment: true,
+      tags: ["production"]
     }
-  },
-  etherscan: {
-    // Obtain etherscan API key at https://etherscan.io/
-    apiKey: process.env.ETHERSCAN_KEY
   },
   solidity: {
     compilers: [
@@ -69,5 +77,17 @@ export default {
     target: "ethers-v5",
     alwaysGenerateOverloads: false,
     externalArtifacts: ["externalArtifacts/*.json"]
+  },
+  verify: {
+    etherscan: {
+      apiKey: process.env.ETHERSCAN_KEY
+    }
+  },
+  namedAccounts: {
+    deployer: {
+      default: 0,
+      goerli: process.env.GOERLI_DEPLOYER,
+    },
+
   }
 };
