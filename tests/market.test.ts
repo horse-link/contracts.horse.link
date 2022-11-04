@@ -90,6 +90,9 @@ describe("Market", () => {
     });
 
     it("should properties set on deploy", async () => {
+        const marketOwner = await market.owner();
+        expect(marketOwner).to.equal(owner.address);
+
         const fee = await market.getFee();
         expect(fee).to.equal(FEE, "fee should be set");
 
@@ -215,8 +218,8 @@ describe("Market", () => {
 
         const inPlay = await market.getTotalInPlay();
         expect(inPlay).to.equal(
-            ethers.utils.parseUnits("450", USDT_DECIMALS),
-            "Market should be $450 USDT in play after $100 bet @ 1:4.5"
+            ethers.utils.parseUnits("100", USDT_DECIMALS),
+            "Market should have $100 USDT in play after $100 bet @ 1:4.5"
         );
 
         vaultBalance = await underlying.balanceOf(vault.address);
@@ -316,7 +319,7 @@ describe("Market", () => {
             );
 
             let index = await market.getCount();
-            expect(index).to.equal(0, "First bet should have a 0 index");
+            expect(index).to.equal(0, "Should have no bets yet");
 
             await market
                 .connect(bob)
@@ -330,9 +333,11 @@ describe("Market", () => {
                     end,
                     betSignature
                 );
+            const bet: any = await market.getBetByIndex(index);
+            expect(BigNumber.from(bet[0])).to.equal(BigNumber.from(propositionId));
 
-            index = await market.getCount();
-            expect(index).to.equal(1, "Second bet should have a 1 index");
+            const newBetCount = await market.getCount();
+            expect(newBetCount).to.equal(1, "Should have 1 bet");
 
             const settleMessage = makeSettleMessage(index, true);
             const contractSettleMessage = await market.getSettleMessage(index, true);
@@ -340,8 +345,8 @@ describe("Market", () => {
                 contractSettleMessage,
                 "Settle message should match"
             );
-            const settleSignature = await signSettleMessage(index, true, owner);
-            await market.settle(index, true, settleSignature);
+            const settleSignature = await signSettleMessage(0, true, owner);
+            await market.settle(0, true, settleSignature);
         });
     });
 });
@@ -352,7 +357,7 @@ async function signMessage(message: string, signer: SignerWithAddress) {
     return { v, r, s };
 }
 
-function makeSettleMessage(index: BigNumber, result: boolean): string {
+function makeSettleMessage(index: BigNumberish, result: boolean): string {
     const settleMessage = ethers.utils.solidityKeccak256(
         ["uint256", "bool"],
         [index, result]
@@ -361,7 +366,7 @@ function makeSettleMessage(index: BigNumber, result: boolean): string {
 }
 
 function signSettleMessage(
-    index: BigNumber,
+    index: BigNumberish,
     result: boolean,
     signer: SignerWithAddress
 ): Promise<Signature> {

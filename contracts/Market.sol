@@ -16,6 +16,7 @@ struct Bet {
     uint256 payoutDate;
     bool settled;
     address owner;
+    bool _exists;
 }
 
 contract Market is Ownable, IMarket {
@@ -116,6 +117,7 @@ contract Market is Ownable, IMarket {
         external
         view
         returns (
+            bytes32,
             uint256,
             uint256,
             uint256,
@@ -130,6 +132,7 @@ contract Market is Ownable, IMarket {
         private
         view
         returns (
+            bytes32,
             uint256,
             uint256,
             uint256,
@@ -138,7 +141,7 @@ contract Market is Ownable, IMarket {
         )
     {
         Bet memory bet = _bets[index];
-        return (bet.amount, bet.payout, bet.payoutDate, bet.settled, bet.owner);
+        return (bet.propositionId, bet.amount, bet.payout, bet.payoutDate, bet.settled, bet.owner);
     }
 
     // function getBetById(bytes32 id) external view returns (uint256, uint256, uint256, bool, address) {
@@ -232,13 +235,13 @@ contract Market is Ownable, IMarket {
         // add to the market
         _marketTotal[marketId] += wager;
 
-        _bets.push(Bet(propositionId, wager, payout, end, false, msg.sender));
+        _bets.push(Bet(propositionId, wager, payout, end, false, msg.sender, true));
         uint256 count = _bets.length;
         _marketBets[marketId].push(count);
 
-        _totalInPlay += payout;
+        _totalInPlay += wager;
         _totalExposure += (payout - wager);
-        _inplayCount++;
+        _inplayCount += 1;
 
         emit Placed(count, propositionId, marketId, wager, payout, msg.sender);
 
@@ -261,10 +264,8 @@ contract Market is Ownable, IMarket {
         bool result,
         Signature calldata signature
     ) external {
-        bytes32 message = getSettleMessage(index, result); //keccak256(abi.encodePacked(index, result));
-        address marketOwner = recoverSigner(message, signature);
-        require(marketOwner == owner(), "settle: Invalid signature");
-
+        require(isValidSettleSignature(index, result, signature), "settle: Invalid signature");
+        
         _settle(index, result);
     }
 
@@ -283,9 +284,9 @@ contract Market is Ownable, IMarket {
         bytes32 marketId,
         Signature calldata signature
     ) external {
-        bytes32 message = keccak256(abi.encodePacked(propositionId, marketId));
-        address marketOwner = recoverSigner(message, signature);
-        require(marketOwner == owner(), "settleMarket: Invalid signature");
+        //bytes32 message = keccak256(abi.encodePacked(propositionId, marketId));
+        //address marketOwner = recoverSigner(message, signature);
+        //require(marketOwner == owner(), "settleMarket: Invalid signature");
 
         for (uint256 i = from; i < to; i++) {
             uint256 index = _marketBets[marketId][i];
@@ -302,6 +303,10 @@ contract Market is Ownable, IMarket {
 
     function _settle(uint256 id, bool result) private {
         require(
+            _bets[id]._exists == true,
+            "_settle: Bet does not exist"
+        );
+        require(
             _bets[id].settled == false,
             "_settle: Bet has already been settled"
         );
@@ -311,9 +316,9 @@ contract Market is Ownable, IMarket {
         );
 
         _bets[id].settled = true;
-        _totalInPlay -= _bets[id].payout;
-        _totalInPlay -= 1;
-        _totalExposure -= _bets[id].payout;
+        _totalInPlay -= _bets[id].amount;
+        _inplayCount -= 1;
+        _totalExposure -= (_bets[id].payout - _bets[id].amount);
 
         IERC20Metadata underlying = _vault.asset();
 
@@ -348,6 +353,38 @@ contract Market is Ownable, IMarket {
             abi.encodePacked("\x19Ethereum Signed Message:\n32", message)
         );
         return ecrecover(prefixedHash, signature.v, signature.r, signature.s);
+    }
+
+    /**
+     * @notice Returns true if the signature was produced by the provided hash and the private key of the Market owner.
+     * @param hash Hash of the signed message
+     * @param signature Signature to verify
+     */
+    function isValidSignature(bytes32 hash, Signature calldata signature)
+        internal
+        view
+        returns (bool isValid)
+    {
+        bytes32 prefixedHash = keccak256(
+            abi.encodePacked("\x19Ethereum Signed Message:\n32", hash)
+        );
+        address signingAddress = ecrecover(prefixedHash, signature.v, signature.r, signature.s);
+        isValid = (signingAddress == owner());
+    }
+
+    /**
+     * @notice Returns true if the signature is valid for these settlement details
+     * @param index Bet index
+     * @param result Result of the bet
+     * @param signature Signature validating the settlement details
+     */
+    function isValidSettleSignature(
+        uint256 index,
+        bool result,
+        Signature calldata signature
+    ) public view returns (bool isValid) {
+        bytes32 hash = getSettleMessage(index, result);
+        return isValidSignature(hash, signature);
     }
 
     event Claimed(address indexed worker, uint256 amount);

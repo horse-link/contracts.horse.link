@@ -20,6 +20,7 @@ interface IMarket {
         external
         view
         returns (
+            bytes32,
             uint256,
             uint256,
             uint256,
