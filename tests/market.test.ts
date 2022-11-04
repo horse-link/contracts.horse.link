@@ -92,7 +92,7 @@ describe("Market", () => {
     it("should properties set on deploy", async () => {
         const marketOwner = await market.owner();
         expect(marketOwner).to.equal(owner.address);
-
+        
         const fee = await market.getFee();
         expect(fee).to.equal(FEE, "fee should be set");
 
@@ -167,7 +167,6 @@ describe("Market", () => {
         );
 
         const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
-
         const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
         const close = 0;
         const end = 1000000000000;
@@ -195,6 +194,12 @@ describe("Market", () => {
         // Arbitary market ID set by the operator
         const marketId = ethers.utils.formatBytes32String("20220115-BNE-R1-w");
 
+        const potentialPayout = await market.getPotentialPayout(
+            propositionId,
+            wager,
+            odds
+        );
+
         const signature = await signBackMessage(
             nonce,
             propositionId,
@@ -211,21 +216,16 @@ describe("Market", () => {
             .back(nonce, propositionId, marketId, wager, odds, close, end, signature);
 
         balance = await underlying.balanceOf(bob.address);
-        expect(balance).to.equal(
-            ethers.utils.parseUnits("900", USDT_DECIMALS),
-            "Should have $900 USDT after a $100 bet"
+        expect(balance, "Should have $900 USDT after a $100 bet").to.equal(
+            ethers.utils.parseUnits("900", USDT_DECIMALS)        
         );
 
         const inPlay = await market.getTotalInPlay();
-        expect(inPlay).to.equal(
-            ethers.utils.parseUnits("100", USDT_DECIMALS),
-            "Market should have $100 USDT in play after $100 bet @ 1:4.5"
-        );
+        expect(inPlay, "Market should have in play amount equal to payout").to.equal(potentialPayout);
 
         vaultBalance = await underlying.balanceOf(vault.address);
-        expect(vaultBalance).to.equal(
-            ethers.utils.parseUnits("650", USDT_DECIMALS),
-            "Vault should have $650 USDT"
+        expect(vaultBalance, "Vault should have original amount minus the exposure amount").to.equal(
+            BigNumber.from(ethers.utils.parseUnits("1000", USDT_DECIMALS)).sub(potentialPayout.sub(wager))
         );
     });
 
@@ -293,21 +293,41 @@ describe("Market", () => {
             ethers.utils.parseUnits("800", USDT_DECIMALS),
             "Should have $800 USDT after a $200 bet"
         );
+        
+        await vault
+            .connect(alice)
+            .deposit(ethers.utils.parseUnits("1000", USDT_DECIMALS), alice.address);
     });
-    describe("Settle", () => {
-        it("should settle by index", async () => {
-            const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
-            const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
-            const close = 0;
-            const end = 1000000000000;
 
-            // Runner 1 for a Win
-            const propositionId = ethers.utils.formatBytes32String("1");
-            const nonce = ethers.utils.formatBytes32String("1");
+    it("should settle by index", async () => {
+        const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
+        const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
+        const close = 0;
+        const end = 1000000000000;
 
-            // Arbitary market ID set by the operator `${today}_${track}_${race}_W${runner}`
-            const marketId = ethers.utils.formatBytes32String("20220115_BNE_1_W");
-            const betSignature = await signBackMessage(
+        // Runner 1 for a Win
+        const propositionId = ethers.utils.formatBytes32String("1");
+        const nonce = ethers.utils.formatBytes32String("1");
+
+        // Arbitary market ID set by the operator `${today}_${track}_${race}_W${runner}`
+        const marketId = ethers.utils.formatBytes32String("20220115_BNE_1_W");
+        const betSignature = await signBackMessage(
+            nonce,
+            propositionId,
+            marketId,
+            wager,
+            odds,
+            close,
+            end,
+            owner
+        );
+
+        let index = await market.getCount();
+        expect(index).to.equal(0, "Should have no bets yet");
+
+        await market
+            .connect(bob)
+            .back(
                 nonce,
                 propositionId,
                 marketId,
@@ -315,39 +335,22 @@ describe("Market", () => {
                 odds,
                 close,
                 end,
-                owner
+                betSignature
             );
+        const bet: any = await market.getBetByIndex(index);
+        expect(BigNumber.from(bet[0])).to.equal(BigNumber.from(propositionId));
 
-            let index = await market.getCount();
-            expect(index).to.equal(0, "Should have no bets yet");
+        const newBetCount = await market.getCount();
+        expect(newBetCount).to.equal(1, "Should have 1 bet");
 
-            await market
-                .connect(bob)
-                .back(
-                    nonce,
-                    propositionId,
-                    marketId,
-                    wager,
-                    odds,
-                    close,
-                    end,
-                    betSignature
-                );
-            const bet: any = await market.getBetByIndex(index);
-            expect(BigNumber.from(bet[0])).to.equal(BigNumber.from(propositionId));
-
-            const newBetCount = await market.getCount();
-            expect(newBetCount).to.equal(1, "Should have 1 bet");
-
-            const settleMessage = makeSettleMessage(index, true);
-            const contractSettleMessage = await market.getSettleMessage(index, true);
-            expect(settleMessage).to.equal(
-                contractSettleMessage,
-                "Settle message should match"
-            );
-            const settleSignature = await signSettleMessage(0, true, owner);
-            await market.settle(0, true, settleSignature);
-        });
+        const settleMessage = makeSettleMessage(index, true);
+        const contractSettleMessage = await market.getSettleMessage(index, true);
+        expect(settleMessage).to.equal(
+            contractSettleMessage,
+            "Settle message should match"
+        );
+        const settleSignature = await signSettleMessage(0, true, owner);
+        await market.settle(0, true, settleSignature);
     });
 });
 
@@ -363,6 +366,23 @@ function makeSettleMessage(index: BigNumberish, result: boolean): string {
         [index, result]
     );
     return settleMessage;
+}
+
+
+function makeBackMessage(
+    nonce: string,
+    propositionId: string,
+    marketId: string,
+    wager: BigNumberish,
+    odds: BigNumberish,
+    close: BigNumberish,
+    end: BigNumberish
+): string {
+    const backMessage = ethers.utils.solidityKeccak256(
+        ["bytes32", "bytes32", "bytes32", "uint256", "uint256", "uint256", "uint256"],
+        [nonce, propositionId, marketId, wager, odds, close, end]
+    );
+    return backMessage;
 }
 
 function signSettleMessage(
@@ -384,17 +404,6 @@ function signBackMessage(
     end: number,
     signer: SignerWithAddress
 ) {
-    const backMessage = ethers.utils.solidityKeccak256(
-        [
-            "bytes32",
-            "bytes32",
-            "bytes32",
-            "uint256",
-            "uint256",
-            "uint256",
-            "uint256"
-        ],
-        [nonce, propositionId, marketId, wager, odds, close, end]
-    );
+    const backMessage = makeBackMessage(nonce, propositionId, marketId, wager, odds, close, end);
     return signMessage(backMessage, signer);
 }

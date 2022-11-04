@@ -222,6 +222,7 @@ contract Market is Ownable, IMarket {
             end > block.timestamp && block.timestamp > close,
             "back: Invalid date"
         );
+        require(isValidBackSignature(nonce, propositionId, marketId, wager, odds, close, end, signature), "back: Invalid signature");
 
         IERC20Metadata underlying = _vault.asset();
 
@@ -239,7 +240,7 @@ contract Market is Ownable, IMarket {
         uint256 count = _bets.length;
         _marketBets[marketId].push(count);
 
-        _totalInPlay += wager;
+        _totalInPlay += payout;
         _totalExposure += (payout - wager);
         _inplayCount += 1;
 
@@ -277,6 +278,29 @@ contract Market is Ownable, IMarket {
         return keccak256(abi.encodePacked(index, result));
     }
 
+    function getBackMessage(
+        bytes32 nonce,
+        bytes32 propositionId,
+        bytes32 marketId,
+        uint256 wager,
+        uint256 odds,
+        uint256 close,
+        uint256 end
+    ) public view returns (bytes32) {
+        return
+            keccak256(
+                abi.encodePacked(
+                    nonce,
+                    propositionId,
+                    marketId,
+                    wager,
+                    odds,
+                    close,
+                    end
+                )
+            );
+    }
+
     function settleMarket(
         bytes32 propositionId,
         uint256 from,
@@ -284,10 +308,7 @@ contract Market is Ownable, IMarket {
         bytes32 marketId,
         Signature calldata signature
     ) external {
-        //bytes32 message = keccak256(abi.encodePacked(propositionId, marketId));
-        //address marketOwner = recoverSigner(message, signature);
-        //require(marketOwner == owner(), "settleMarket: Invalid signature");
-
+        //TODO: Settle market signature validation
         for (uint256 i = from; i < to; i++) {
             uint256 index = _marketBets[marketId][i];
 
@@ -316,7 +337,7 @@ contract Market is Ownable, IMarket {
         );
 
         _bets[id].settled = true;
-        _totalInPlay -= _bets[id].amount;
+        _totalInPlay -= _bets[id].payout;
         _inplayCount -= 1;
         _totalExposure -= (_bets[id].payout - _bets[id].amount);
 
@@ -384,6 +405,31 @@ contract Market is Ownable, IMarket {
         Signature calldata signature
     ) public view returns (bool isValid) {
         bytes32 hash = getSettleMessage(index, result);
+        return isValidSignature(hash, signature);
+    }
+
+    /**
+     * @notice Returns true if the signature is valid for these bet details
+     */
+    function isValidBackSignature(
+        bytes32 nonce,
+        bytes32 propositionId,
+        bytes32 marketId,
+        uint256 wager,
+        uint256 odds,
+        uint256 close,
+        uint256 end,
+        Signature calldata signature
+    ) public view returns (bool isValid) {
+        bytes32 hash = getBackMessage(
+            nonce,
+            propositionId,
+            marketId,
+            wager,
+            odds,
+            close,
+            end
+        );
         return isValidSignature(hash, signature);
     }
 
