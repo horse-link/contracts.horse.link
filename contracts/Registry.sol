@@ -72,7 +72,7 @@ contract Registry {
         _;
     }
 
-    event ThresholdUpdated(uint256 threshold);
     event MarketAdded(address indexed market);
+    event ThresholdUpdated(uint256 threshold);
     event VaultAdded(address indexed vault);
 }
