@@ -51,13 +51,13 @@ interface IMarket {
         uint256 odds,
         uint256 close,
         uint256 end,
-        Signature memory sig
+        Signature calldata sig
     ) external returns (uint256);
 
     function settle(
         uint256 index,
         bool result,
-        Signature memory sig
+        Signature calldata sig
     ) external;
 
     function settleMarket(
@@ -65,6 +65,6 @@ interface IMarket {
         uint256 from,
         uint256 to,
         bytes32 marketId,
-        Signature memory sig
+        Signature calldata sig
     ) external;
 }

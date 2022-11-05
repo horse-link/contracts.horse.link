@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IBet} from "./IBet.sol";
 import "./IVault.sol";
 import "./IMarket.sol";
+import "./IOracle.sol";
 
 // Put these in the ERC721 contract
 struct Bet {
@@ -25,7 +26,7 @@ contract Market is Ownable, IMarket {
     uint8 private immutable _workerfee;
     IVault private immutable _vault;
     address private immutable _self;
-    address private immutable _oracle;
+    IOracle private immutable _oracle;
 
     uint256 private _inplayCount; // running count of bets
 
@@ -72,7 +73,7 @@ contract Market is Ownable, IMarket {
     }
 
     function getOracleAddress() external view returns (address) {
-        return _oracle;
+        return address(_oracle);
     }
 
     function getVaultAddress() external view returns (address) {
@@ -100,17 +101,11 @@ contract Market is Ownable, IMarket {
         _self = address(this);
         _vault = vault;
         _fee = fee;
-        _workerfee = 10;
-        _oracle = oracle;
+        _oracle = IOracle(oracle);
 
         timeout = 30 days;
         min = 1 hours;
     }
-
-    // function getBetById(bytes32 id) external view returns (uint256, uint256, uint256, bool, address) {
-    //     uint64 index = _betsIndexes[id];
-    //     return _getBet(index);
-    // }
 
     function getBetByIndex(uint256 index)
         external
@@ -140,13 +135,6 @@ contract Market is Ownable, IMarket {
         Bet memory bet = _bets[index];
         return (bet.amount, bet.payout, bet.payoutDate, bet.settled, bet.owner);
     }
-
-    // function getBetById(bytes32 id) external view returns (uint256, uint256, uint256, bool, address) {
-    //     // bytes32 index = _betsIndexes[id];
-    //     // Bet memory bet = _bets[id];
-    //     // return (bet.amount, bet.payout, bet.payoutDate, bet.claimed, bet.owner);
-    //     return 0;
-    // }
 
     function getOdds(
         int256 wager,
@@ -245,39 +233,37 @@ contract Market is Ownable, IMarket {
         return count; // token ID
     }
 
-    function claim() external {
-        uint256 workerfee = _workerfees[msg.sender];
-        require(workerfee > 0, "claim: No fees to claim");
+    // function claim() external {
+    //     uint256 workerfee = _workerfees[msg.sender];
+    //     require(workerfee > 0, "claim: No fees to claim");
 
-        _workerfees[msg.sender] = 0;
-        IERC20Metadata underlying = IVault(_vault).asset();
-        underlying.transfer(msg.sender, workerfee);
+    //     _workerfees[msg.sender] = 0;
+    //     IERC20Metadata underlying = IVault(_vault).asset();
+    //     underlying.transfer(msg.sender, workerfee);
 
-        emit Claimed(msg.sender, workerfee);
-    }
+    //     emit Claimed(msg.sender, workerfee);
+    // }
 
     function settle(
-        uint256 index,
-        bool result,
-        Signature calldata signature
+        uint256 index
     ) external {
-        bytes32 message = getSettleMessage(index, result); //keccak256(abi.encodePacked(index, result));
-        address marketOwner = recoverSigner(message, signature);
-        require(marketOwner == owner(), "settle: Invalid signature");
+        // bytes32 message = getSettleMessage(index, result); //keccak256(abi.encodePacked(index, result));
+        // address marketOwner = recoverSigner(message, signature);
+        // require(marketOwner == owner(), "settle: Invalid signature");
 
-        _settle(index, result);
+        bool result = IOracle(_oracle).getResult(_bets[id].propositionId);
+        _settle(index);
     }
 
-    function getSettleMessage(uint256 index, bool result)
-        public
-        view
-        returns (bytes32)
-    {
-        return keccak256(abi.encodePacked(index, result));
-    }
+    // function getSettleMessage(uint256 index, bool result)
+    //     public
+    //     view
+    //     returns (bytes32)
+    // {
+    //     return keccak256(abi.encodePacked(index, result));
+    // }
 
     function settleMarket(
-        bytes32 propositionId,
         uint256 from,
         uint256 to,
         bytes32 marketId,
@@ -350,7 +336,7 @@ contract Market is Ownable, IMarket {
         return ecrecover(prefixedHash, signature.v, signature.r, signature.s);
     }
 
-    event Claimed(address indexed worker, uint256 amount);
+    // event Claimed(address indexed worker, uint256 amount);
     event Placed(
         uint256 index,
         bytes32 propositionId,
