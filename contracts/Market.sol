@@ -276,7 +276,8 @@ contract Market is Ownable, IMarket {
 
         _bets[id].settled = true;
         _totalInPlay -= _bets[id].payout;
-        _totalExposure -= _bets[id].payout;
+        // _totalExposure -= (_bets[id].amount + _bets[id].payout);
+        _totalExposure -= _bets[id].amount;  // + _bets[id].payout);
 
         IERC20Metadata underlying = _vault.asset();
 
@@ -287,7 +288,6 @@ contract Market is Ownable, IMarket {
 
         if (result == false) {
             // Transfer the proceeds to the vault, less market fee
-
             underlying.transfer(address(_vault), _bets[id].payout);
         }
 

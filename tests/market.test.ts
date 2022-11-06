@@ -302,7 +302,7 @@ describe("Market", () => {
   });
 
   describe("Settle", () => {
-    it("should settle bobs bet by index", async () => {
+    it("should settle bobs winning bet by index", async () => {
       const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
       const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
       const close = 0;
@@ -328,21 +328,25 @@ describe("Market", () => {
       let count = await market.getCount();
       expect(count).to.equal(0, "First bet should have a 0 index");
 
-      await market
-        .connect(bob)
-        .back(
-          nonce,
-          propositionId,
-          marketId,
-          wager,
-          odds,
-          close,
-          end,
-          betSignature
-        );
+      expect(
+        await market
+          .connect(bob)
+          .back(
+            nonce,
+            propositionId,
+            marketId,
+            wager,
+            odds,
+            close,
+            end,
+            betSignature
+          )
+      ).to.emit(market, "Placed");
 
       count = await market.getCount();
       expect(count).to.equal(1, "Second bet should have a 1 index");
+
+      let exposure = await market.getTotalExposure();
 
       await oracle.setResult(
         marketId,
@@ -360,7 +364,7 @@ describe("Market", () => {
       // await market.settle(index, true, settleSignature);
 
       const index = 0;
-      await market.settle(index);
+      expect(await market.settle(index)).to.emit(market, "Settled");
 
       const inPlay = await market.getTotalInPlay();
       expect(inPlay).to.equal(0);
