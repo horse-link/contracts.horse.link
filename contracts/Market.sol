@@ -244,7 +244,7 @@ contract Market is Ownable, IMarket {
         Bet memory bet = _bets[index];
         require(bet.settled == false, "settle: Bet has already settled");
         bool result = IOracle(_oracle).checkResult(bet.marketId, bet.propositionId);
-        // _settle(index, result);
+        _settle(index, result);
     }
 
     function settleMarket(

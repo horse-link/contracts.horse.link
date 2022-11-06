@@ -302,7 +302,7 @@ describe("Market", () => {
   });
 
   describe("Settle", () => {
-    it("should settle by index", async () => {
+    it("should settle bobs bet by index", async () => {
       const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
       const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
       const close = 0;
@@ -361,6 +361,12 @@ describe("Market", () => {
 
       const index = 0;
       await market.settle(index);
+
+      const inPlay = await market.getTotalInPlay();
+      expect(inPlay).to.equal(0);
+
+      // const balance = await underlying.balanceOf(bob.address);
+      // expect(balance).to.equal(500);
     });
   });
 });
