@@ -2,6 +2,7 @@
 pragma solidity =0.8.10;
 
 import "./IOracle.sol";
+import "./SignatureLib.sol";
 
 contract MarketOracle is IOracle {
 
@@ -22,30 +23,19 @@ contract MarketOracle is IOracle {
         return _results[marketId];
     }
 
-    function setResult(bytes32 marketId, bytes32 propositionId, Signature calldata sig) external {
+    function setResult(bytes32 marketId, bytes32 propositionId, bytes32 sig) external {
         require(propositionId != 0x0000000000000000000000000000000000000000000000000000000000000000, "setBinaryResult: Invalid propositionId");
-        require(_results[marketId] != 0x0000000000000000000000000000000000000000000000000000000000000000, "setBinaryResult: Invalid propositionId");
+        require(_results[marketId] == 0x0000000000000000000000000000000000000000000000000000000000000000, "setBinaryResult: Result already set");
         _results[marketId] = propositionId;
 
-        Emit ResultSet(marketId, propositionId);
+        emit ResultSet(marketId, propositionId);
     }
 
-    modifier onlyMarketOwner(bytes32 messageHash, Signature calldata sig) {
+    modifier onlyMarketOwner(bytes32 messageHash, SignatureLib.Signature memory sig) {
         require(
-            recoverSigner(messageHash, sig) == _owner,
+            SignatureLib.recoverSigner(messageHash, sig) == _owner,
             "onlyMarketOwner: Invalid signature"
         );
         _;
-    }
-
-    function recoverSigner(bytes32 message, Signature calldata signature)
-        private
-        pure
-        returns (address)
-    {
-        bytes32 prefixedHash = keccak256(
-            abi.encodePacked("\x19Ethereum Signed Message:\n32", message)
-        );
-        return ecrecover(prefixedHash, signature.v, signature.r, signature.s);
     }
 }

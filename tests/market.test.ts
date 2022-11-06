@@ -4,12 +4,15 @@ import { BigNumber, BigNumberish, ethers as tsEthers, Signer } from "ethers";
 import chai, { expect } from "chai";
 
 import {
-  Token,
   Market,
   Market__factory,
+  MarketOracle,
+  MarketOracle__factory,
+  Token,
   Token__factory,
   Vault,
-  Vault__factory
+  Vault__factory,
+  Oracle__factory
 } from "../build/typechain";
 
 import { solidity } from "ethereum-waffle";
@@ -27,16 +30,22 @@ describe("Market", () => {
   let underlying: Token;
   let vault: Vault;
   let market: Market;
+  let oracle: MarketOracle;
   let owner: SignerWithAddress;
   let alice: SignerWithAddress;
   let bob: SignerWithAddress;
   let carol: SignerWithAddress;
+
   const USDT_DECIMALS = 6;
   const ODDS_DECIMALS = 6;
   const FEE = 100;
 
   beforeEach(async () => {
     [owner, alice, bob, carol] = await ethers.getSigners();
+
+    oracle = await new MarketOracle__factory(owner).deploy();
+    await oracle.deployed();
+
     underlying = await new Token__factory(owner).deploy(
       "Mock USDT",
       "USDT",
@@ -65,7 +74,7 @@ describe("Market", () => {
     market = await new Market__factory(owner).deploy(
       vault.address,
       FEE,
-      ethers.constants.AddressZero
+      oracle.address
     );
     await vault.setMarket(market.address, ethers.constants.MaxUint256);
     await underlying
@@ -104,14 +113,14 @@ describe("Market", () => {
   });
 
   it("should get correct odds on a 5:1 punt", async () => {
-    let balance = await underlying.balanceOf(bob.address);
+    const balance = await underlying.balanceOf(bob.address);
     expect(balance).to.equal(
       ethers.utils.parseUnits("1000", USDT_DECIMALS),
       "Should have $1,000 USDT"
     );
 
     // check vault balance
-    let vaultBalance = await underlying.balanceOf(vault.address);
+    const vaultBalance = await underlying.balanceOf(vault.address);
     expect(vaultBalance).to.equal(
       ethers.utils.parseUnits("1000", USDT_DECIMALS),
       "Should have $1,000 USDT in vault"
@@ -240,7 +249,7 @@ describe("Market", () => {
     const end = 1000000000000;
 
     // check vault balance
-    let vaultBalance = await underlying.balanceOf(vault.address);
+    const vaultBalance = await underlying.balanceOf(vault.address);
     expect(vaultBalance).to.equal(
       ethers.utils.parseUnits("1000", USDT_DECIMALS),
       "Should have $1,000 USDT in vault"
@@ -291,6 +300,7 @@ describe("Market", () => {
       "Should have $800 USDT after a $200 bet"
     );
   });
+
   describe("Settle", () => {
     it("should settle by index", async () => {
       const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
@@ -315,8 +325,8 @@ describe("Market", () => {
         owner
       );
 
-      let index = await market.getCount();
-      expect(index).to.equal(0, "First bet should have a 0 index");
+      let count = await market.getCount();
+      expect(count).to.equal(0, "First bet should have a 0 index");
 
       await market
         .connect(bob)
@@ -331,17 +341,26 @@ describe("Market", () => {
           betSignature
         );
 
-      index = await market.getCount();
-      expect(index).to.equal(1, "Second bet should have a 1 index");
+      count = await market.getCount();
+      expect(count).to.equal(1, "Second bet should have a 1 index");
 
-      const settleMessage = makeSettleMessage(index, true);
-      const contractSettleMessage = await market.getSettleMessage(index, true);
-      expect(settleMessage).to.equal(
-        contractSettleMessage,
-        "Settle message should match"
+      await oracle.setResult(
+        marketId,
+        propositionId,
+        "0x0000000000000000000000000000000000000000000000000000000000000000"
       );
-      const settleSignature = await signSettleMessage(index, true, owner);
-      await market.settle(index, true, settleSignature);
+
+      // const settleMessage = makeSettleMessage(index, true);
+      // const contractSettleMessage = await market.getSettleMessage(index, true);
+      // expect(settleMessage).to.equal(
+      //   contractSettleMessage,
+      //   "Settle message should match"
+      // );
+      // const settleSignature = await signSettleMessage(index, true, owner);
+      // await market.settle(index, true, settleSignature);
+
+      const index = 0;
+      await market.settle(index);
     });
   });
 });
