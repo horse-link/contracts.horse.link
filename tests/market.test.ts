@@ -352,7 +352,10 @@ describe("Market", () => {
       count = await market.getCount();
       expect(count).to.equal(1, "Second bet should have a 1 index");
 
-      const exposure = await market.getTotalExposure();
+      let inPlayCount = await market.getInPlayCount();
+      expect(inPlayCount).to.equal(1, "In play count should be 1");
+
+      let exposure = await market.getTotalExposure();
       expect(exposure).to.equal(ethers.utils.parseUnits("350", USDT_DECIMALS));
 
       let inPlay = await market.getTotalInPlay();
@@ -366,6 +369,9 @@ describe("Market", () => {
 
       const index = 0;
       expect(await market.settle(index)).to.emit(market, "Settled");
+
+      exposure = await market.getTotalExposure();
+      expect(exposure).to.equal(0);
 
       inPlay = await market.getTotalInPlay();
       expect(inPlay).to.equal(0);

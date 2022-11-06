@@ -63,7 +63,7 @@ contract Market is Ownable, IMarket {
     }
 
     function getInPlayCount() external view returns (uint256) {
-        return _inplayCount; // this is incorrect
+        return _inplayCount;
     }
 
     function getCount() external view returns (uint256) {
@@ -254,7 +254,7 @@ contract Market is Ownable, IMarket {
     ) external {
         for (uint256 i = from; i < to; i++) {
             uint256 index = _marketBets[marketId][i];
-            
+
             if (!_bets[index].settled) {
 
                 bytes32 propositionId = IOracle(_oracle).getResult(_bets[index].marketId);
@@ -276,8 +276,8 @@ contract Market is Ownable, IMarket {
 
         _bets[id].settled = true;
         _totalInPlay -= _bets[id].payout;
-        // _totalExposure -= (_bets[id].amount + _bets[id].payout);
-        _totalExposure -= _bets[id].amount;  // + _bets[id].payout);
+        _totalExposure -= _bets[id].payout - _bets[id].amount;
+        _inplayCount--;
 
         IERC20Metadata underlying = _vault.asset();
 
