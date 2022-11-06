@@ -346,7 +346,9 @@ describe("Market", () => {
       count = await market.getCount();
       expect(count).to.equal(1, "Second bet should have a 1 index");
 
-      let exposure = await market.getTotalExposure();
+      // TODO: Check this value
+      const exposure = await market.getTotalExposure();
+      expect(exposure).to.equal(ethers.utils.parseUnits("350", USDT_DECIMALS));
 
       await oracle.setResult(
         marketId,
@@ -354,23 +356,15 @@ describe("Market", () => {
         "0x0000000000000000000000000000000000000000000000000000000000000000"
       );
 
-      // const settleMessage = makeSettleMessage(index, true);
-      // const contractSettleMessage = await market.getSettleMessage(index, true);
-      // expect(settleMessage).to.equal(
-      //   contractSettleMessage,
-      //   "Settle message should match"
-      // );
-      // const settleSignature = await signSettleMessage(index, true, owner);
-      // await market.settle(index, true, settleSignature);
-
       const index = 0;
       expect(await market.settle(index)).to.emit(market, "Settled");
 
       const inPlay = await market.getTotalInPlay();
       expect(inPlay).to.equal(0);
 
-      // const balance = await underlying.balanceOf(bob.address);
-      // expect(balance).to.equal(500);
+      // TODO: Check this value
+      const balance = await underlying.balanceOf(bob.address);
+      expect(balance).to.equal(ethers.utils.parseUnits("1350", USDT_DECIMALS));
     });
   });
 });
