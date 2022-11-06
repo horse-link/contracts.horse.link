@@ -1,5 +1,5 @@
-import { ethers } from "hardhat";
-import { BigNumber, BigNumberish, ethers as tsEthers, Signer } from "ethers";
+import { ethers, deployments } from "hardhat";
+import { BigNumber, BigNumberish } from "ethers";
 
 import chai, { expect } from "chai";
 
@@ -36,6 +36,7 @@ describe("Market", () => {
     const FEE = 100;
 
     beforeEach(async () => {
+        //TODO: Use hardhat-deploy to deploy contracts via "global fixture"
         [owner, alice, bob, carol] = await ethers.getSigners();
         underlying = await new Token__factory(owner).deploy(
             "Mock USDT",
