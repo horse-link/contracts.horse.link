@@ -1,5 +1,11 @@
 import { ethers } from "hardhat";
-import { BigNumber, BigNumberish, ethers as tsEthers, Signer } from "ethers";
+import {
+  BigNumber,
+  BigNumberish,
+  BytesLike,
+  ethers as tsEthers,
+  Signer
+} from "ethers";
 
 import chai, { expect } from "chai";
 
@@ -346,9 +352,11 @@ describe("Market", () => {
       count = await market.getCount();
       expect(count).to.equal(1, "Second bet should have a 1 index");
 
-      // TODO: Check this value
       const exposure = await market.getTotalExposure();
       expect(exposure).to.equal(ethers.utils.parseUnits("350", USDT_DECIMALS));
+
+      let inPlay = await market.getTotalInPlay();
+      expect(inPlay).to.equal(ethers.utils.parseUnits("450", USDT_DECIMALS));
 
       await oracle.setResult(
         marketId,
@@ -359,10 +367,9 @@ describe("Market", () => {
       const index = 0;
       expect(await market.settle(index)).to.emit(market, "Settled");
 
-      const inPlay = await market.getTotalInPlay();
+      inPlay = await market.getTotalInPlay();
       expect(inPlay).to.equal(0);
 
-      // TODO: Check this value
       const balance = await underlying.balanceOf(bob.address);
       expect(balance).to.equal(ethers.utils.parseUnits("1350", USDT_DECIMALS));
     });
@@ -375,20 +382,23 @@ async function signMessage(message: string, signer: SignerWithAddress) {
   return { v, r, s };
 }
 
-function makeSettleMessage(index: BigNumber, result: boolean): string {
-  const settleMessage = ethers.utils.solidityKeccak256(
-    ["uint256", "bool"],
-    [index, result]
+function makeSetResultMessage(
+  marketId: BytesLike,
+  propositionId: BytesLike
+): string {
+  const message = ethers.utils.solidityKeccak256(
+    ["bytes32", "bytes32"],
+    [marketId, propositionId]
   );
-  return settleMessage;
+  return message;
 }
 
-function signSettleMessage(
-  index: BigNumber,
-  result: boolean,
+function signSetResultMessage(
+  marketId: BytesLike,
+  propositionId: BytesLike,
   signer: SignerWithAddress
 ): Promise<Signature> {
-  const settleMessage = makeSettleMessage(index, result);
+  const settleMessage = makeSetResultMessage(marketId, propositionId);
   return signMessage(settleMessage, signer);
 }
 
@@ -402,7 +412,7 @@ function signBackMessage(
   end: number,
   signer: SignerWithAddress
 ) {
-  const backMessage = ethers.utils.solidityKeccak256(
+  const message = ethers.utils.solidityKeccak256(
     [
       "bytes32",
       "bytes32",
@@ -414,5 +424,5 @@ function signBackMessage(
     ],
     [nonce, propositionId, marketId, wager, odds, close, end]
   );
-  return signMessage(backMessage, signer);
+  return signMessage(message, signer);
 }
