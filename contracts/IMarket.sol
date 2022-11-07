@@ -1,11 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity =0.8.10;
 
-struct Signature {
-    uint8 v;
-    bytes32 r;
-    bytes32 s;
-}
+import "./SignatureLib.sol";
 
 interface IMarket {
     function getFee() external view returns (uint8);
@@ -51,20 +47,16 @@ interface IMarket {
         uint256 odds,
         uint256 close,
         uint256 end,
-        Signature memory sig
+        SignatureLib.Signature calldata sig
     ) external returns (uint256);
 
     function settle(
-        uint256 index,
-        bool result,
-        Signature memory sig
+        uint256 index
     ) external;
 
     function settleMarket(
-        bytes32 propositionId,
         uint256 from,
         uint256 to,
-        bytes32 marketId,
-        Signature memory sig
+        bytes32 marketId
     ) external;
 }

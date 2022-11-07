@@ -60,7 +60,6 @@ contract Vault is Ownable, IVault, ERC20PresetMinterPauser {
 
     function _getPerformance() private view returns (uint256) {
         uint256 underlyingBalance = IERC20(_underlying).balanceOf(_self);
-
         if (underlyingBalance > 0)
             return (_totalSupply * 100) / underlyingBalance;
 
@@ -134,6 +133,8 @@ contract Vault is Ownable, IVault, ERC20PresetMinterPauser {
 
         shares = _convertToShares(assets);
         _mint(receiver, shares);
+        _totalSupply += shares;
+        _balances[msg.sender] += shares;
 
         IERC20(_underlying).transferFrom(receiver, _self, assets);
         IERC20(_underlying).approve(_market, shares);
@@ -174,6 +175,7 @@ contract Vault is Ownable, IVault, ERC20PresetMinterPauser {
         uint256 amount = _previewWithdraw(shares);
         _totalSupply -= amount;
         _balances[msg.sender] -= shares;
+        _burn(msg.sender, shares);
 
         IERC20(_underlying).approve(_market, _totalSupply);
         IERC20(_underlying).transfer(msg.sender, amount);
