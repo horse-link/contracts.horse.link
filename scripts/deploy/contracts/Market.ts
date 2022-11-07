@@ -12,7 +12,7 @@ const network = process.env.HARDHAT_NETWORK ?? "hardhat";
 
 export const constructorArguments = (): MarketContractorArgs => {
   const vault = contracts[network].vault;
-  const oracle = process.env.ORACLE_ADDRESS ?? ethers.constants.AddressZero;
+  const oracle = contracts[network].marketOracle;
   const fee = process.env.FEE ?? 0;
   return [vault, fee, oracle];
 };
