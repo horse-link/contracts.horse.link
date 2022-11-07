@@ -62,6 +62,7 @@ contract Vault is Ownable, IVault, ERC20PresetMinterPauser {
         uint256 underlyingBalance = IERC20(_underlying).balanceOf(_self);
         if (underlyingBalance > 0)
             return (_totalSupply * 100) / underlyingBalance;
+
         return 0;
     }
 
