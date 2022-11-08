@@ -88,6 +88,18 @@ export default {
       default: 0,
       goerli: process.env.GOERLI_DEPLOYER,
     },
+    usdt: {
+      default: 1,
+      mainnet: "TODO",
+      goerli: "TODO",
+    },
+    usdc: {
+
+    },
+    dai: {
+    },
+    forex: {     
+    }
 
   }
 };
