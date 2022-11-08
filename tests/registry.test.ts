@@ -3,7 +3,13 @@ import chai, { expect } from "chai";
 import { ethers, deployments } from "hardhat";
 import { solidity } from "ethereum-waffle";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { Market, MarketOracle, Registry, Token, Vault } from "../build/typechain";
+import {
+  Market,
+  MarketOracle,
+  Registry,
+  Token,
+  Vault
+} from "../build/typechain";
 
 chai.use(solidity);
 
@@ -18,33 +24,18 @@ describe("Registry", () => {
   let owner: SignerWithAddress;
 
   beforeEach(async () => {
-    const fixture = await deployments.fixture([
-      "registry",
-      "vault",
-      "market"
-    ]);
+    const fixture = await deployments.fixture(["registry", "vault", "market"]);
     [owner] = await ethers.getSigners();
 
     token = await ethers.getContract("Token", owner);
     vault = await ethers.getContract("Vault", owner);
     market = await ethers.getContract("Market", owner);
-    //registry = await ethers.getContract("Registry", owner);
+    registry = await ethers.getContract("Registry", owner);
     oracle = await ethers.getContract("MarketOracle", owner);
-    
-
   });
 
   it("should be able to add markets and vaults", async () => {
     //Deploy a new market
-
-    const marketDeployment = await deployments.deploy("Market 2", {
-      from: owner.address,
-      args: [vault.address, 0, oracle.address],
-      log: true,
-      autoMine: true, 
-      skipIfAlreadyDeployed: true
-    });
-
 
     const market_count = await registry.marketCount();
     expect(market_count).to.equal(0, "Should have no markets");
