@@ -25,7 +25,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     await execute("Vault", { from: deployer, log: true }, "setMarket", marketDeployment.address, ethers.constants.MaxUint256)
   }
   if (!network.tags.test) {
-    // Add market
+    // Add market to registry
     const registry = await deployments.get("Registry");
     await execute("Registry", { from: deployer, log: true }, "addMarket", marketDeployment.address);
   }
