@@ -1,68 +1,56 @@
-import { ethers } from "hardhat";
+import { BigNumber, BigNumberish, BytesLike } from "ethers";
 import chai, { expect } from "chai";
-import {
-  Token,
-  Market,
-  Market__factory,
-  Token__factory,
-  Vault,
-  Vault__factory
-} from "../build/typechain";
+import { ethers, deployments } from "hardhat";
 import { solidity } from "ethereum-waffle";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { Market, MarketOracle, Token, Vault } from "../build/typechain";
 import { getEventData } from "./utils";
 
 chai.use(solidity);
 
 describe("Vault", () => {
-  let underlying: Token;
+  let token: Token;
   let vault: Vault;
   let market: Market;
   let owner: SignerWithAddress;
   let alice: SignerWithAddress;
   let bob: SignerWithAddress;
+  let tokenDecimals: number;
 
   beforeEach(async () => {
-    const USDT_DECIMALS = 6;
-    const FEE = 100;
+    const fixture = await deployments.fixture([
+      "token",
+      "oracle",
+      "vault",
+      "market"
+    ]);
+
     [owner, alice, bob] = await ethers.getSigners();
-    underlying = await new Token__factory(owner).deploy(
-      "Mock USDT",
-      "USDT",
-      USDT_DECIMALS
-    );
-    await underlying.deployed();
-    await underlying.mint(
+
+    token = await ethers.getContract("Token", owner);
+    vault = await ethers.getContract("Vault", owner);
+    market = await ethers.getContract("Market", owner);
+    tokenDecimals = await token.decimals();
+
+    await token.mint(
       owner.address,
-      ethers.utils.parseUnits("1000000", USDT_DECIMALS)
+      ethers.utils.parseUnits("1000000", tokenDecimals)
     );
-    await underlying.transfer(
+    await token.transfer(
       alice.address,
-      ethers.utils.parseUnits("2000", USDT_DECIMALS)
+      ethers.utils.parseUnits("2000", tokenDecimals)
     );
-    await underlying.transfer(
+    await token.transfer(
       bob.address,
-      ethers.utils.parseUnits("2000", USDT_DECIMALS)
+      ethers.utils.parseUnits("2000", tokenDecimals)
     );
-
-    vault = await new Vault__factory(owner).deploy(underlying.address);
-    await vault.deployed();
-    market = await new Market__factory(owner).deploy(
-      vault.address,
-      FEE,
-      ethers.constants.AddressZero
-    );
-
-    await vault.setMarket(market.address, ethers.constants.MaxUint256);
   });
 
   it("Mock USDT has correreturn the correct symbol", async () => {
-    expect(await underlying.symbol()).to.equal("USDT");
+    expect(await token.symbol()).to.equal("USDT");
   });
 
   it("should set properties on deploy", async () => {
-    const fee = await market.getFee();
-    expect(fee).to.equal(100, "Should have fee of 100");
 
     const totalSupply = await vault.totalSupply();
     expect(totalSupply).to.equal(0, "Should have no tokens");
@@ -70,10 +58,10 @@ describe("Vault", () => {
     const vaultPerformance = await vault.getPerformance();
     expect(vaultPerformance).to.equal(0, "Should have no values");
 
-    const _underlying = await vault.asset();
-    expect(_underlying).to.equal(
-      underlying.address,
-      "Should have token address as underlying"
+    const _token = await vault.asset();
+    expect(_token).to.equal(
+      token.address,
+      "Should have token address as token"
     );
 
     const _market = await vault.getMarket();
@@ -118,7 +106,7 @@ describe("Vault", () => {
 
   it("Should allow user to deposit supported assets and get performance", async () => {
     const amount = ethers.utils.parseUnits("100", 6);
-    await underlying.connect(alice).approve(vault.address, amount);
+    await token.connect(alice).approve(vault.address, amount);
 
     const receipt = await (
       await vault.connect(alice).deposit(amount, alice.address)
@@ -135,7 +123,7 @@ describe("Vault", () => {
 
   it("Should allow msg.sender to receive shares when receiver address is address zero", async () => {
     const amount = ethers.utils.parseUnits("100", 6);
-    await underlying.connect(alice).approve(vault.address, amount);
+    await token.connect(alice).approve(vault.address, amount);
 
     await vault.connect(alice).deposit(amount, ethers.constants.AddressZero);
     const totalAssets = await vault.totalAssets();
@@ -147,7 +135,7 @@ describe("Vault", () => {
 
   it("Should get user maxWithdraw amount", async () => {
     const amount = ethers.utils.parseUnits("100", 6);
-    await underlying.connect(alice).approve(vault.address, amount);
+    await token.connect(alice).approve(vault.address, amount);
 
     await vault.connect(alice).deposit(amount, alice.address);
     const maxWithdraw = await vault.maxWithdraw(alice.address);
@@ -156,7 +144,7 @@ describe("Vault", () => {
 
   it("Should get previewWithdraw amount", async () => {
     const amount = ethers.utils.parseUnits("200", 6);
-    await underlying.connect(bob).approve(vault.address, amount);
+    await token.connect(bob).approve(vault.address, amount);
 
     await vault.connect(bob).deposit(amount, bob.address);
     const previewWithdraw = await vault.previewWithdraw(amount);
@@ -165,7 +153,7 @@ describe("Vault", () => {
 
   it("Should not allow user to withdraw more than maxWithdraw", async () => {
     const amount = ethers.utils.parseUnits("1000", 6);
-    await underlying.connect(alice).approve(vault.address, amount);
+    await token.connect(alice).approve(vault.address, amount);
 
     await vault.connect(alice).deposit(amount, alice.address);
 
@@ -180,7 +168,7 @@ describe("Vault", () => {
       ethers.utils.parseUnits("500", 6)
     );
 
-    expect(await underlying.balanceOf(alice.address)).to.equal(
+    expect(await token.balanceOf(alice.address)).to.equal(
       ethers.utils.parseUnits("1500", 6)
     );
 

@@ -18,7 +18,15 @@ Contracts are located in the `/contracts` folder.
 See `/hardhat.config.ts` for hardhat configuration. Some values are fetched from environment variables, see `dev.env` for local development environment variables and copy it into `.env` before changing the values.
 
 ## Deployment
-The deployment script is located in the `/scripts/deploy` folder. Each contract to be deployed should have its own deployment module.
+TODO: How to deploy
+
+### Deployment to Goerli
+
+### Deployment to Local
+
+### Deployment to Mainnet
+
+
 
 ### Contract addresses
 Deployed addresses are saved in `/contracts.json` for each network. This file should be committed so that addresses are managed by git.

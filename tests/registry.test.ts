@@ -1,22 +1,9 @@
-import { ethers } from "hardhat";
-import { BigNumber, BigNumberish, ethers as tsEthers } from "ethers";
-
+import { BigNumber, BigNumberish, BytesLike } from "ethers";
 import chai, { expect } from "chai";
-
-import {
-  Token,
-  Market,
-  Market__factory,
-  Token__factory,
-  Vault,
-  Registry,
-  Registry__factory,
-  Vault__factory,
-  MockToken__factory
-} from "../build/typechain";
-
+import { ethers, deployments } from "hardhat";
 import { solidity } from "ethereum-waffle";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { Market, MarketOracle, Registry, Token, Vault } from "../build/typechain";
 
 chai.use(solidity);
 
@@ -24,24 +11,23 @@ describe("Registry", () => {
   let underlying: Token;
   let token: Token;
   let vault: Vault;
-
   let registry: Registry;
+  let market: Market;
+
   let owner: SignerWithAddress;
 
   beforeEach(async () => {
-    [owner] = await ethers.getSigners();
-    underlying = await new Token__factory(owner).deploy(
-      "Mock USDT",
-      "USDT",
-      18
-    );
-    await underlying.deployed();
+    const fixture = await deployments.fixture([
+      "registry",
+      "vault",
+      "market"
+    ]);
 
-    token = await new Token__factory(owner).deploy("HL", "HL", 18);
-    await token.deployed();
+    token = await ethers.getContract("Token", owner);
+    vault = await ethers.getContract("Vault", owner);
+    market = await ethers.getContract("Market", owner);
+    registry = await ethers.getContract("Registry", owner);
 
-    registry = await new Registry__factory(owner).deploy(token.address);
-    await registry.deployed();
   });
 
   it("should be able to add markets and vaults", async () => {
