@@ -21,6 +21,6 @@ contract TabOracle is ChainlinkClient {
         setPublicChainlinkToken();
         oracle = 0xc57B33452b4F7BB189bB5AfaE9cc4aBa1f7a4FD8;
         jobId = "d5270d1c311941d0b08bead21fea7747";
-        fee = 0.1 * 10**18; // (Varies by network and job)
+        fee = 0.1 * 10 ** 18; // (Varies by network and job)
     }
 }
