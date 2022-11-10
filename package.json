@@ -5,7 +5,7 @@
   "scripts": {
     "prepare": "husky install",
     "postinstall": "npx hardhat compile",
-    "hh:compile": "npx hardhat compile && npx hardhat size-contracts",
+    "hh:compile": "npx hardhat compile",
     "deploy:uat": "npx hardhat compile && npx hardhat deploy --network goerli --tags oracle,registryToken,vault,market --export ./deployments/goerli/exports.json",
     "hh:node": "npx hardhat node --hostname localhost",
     "test": "npx hardhat test",
