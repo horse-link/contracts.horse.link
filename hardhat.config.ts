@@ -1,4 +1,3 @@
-
 //import "@nomiclabs/hardhat-etherscan";
 //import "@nomiclabs/hardhat-waffle";
 import "@openzeppelin/hardhat-upgrades";
@@ -44,13 +43,13 @@ export default {
       url: defaultRpcUrl,
       accounts: [process.env.PRIVATE_KEY || defaultKey],
       saveDeployment: false,
-      tags: ["local"],
+      tags: ["local", "test"]
     },
     goerli: {
       url: process.env.GOERLI_URL || defaultRpcUrl,
       accounts: [process.env.PRIVATE_KEY || defaultKey],
       saveDeployment: true,
-      tags: ["staging"]
+      tags: ["uat", "test"]
     },
     mainnet: {
       url: process.env.MAINNET_URL || defaultRpcUrl,
@@ -86,20 +85,13 @@ export default {
   namedAccounts: {
     deployer: {
       default: 0,
-      goerli: process.env.GOERLI_DEPLOYER,
+      goerli: process.env.GOERLI_DEPLOYER
     },
-    usdt: {
-      default: 1,
-      mainnet: "TODO",
-      goerli: "TODO",
+    Usdt: {
+      goerli: "0xaF2929Ed6758B0bD9575e1F287b85953B08E50BC"
     },
-    usdc: {
-
-    },
-    dai: {
-    },
-    forex: {     
+    Dai: {
+      goerli: "0x70b481B732822Af9beBc895779A6e261DC3D6C8B"
     }
-
   }
 };

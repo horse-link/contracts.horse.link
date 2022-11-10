@@ -1,6 +1,5 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
-import { parseEther } from "ethers/lib/utils";
 import "hardhat-deploy";
 import "@nomiclabs/hardhat-ethers";
 
@@ -10,7 +9,7 @@ import "@nomiclabs/hardhat-ethers";
  */
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployments, getNamedAccounts } = hre;
-  const { deploy, execute } = deployments;
+  const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
 
   const deployResult = await deploy("MarketOracle", {
@@ -18,7 +17,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     args: [],
     log: true,
     autoMine: true, // speed up deployment on local network (ganache, hardhat), no effect on live networks,
-    skipIfAlreadyDeployed: true
+    //Redeploy if the script was called with "fresh" tag
+    skipIfAlreadyDeployed: false
   });
   if (deployResult?.newlyDeployed) {
     console.log(
@@ -29,4 +29,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   }
 };
 export default func;
-func.tags = ["oracle", "market"]; // Deploy if "oracle" or "market" tags are specified
+func.tags = ["oracle"];
+func.skip = async (hre: HardhatRuntimeEnvironment) => {
+  return false;
+};
