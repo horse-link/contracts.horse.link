@@ -1,11 +1,10 @@
-import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { DeployFunction } from "hardhat-deploy/types";
+import "@nomiclabs/hardhat-ethers";
 import { ethers } from "hardhat";
 import "hardhat-deploy";
-import "@nomiclabs/hardhat-ethers";
-import { UnderlyingTokens } from "../deployData/settings";
+import { DeployFunction } from "hardhat-deploy/types";
+import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { Token } from "../build/typechain";
-import { parseEther } from "ethers/lib/utils";
+import { UnderlyingTokens } from "../deployData/settings";
 /*
  * Deploy a Market contract with an Oracle
  */

@@ -1,11 +1,8 @@
-import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { DeployFunction } from "hardhat-deploy/types";
-import { parseEther } from "ethers/lib/utils";
-import { ethers } from "hardhat";
-import "hardhat-deploy";
 import "@nomiclabs/hardhat-ethers";
+import "hardhat-deploy";
+import { DeployFunction } from "hardhat-deploy/types";
+import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { UnderlyingTokens } from "../deployData/settings";
-import { Token } from "../build/typechain/Token";
 
 /*
  * Deploy a Vault contract with an Underlying ERC-20 token
