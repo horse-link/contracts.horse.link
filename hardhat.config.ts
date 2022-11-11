@@ -35,25 +35,28 @@ export default {
 	networks: {
 		hardhat: {
 			chainId: 1337,
-			allowUnlimitedContractSize: false,
 			saveDeployment: false,
 			tags: ["local", "test"]
 		},
 		localhost: {
 			url: defaultRpcUrl,
-			accounts: [process.env.PRIVATE_KEY || defaultKey],
 			saveDeployment: false,
 			tags: ["local", "test"]
 		},
 		goerli: {
 			url: process.env.GOERLI_URL || defaultRpcUrl,
-			accounts: [process.env.PRIVATE_KEY || defaultKey],
+			accounts: [process.env.GOERLI_DEPLOYER || defaultKey],
 			saveDeployment: true,
+			verify: {
+				etherscan: {
+					apiKey: process.env.ETHERSCAN_API_KEY
+				}
+			},
 			tags: ["uat", "test"]
 		},
 		mainnet: {
 			url: process.env.MAINNET_URL || defaultRpcUrl,
-			accounts: [process.env.PRIVATE_KEY || defaultKey],
+			accounts: [process.env.MAINNET_DEPLOYER || defaultKey],
 			saveDeployment: true,
 			tags: ["production"]
 		}
@@ -76,11 +79,6 @@ export default {
 		target: "ethers-v5",
 		alwaysGenerateOverloads: false,
 		externalArtifacts: ["externalArtifacts/*.json"]
-	},
-	verify: {
-		etherscan: {
-			apiKey: process.env.ETHERSCAN_KEY
-		}
 	},
 	namedAccounts: {
 		deployer: {

@@ -35,43 +35,16 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 			autoMine: true, // speed up deployment on local network (ganache, hardhat), no effect on live networks,
 			skipIfAlreadyDeployed: false
 		});
-		//if (deployResult?.newlyDeployed) {
-		// If this is a test network,
-		// 1. Approve the Vault contract to spend the tokens
-		// 2. Deposit a bunch of tokens
-		if (network.tags.test) {
-			const token: Token = await ethers.getContractAt(
-				"Token",
-				tokenAddress
-			);
-			//get deployer signer from hardhat-deploy
-			const signer = await ethers.getNamedSigner("deployer");
-			//onst signer = new ethers.Wallet(namedAccounts["deployer"], ethers.provider);
-			//const signer = await ethers.getSigner(deployer);
-			const deployerToken = token.connect(signer);
-			await deployerToken.approve(
-				deployResult.address,
-				ethers.constants.MaxUint256
-			);
+
+		if (deployResult.newlyDeployed) {
+			// Add vault to registry
 			await execute(
-				tokenDetails.vaultName,
-				{
-					from: deployer,
-					log: true
-				},
-				"deposit",
-				parseEther(tokenDetails.mintAmount).div(2),
-				deployer
+				"Registry",
+				{ from: deployer, log: true },
+				"addVault",
+				deployResult.address
 			);
 		}
-		// Add vault to registry
-		await execute(
-			"Registry",
-			{ from: deployer, log: true },
-			"addVault",
-			deployResult.address
-		);
-		//}
 	}
 };
 export default func;

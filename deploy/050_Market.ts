@@ -4,6 +4,8 @@ import { ethers } from "hardhat";
 import "hardhat-deploy";
 import "@nomiclabs/hardhat-ethers";
 import { UnderlyingTokens } from "../deployData/settings";
+import { Token } from "../build/typechain";
+import { parseEther } from "ethers/lib/utils";
 /*
  * Deploy a Market contract with an Oracle
  */
@@ -16,17 +18,17 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	const deployer = namedAccounts.deployer;
 
 	for (const tokenDetails of UnderlyingTokens) {
-		//const tokenDeployment = await deployments.get(
-		//	tokenDetails.deploymentName
-		//);
 		const vaultDeployment = await deployments.get(tokenDetails.vaultName);
-		//let tokenAddress: string;
-		//if (network.tags.production || network.tags.uat) {
-		//	tokenAddress = namedAccounts[tokenDetails.deploymentName];
-		//} else {
-		//	tokenAddress = tokenDeployment.address;
-		//}
-		const deployResult = await deploy(tokenDetails.marketName, {
+		let tokenAddress: string;
+		if (network.tags.production || network.tags.uat) {
+			tokenAddress = namedAccounts[tokenDetails.deploymentName];
+		} else {
+			const tokenDeployment = await deployments.get(
+				tokenDetails.deploymentName
+			);
+			tokenAddress = tokenDeployment.address;
+		}
+		const marketDeployment = await deploy(tokenDetails.marketName, {
 			contract: "Market",
 			from: deployer,
 			args: [vaultDeployment.address, 0, oracle.address],
@@ -34,23 +36,48 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 			autoMine: true,
 			skipIfAlreadyDeployed: false
 		});
-		if (deployResult?.newlyDeployed) {
+		if (marketDeployment?.newlyDeployed) {
 			await execute(
 				tokenDetails.vaultName,
 				{ from: deployer, log: true },
 				"setMarket",
-				deployResult.address,
+				marketDeployment.address,
 				ethers.constants.MaxUint256
 			);
+			await execute(
+				"Registry",
+				{ from: deployer, log: true },
+				"addMarket",
+				marketDeployment.address
+			);
 		}
-		// Add market to registry
-		//const registry = await deployments.get("Registry");
-		await execute(
-			"Registry",
-			{ from: deployer, log: true },
-			"addMarket",
-			deployResult.address
-		);
+		// Local testing only
+		// 1. Approve the Vault contract to spend the tokens
+		// 2. Deposit a bunch of tokens
+		if (network.tags.local) {
+			const token: Token = await ethers.getContractAt(
+				"Token",
+				tokenAddress
+			);
+			//get deployer signer from hardhat-deploy
+			const signer = await ethers.getSigner(deployer);
+			const receipt = await token
+				.connect(signer)
+				.approve(vaultDeployment.address, ethers.constants.MaxUint256);
+			await receipt.wait();
+			const balance = await token.balanceOf(signer.address);
+
+			await execute(
+				tokenDetails.vaultName,
+				{
+					from: deployer,
+					log: true
+				},
+				"deposit",
+				balance,
+				deployer
+			);
+		}
 	}
 };
 export default func;
