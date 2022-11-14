@@ -233,7 +233,7 @@ describe("Market", () => {
 
 		const inPlay = await market.getTotalInPlay();
 		expect(inPlay).to.equal(
-			ethers.utils.parseUnits("450", tokenDecimals),
+			ethers.utils.parseUnits("100", tokenDecimals),
 			"Market should be $450 USDT in play after $100 bet @ 1:4.5"
 		);
 
@@ -363,13 +363,13 @@ describe("Market", () => {
 			expect(inPlayCount).to.equal(1, "In play count should be 1");
 
 			let exposure = await market.getTotalExposure();
-			expect(exposure).to.equal(
+			expect(exposure, "Exposure amount incorrect").to.equal(
 				ethers.utils.parseUnits("350", tokenDecimals)
 			);
 
 			let inPlay = await market.getTotalInPlay();
-			expect(inPlay).to.equal(
-				ethers.utils.parseUnits("450", tokenDecimals)
+			expect(inPlay, "In play amount incorrect").to.equal(
+				ethers.utils.parseUnits("100", tokenDecimals)
 			);
 
 			await oracle.setResult(

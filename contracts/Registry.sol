@@ -47,6 +47,7 @@ contract Registry {
             _markets[market] == address(0),
             "addMarket: Market already added"
         );
+        _markets[market] = market;
         markets.push(market);
         emit MarketAdded(market);
     }
