@@ -8,7 +8,7 @@ import { getEventData } from "./utils";
 
 chai.use(solidity);
 
-describe.only("Vault", () => {
+describe("Vault", () => {
 	let underlying: Token;
 	let vault: Vault;
 	let market: Market;
