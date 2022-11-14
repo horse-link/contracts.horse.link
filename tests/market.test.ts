@@ -27,6 +27,7 @@ describe("Market", () => {
 	const ODDS_DECIMALS = 6;
 
 	beforeEach(async () => {
+		// Import deployments tagged with these values
 		const fixture = await deployments.fixture([
 			"token",
 			"oracle",

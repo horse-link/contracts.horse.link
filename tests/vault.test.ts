@@ -18,6 +18,7 @@ describe("Vault", () => {
 	let underlyingDecimals: number;
 
 	beforeEach(async () => {
+		// Import deployments tagged with these values
 		const fixture = await deployments.fixture([
 			"token",
 			"oracle",
