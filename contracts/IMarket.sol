@@ -50,13 +50,11 @@ interface IMarket {
         SignatureLib.Signature calldata sig
     ) external returns (uint256);
 
-    function settle(
-        uint256 index
-    ) external;
+    function settle(uint256 index) external;
 
-    function settleMarket(
-        uint256 from,
-        uint256 to,
-        bytes32 marketId
-    ) external;
+    // function settleMarket(
+    //     uint256 from,
+    //     uint256 to,
+    //     bytes32 marketId
+    // ) external;
 }

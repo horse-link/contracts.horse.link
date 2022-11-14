@@ -10,7 +10,6 @@ import "./IMarket.sol";
 import "./IOracle.sol";
 import "./SignatureLib.sol";
 
-
 // Put these in the ERC721 contract
 struct Bet {
     bytes32 propositionId;
@@ -211,7 +210,10 @@ contract Market is Ownable, IMarket {
         );
 
         // check the oracle first
-        require(IOracle(_oracle).checkResult(marketId, propositionId) == false, "back: Oracle result already set for this market");
+        require(
+            IOracle(_oracle).checkResult(marketId, propositionId) == false,
+            "back: Oracle result already set for this market"
+        );
 
         IERC20Metadata underlying = _vault.asset();
 
@@ -225,7 +227,9 @@ contract Market is Ownable, IMarket {
         // add to the market
         _marketTotal[marketId] += wager;
 
-        _bets.push(Bet(propositionId, marketId, wager, payout, end, false, msg.sender));
+        _bets.push(
+            Bet(propositionId, marketId, wager, payout, end, false, msg.sender)
+        );
         uint256 count = _bets.length;
         _marketBets[marketId].push(count);
 
@@ -238,40 +242,42 @@ contract Market is Ownable, IMarket {
         return count; // token ID
     }
 
-    function settle(
-        uint256 index
-    ) external {
+    function settle(uint256 index) external {
         Bet memory bet = _bets[index];
         require(bet.settled == false, "settle: Bet has already settled");
-        bool result = IOracle(_oracle).checkResult(bet.marketId, bet.propositionId);
+        bool result = IOracle(_oracle).checkResult(
+            bet.marketId,
+            bet.propositionId
+        );
         _settle(index, result);
     }
 
-    function settleMarket(
-        uint256 from,
-        uint256 to,
-        bytes32 marketId
-    ) external {
-        for (uint256 i = from; i < to; i++) {
-            uint256 index = _marketBets[marketId][i];
+    // function settleMarket(
+    //     uint256 from,
+    //     uint256 to,
+    //     bytes32 marketId
+    // ) external {
+    //     for (uint256 i = from; i < to; i++) {
+    //         uint256 index = _marketBets[marketId][i];
 
-            if (!_bets[index].settled) {
+    //         if (!_bets[index].settled) {
+    //             bytes32 propositionId = IOracle(_oracle).getResult(
+    //                 _bets[index].marketId
+    //             );
 
-                bytes32 propositionId = IOracle(_oracle).getResult(_bets[index].marketId);
-
-                if (_bets[index].propositionId == propositionId) {
-                    _settle(index, true);
-                } else {
-                    _settle(index, false);
-                }
-            }
-        }
-    }
+    //             if (_bets[index].propositionId == propositionId) {
+    //                 _settle(index, true);
+    //             } else {
+    //                 _settle(index, false);
+    //             }
+    //         }
+    //     }
+    // }
 
     function _settle(uint256 id, bool result) private {
         require(
-            _bets[id].payoutDate < block.timestamp + _bets[id].payoutDate,
-            "_settle: Market not closed"
+            _bets[id].payoutDate < block.timestamp,
+            "_settle: Payout date not reached"
         );
 
         _bets[id].settled = true;
@@ -294,16 +300,17 @@ contract Market is Ownable, IMarket {
         emit Settled(id, _bets[id].payout, result, _bets[id].owner);
     }
 
-    modifier onlyMarketOwner(bytes32 messageHash, SignatureLib.Signature calldata signature) {
-        //bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
-        require(
-            SignatureLib.recoverSigner(messageHash, signature) == owner(),
-            "onlyMarketOwner: Invalid signature"
-        );
-        _;
-    }
+    // modifier onlyMarketOwner(bytes32 messageHash, SignatureLib.Signature calldata signature) {
+    //     //bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
+    //     require(
+    //         SignatureLib.recoverSigner(messageHash, signature) == owner(),
+    //         "onlyMarketOwner: Invalid signature"
+    //     );
+    //     _;
+    // }
 
-    // event Claimed(address indexed worker, uint256 amount);
+    event Claimed(address indexed worker, uint256 amount);
+
     event Placed(
         uint256 index,
         bytes32 propositionId,

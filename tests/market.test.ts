@@ -1,14 +1,6 @@
-import { ethers } from "hardhat";
-import {
-  BigNumber,
-  BigNumberish,
-  BytesLike,
-  ethers as tsEthers,
-  Signer
-} from "ethers";
-
+import hre, { ethers } from "hardhat";
+import { BigNumber, BigNumberish, BytesLike, ethers as tsEthers } from "ethers";
 import chai, { expect } from "chai";
-
 import {
   Market,
   Market__factory,
@@ -17,10 +9,8 @@ import {
   Token,
   Token__factory,
   Vault,
-  Vault__factory,
-  Oracle__factory
+  Vault__factory
 } from "../build/typechain";
-
 import { solidity } from "ethereum-waffle";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 
@@ -99,6 +89,16 @@ describe("Market", () => {
       .connect(carol)
       .approve(market.address, ethers.constants.MaxUint256);
 
+    //Should get 0 odds if vault has ZERO assets
+    const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
+    const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
+    const propositionId = ethers.utils.formatBytes32String("1");
+    expect(await market.getOdds(wager, odds, propositionId)).to.equal(0);
+    //Should get 0 potential payout if vault has Zero odds
+    expect(
+      await market.getPotentialPayout(propositionId, wager, odds)
+    ).to.equal(0);
+
     await vault
       .connect(alice)
       .deposit(ethers.utils.parseUnits("1000", USDT_DECIMALS), alice.address);
@@ -116,6 +116,8 @@ describe("Market", () => {
 
     const vault = await market.getVaultAddress();
     expect(vault).to.equal(vault, "Should have vault address");
+
+    expect(await market.getOracleAddress()).to.equal(oracle.address);
   });
 
   it("should get correct odds on a 5:1 punt", async () => {
@@ -222,6 +224,9 @@ describe("Market", () => {
       .connect(bob)
       .back(nonce, propositionId, marketId, wager, odds, close, end, signature);
 
+    expect(await market.getMarketTotal(marketId)).to.equal(
+      ethers.utils.parseUnits("100", USDT_DECIMALS)
+    );
     balance = await underlying.balanceOf(bob.address);
     expect(balance).to.equal(
       ethers.utils.parseUnits("900", USDT_DECIMALS),
@@ -239,6 +244,10 @@ describe("Market", () => {
       ethers.utils.parseUnits("650", USDT_DECIMALS),
       "Vault should have $650 USDT"
     );
+
+    //Should get expiry after back bet
+    const expiry = await market.getExpiry(0);
+    expect(expiry).to.equal(end + 2592000, "Should have expiry set");
   });
 
   it("should allow Carol a $200 punt at 2:1", async () => {
@@ -308,11 +317,133 @@ describe("Market", () => {
   });
 
   describe("Settle", () => {
+    it("Should not allow back if end is invalid or oracle result already set", async () => {
+      const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
+      const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
+      const close = 0;
+      const end = 0;
+
+      // Runner 1 for a Win
+      const propositionId = ethers.utils.formatBytes32String("1");
+      const nonce = ethers.utils.formatBytes32String("1");
+
+      // Arbitary market ID set by the operator `${today}_${track}_${race}_W${runner}`
+      const marketId = ethers.utils.formatBytes32String("20220115_BNE_1_W");
+      const betSignature = await signBackMessage(
+        nonce,
+        propositionId,
+        marketId,
+        wager,
+        odds,
+        close,
+        end,
+        owner
+      );
+
+      await expect(
+        market
+          .connect(bob)
+          .back(
+            nonce,
+            propositionId,
+            marketId,
+            wager,
+            odds,
+            close,
+            end,
+            betSignature
+          )
+      ).to.be.revertedWith("back: Invalid date");
+
+      await oracle.setResult(
+        marketId,
+        propositionId,
+        "0x0000000000000000000000000000000000000000000000000000000000000000"
+      );
+
+      await expect(
+        market
+          .connect(bob)
+          .back(
+            nonce,
+            propositionId,
+            marketId,
+            wager,
+            odds,
+            close,
+            1000000000000,
+            betSignature
+          )
+      ).to.be.revertedWith("back: Oracle result already set for this market");
+    });
+
+    it("Should transfer to vault if result not been set", async () => {
+      const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
+      const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
+      const close = 0;
+      const latestBlockNumber = await ethers.provider.getBlockNumber();
+      const latestBlock = await ethers.provider.getBlock(latestBlockNumber);
+
+      const end = latestBlock.timestamp + 10000;
+
+      // Runner 1 for a Win
+      const propositionId = ethers.utils.formatBytes32String("1");
+      const nonce = ethers.utils.formatBytes32String("1");
+
+      // Arbitary market ID set by the operator `${today}_${track}_${race}_W${runner}`
+      const marketId = ethers.utils.formatBytes32String("20220115_BNE_1_W");
+      const betSignature = await signBackMessage(
+        nonce,
+        propositionId,
+        marketId,
+        wager,
+        odds,
+        close,
+        end,
+        owner
+      );
+      expect(
+        await market
+          .connect(bob)
+          .back(
+            nonce,
+            propositionId,
+            marketId,
+            wager,
+            odds,
+            close,
+            end,
+            betSignature
+          )
+      ).to.emit(market, "Placed");
+
+      const vaultBalanceBefore = await underlying.balanceOf(vault.address);
+      const index = 0;
+      await expect(market.settle(index)).to.be.revertedWith(
+        "_settle: Payout date not reached"
+      );
+
+      await hre.network.provider.request({
+        method: "evm_setNextBlockTimestamp",
+        params: [end + 7200]
+      });
+      expect(await market.settle(index)).to.emit(market, "Settled");
+
+      const vaultBalanceAfter = await underlying.balanceOf(vault.address);
+
+      const bet = await market.getBetByIndex(0);
+      expect(vaultBalanceAfter).to.equal(vaultBalanceBefore.add(bet[1]));
+    });
+
     it("should settle bobs winning bet by index", async () => {
       const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
       const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
       const close = 0;
-      const end = 1000000000000;
+
+      const latestBlockNumber = await ethers.provider.getBlockNumber();
+      const latestBlock = await ethers.provider.getBlock(latestBlockNumber);
+
+      const end = latestBlock.timestamp + 10000;
 
       // Runner 1 for a Win
       const propositionId = ethers.utils.formatBytes32String("1");
@@ -352,7 +483,7 @@ describe("Market", () => {
       count = await market.getCount();
       expect(count).to.equal(1, "Second bet should have a 1 index");
 
-      let inPlayCount = await market.getInPlayCount();
+      const inPlayCount = await market.getInPlayCount();
       expect(inPlayCount).to.equal(1, "In play count should be 1");
 
       let exposure = await market.getTotalExposure();
@@ -366,10 +497,20 @@ describe("Market", () => {
         propositionId,
         "0x0000000000000000000000000000000000000000000000000000000000000000"
       );
-
       const index = 0;
+      await expect(market.settle(index)).to.be.revertedWith(
+        "_settle: Payout date not reached"
+      );
+
+      await hre.network.provider.request({
+        method: "evm_setNextBlockTimestamp",
+        params: [end + 7200]
+      });
       expect(await market.settle(index)).to.emit(market, "Settled");
 
+      await expect(market.settle(index)).to.be.revertedWith(
+        "settle: Bet has already settled"
+      );
       exposure = await market.getTotalExposure();
       expect(exposure).to.equal(0);
 
@@ -379,6 +520,70 @@ describe("Market", () => {
       const balance = await underlying.balanceOf(bob.address);
       expect(balance).to.equal(ethers.utils.parseUnits("1350", USDT_DECIMALS));
     });
+
+    // it("Should allow settled by market id", async () => {
+    //   const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
+    //   const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
+    //   const close = 0;
+
+    //   const latestBlockNumber = await ethers.provider.getBlockNumber();
+    //   const latestBlock = await ethers.provider.getBlock(latestBlockNumber);
+
+    //   const end = latestBlock.timestamp + 10000;
+
+    //   // Runner 1 for a Win
+    //   const propositionId = ethers.utils.formatBytes32String("1");
+    //   const nonce = ethers.utils.formatBytes32String("1");
+
+    //   // Arbitary market ID set by the operator `${today}_${track}_${race}_W${runner}`
+    //   const marketId = ethers.utils.formatBytes32String("20220115_BNE_1_W");
+    //   const betSignature = await signBackMessage(
+    //     nonce,
+    //     propositionId,
+    //     marketId,
+    //     wager,
+    //     odds,
+    //     close,
+    //     end,
+    //     owner
+    //   );
+
+    //   await market
+    //     .connect(bob)
+    //     .back(
+    //       nonce,
+    //       propositionId,
+    //       marketId,
+    //       wager,
+    //       odds,
+    //       close,
+    //       end,
+    //       betSignature
+    //     );
+
+    //   await market
+    //     .connect(carol)
+    //     .back(
+    //       nonce,
+    //       propositionId,
+    //       marketId,
+    //       wager,
+    //       odds,
+    //       close,
+    //       end,
+    //       betSignature
+    //     );
+
+    //   const count = await market.getCount();
+    //   expect(count).to.equal(2);
+
+    //   await hre.network.provider.request({
+    //     method: "evm_setNextBlockTimestamp",
+    //     params: [end + 7200]
+    //   });
+
+    //   // await market.settleMarket(1, 2, marketId);
+    // });
   });
 });
 
