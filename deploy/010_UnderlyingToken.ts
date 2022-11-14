@@ -15,7 +15,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	const { deployer } = await getNamedAccounts();
 
 	for (const tokenDetails of UnderlyingTokens) {
-		const token = await deploy(tokenDetails.deploymentName, {
+		const underlying = await deploy(tokenDetails.deploymentName, {
 			contract: "Token",
 			from: deployer,
 			args: [
@@ -28,8 +28,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 			skipIfAlreadyDeployed: true
 		});
 
-		if (token.newlyDeployed) {
-			console.log(`${tokenDetails.symbol} deployed at ${token.address}`);
+		if (underlying.newlyDeployed) {
+			console.log(
+				`${tokenDetails.symbol} deployed at ${underlying.address}`
+			);
 			await execute(
 				tokenDetails.deploymentName,
 				{ from: deployer, log: true },
