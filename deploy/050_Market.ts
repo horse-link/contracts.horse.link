@@ -43,12 +43,14 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 				marketDeployment.address,
 				ethers.constants.MaxUint256
 			);
-			await execute(
-				"Registry",
-				{ from: deployer, log: true },
-				"addMarket",
-				marketDeployment.address
-			);
+			if (!network.tags.local) {
+				await execute(
+					"Registry",
+					{ from: deployer, log: true },
+					"addMarket",
+					marketDeployment.address
+				);
+			}
 		}
 		// Local testing only
 		// 1. Approve the Vault contract to spend the tokens

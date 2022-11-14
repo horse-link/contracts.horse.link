@@ -33,7 +33,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 			skipIfAlreadyDeployed: false
 		});
 
-		if (deployResult.newlyDeployed) {
+		if (deployResult.newlyDeployed && !network.tags.local) {
 			// Add vault to registry
 			await execute(
 				"Registry",

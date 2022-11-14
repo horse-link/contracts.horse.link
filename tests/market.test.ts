@@ -13,7 +13,7 @@ type Signature = {
 
 chai.use(solidity);
 
-describe.only("Market", () => {
+describe("Market", () => {
 	let underlying: Token;
 	let vault: Vault;
 	let market: Market;
