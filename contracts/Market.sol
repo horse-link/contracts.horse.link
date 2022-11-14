@@ -300,14 +300,17 @@ contract Market is Ownable, IMarket {
         emit Settled(id, _bets[id].payout, result, _bets[id].owner);
     }
 
-    // modifier onlyMarketOwner(bytes32 messageHash, SignatureLib.Signature calldata signature) {
-    //     //bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
-    //     require(
-    //         SignatureLib.recoverSigner(messageHash, signature) == owner(),
-    //         "onlyMarketOwner: Invalid signature"
-    //     );
-    //     _;
-    // }
+    modifier onlyMarketOwner(
+        bytes32 messageHash,
+        SignatureLib.Signature calldata signature
+    ) {
+        //bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
+        require(
+            SignatureLib.recoverSigner(messageHash, signature) == owner(),
+            "onlyMarketOwner: Invalid signature"
+        );
+        _;
+    }
 
     event Claimed(address indexed worker, uint256 amount);
 
