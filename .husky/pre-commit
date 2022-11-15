@@ -2,5 +2,5 @@
 . "$(dirname "$0")/_/husky.sh"
 
 echo "Husky pre-commit"
-echo "Running es-link and prettier. See lint-staged config in package.json"
+echo "Running es-lint and prettier. See lint-staged config in package.json"
 yarn lint-staged
