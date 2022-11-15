@@ -1,98 +1,107 @@
-import { ethers } from "hardhat";
-
+import { BigNumber, BigNumberish, BytesLike } from "ethers";
 import chai, { expect } from "chai";
-
-import {
-  Token,
-  Market__factory,
-  Token__factory,
-  Registry,
-  Registry__factory,
-  Vault__factory
-} from "../build/typechain";
+import { ethers, deployments } from "hardhat";
 
 import { solidity } from "ethereum-waffle";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import {
+	Market,
+	MarketOracle,
+	Market__factory,
+	Registry,
+	Token,
+	Vault,
+	Vault__factory
+} from "../build/typechain";
 
 chai.use(solidity);
 
 describe("Registry", () => {
-  let underlying: Token;
-  let token: Token;
+	let vault: Vault;
+	let registry: Registry;
+	let market: Market;
+	let underlying: Token;
+	let token: Token;
+	let owner: SignerWithAddress;
+	let nonTokenHolders: SignerWithAddress;
 
-  let registry: Registry;
-  let owner: SignerWithAddress;
-  let nonTokenHolders: SignerWithAddress;
+	beforeEach(async () => {
+		const fixture = await deployments.fixture(["registry", "vault", "market"]);
+		[owner, nonTokenHolders] = await ethers.getSigners();
 
-  beforeEach(async () => {
-    [owner, nonTokenHolders] = await ethers.getSigners();
-    underlying = await new Token__factory(owner).deploy(
-      "Mock USDT",
-      "USDT",
-      18
-    );
-    await underlying.deployed();
+		registry = await ethers.getContractAt(
+			fixture.Registry.abi,
+			fixture.Registry.address
+		);
+		vault = await ethers.getContractAt(
+			fixture.UsdtVault.abi,
+			fixture.UsdtVault.address
+		);
+		market = await ethers.getContractAt(
+			fixture.UsdtMarket.abi,
+			fixture.UsdtMarket.address
+		);
+		underlying = await ethers.getContractAt(
+			fixture.Usdt.abi,
+			fixture.Usdt.address
+		);
+	});
 
-    token = await new Token__factory(owner).deploy("HL", "HL", 18);
-    await token.deployed();
+	it("should be able to add markets and vaults", async () => {
+		//Deploy a new market
 
-    registry = await new Registry__factory(owner).deploy(token.address);
-    await registry.deployed();
-  });
+		const market_count = await registry.marketCount();
+		expect(market_count).to.equal(0, "Should have no markets");
+	});
 
-  it("Should only allow owner to set threshold", async () => {
-    await expect(
-      registry.connect(nonTokenHolders).setThreshold(100)
-    ).to.be.revertedWith("onlyOwner: Caller is not the contract owner");
-  });
+	it("Should only allow owner to set threshold", async () => {
+		await expect(
+			registry.connect(nonTokenHolders).setThreshold(100)
+		).to.be.revertedWith("onlyOwner: Caller is not the contract owner");
+	});
 
-  it("Should not allow under threshold holders to add vaults and market", async () => {
-    const vault = await new Vault__factory(owner).deploy(underlying.address);
-    const market = await new Market__factory(owner).deploy(
-      vault.address,
-      1,
-      ethers.constants.AddressZero
-    );
-    const thresholdAmount = ethers.BigNumber.from("1000");
-    await registry.setThreshold(thresholdAmount);
+	it("Should not allow under threshold holders to add vaults and market", async () => {
+		const vault = await await new Vault__factory(owner).deploy(
+			underlying.address
+		);
+		const market = await new Market__factory(owner).deploy(
+			vault.address,
+			1,
+			ethers.constants.AddressZero
+		);
+		const thresholdAmount = ethers.BigNumber.from("1000");
+		await registry.setThreshold(thresholdAmount);
 
-    await expect(
-      registry.connect(nonTokenHolders).addVault(vault.address)
-    ).to.be.revertedWith(
-      "onlyTokenHolders: Caller does not hold enough tokens"
-    );
+		await expect(
+			registry.connect(nonTokenHolders).addVault(vault.address)
+		).to.be.revertedWith(
+			"onlyTokenHolders: Caller does not hold enough tokens"
+		);
 
-    await expect(
-      registry.connect(nonTokenHolders).addMarket(market.address)
-    ).to.be.revertedWith(
-      "onlyTokenHolders: Caller does not hold enough tokens"
-    );
-  });
+		await expect(
+			registry.connect(nonTokenHolders).addMarket(market.address)
+		).to.be.revertedWith(
+			"onlyTokenHolders: Caller does not hold enough tokens"
+		);
+	});
 
-  it("should be able to add markets and vaults", async () => {
-    const market_count = await registry.marketCount();
-    expect(market_count).to.equal(0, "Should have no markets");
+	it("should be able to add markets and vaults", async () => {
+		const market_count = await registry.marketCount();
+		expect(market_count).to.equal(0, "Should have no markets");
 
-    const vault_count = await registry.vaultCount();
-    expect(vault_count).to.equal(0, "Should have no vaults");
+		const vault_count = await registry.vaultCount();
+		expect(vault_count).to.equal(0, "Should have no vaults");
 
-    const vault = await new Vault__factory(owner).deploy(underlying.address);
-    const market = await new Market__factory(owner).deploy(
-      vault.address,
-      1,
-      ethers.constants.AddressZero
-    );
+		await registry.addMarket(market.address);
+		const market_count2 = await registry.marketCount();
+		expect(market_count2).to.equal(1, "Should have 1 market");
 
-    await registry.addMarket(market.address);
-    const market_count2 = await registry.marketCount();
-    expect(market_count2).to.equal(1, "Should have 1 market");
+		await expect(registry.addMarket(market.address)).to.be.revertedWith(
+			"addMarket: Market already added"
+		);
 
-    await expect(registry.addMarket(market.address)).to.be.revertedWith(
-      "addMarket: Market already added"
-    );
-
-    await registry.addVault(vault.address);
-    const vault_count2 = await registry.vaultCount();
-    expect(vault_count2).to.equal(1, "Should have 1 vault");
-  });
+		await registry.addVault(vault.address);
+		const vault_count2 = await registry.vaultCount();
+		expect(vault_count2).to.equal(1, "Should have 1 vault");
+	});
 });
