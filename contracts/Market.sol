@@ -211,13 +211,14 @@ contract Market is Ownable, IMarket {
             Bet(propositionId, marketId, wager, payout, end, false, msg.sender)
         );
         uint256 count = _bets.length;
+        uint256 index = count - 1;
         _marketBets[marketId].push(count);
 
         _totalInPlay += wager;
         _totalExposure += (payout - wager);
         _inplayCount++;
 
-        emit Placed(count, propositionId, marketId, wager, payout, msg.sender);
+        emit Placed(index, propositionId, marketId, wager, payout, msg.sender);
 
         return count; // token ID
     }
