@@ -1,33 +1,14 @@
-import { ethers } from "hardhat";
-import {
-  BigNumber,
-  BigNumberish,
-  BytesLike,
-  ethers as tsEthers,
-  Signer
-} from "ethers";
-
+import { BigNumber, BigNumberish, BytesLike } from "ethers";
 import chai, { expect } from "chai";
-
-import {
-  Market,
-  Market__factory,
-  MarketOracle,
-  MarketOracle__factory,
-  Token,
-  Token__factory,
-  Vault,
-  Vault__factory,
-  Oracle__factory
-} from "../build/typechain";
-
+import { ethers, deployments } from "hardhat";
 import { solidity } from "ethereum-waffle";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { Market, MarketOracle, Token, Vault } from "../build/typechain";
 
 type Signature = {
-  v: BigNumberish;
-  r: string;
-  s: string;
+	v: BigNumberish;
+	r: string;
+	s: string;
 };
 
 chai.use(solidity);
@@ -687,52 +668,52 @@ describe("Market", () => {
 });
 
 async function signMessage(message: string, signer: SignerWithAddress) {
-  const sig = await signer.signMessage(ethers.utils.arrayify(message));
-  const { v, r, s } = ethers.utils.splitSignature(sig);
-  return { v, r, s };
+	const sig = await signer.signMessage(ethers.utils.arrayify(message));
+	const { v, r, s } = ethers.utils.splitSignature(sig);
+	return { v, r, s };
 }
 
 function makeSetResultMessage(
-  marketId: BytesLike,
-  propositionId: BytesLike
+	marketId: BytesLike,
+	propositionId: BytesLike
 ): string {
-  const message = ethers.utils.solidityKeccak256(
-    ["bytes32", "bytes32"],
-    [marketId, propositionId]
-  );
-  return message;
+	const message = ethers.utils.solidityKeccak256(
+		["bytes32", "bytes32"],
+		[marketId, propositionId]
+	);
+	return message;
 }
 
 function signSetResultMessage(
-  marketId: BytesLike,
-  propositionId: BytesLike,
-  signer: SignerWithAddress
+	marketId: BytesLike,
+	propositionId: BytesLike,
+	signer: SignerWithAddress
 ): Promise<Signature> {
-  const settleMessage = makeSetResultMessage(marketId, propositionId);
-  return signMessage(settleMessage, signer);
+	const settleMessage = makeSetResultMessage(marketId, propositionId);
+	return signMessage(settleMessage, signer);
 }
 
 function signBackMessage(
-  nonce: string,
-  propositionId: string,
-  marketId: string,
-  wager: BigNumber,
-  odds: BigNumber,
-  close: number,
-  end: number,
-  signer: SignerWithAddress
+	nonce: string,
+	propositionId: string,
+	marketId: string,
+	wager: BigNumber,
+	odds: BigNumber,
+	close: number,
+	end: number,
+	signer: SignerWithAddress
 ) {
-  const message = ethers.utils.solidityKeccak256(
-    [
-      "bytes32",
-      "bytes32",
-      "bytes32",
-      "uint256",
-      "uint256",
-      "uint256",
-      "uint256"
-    ],
-    [nonce, propositionId, marketId, wager, odds, close, end]
-  );
-  return signMessage(message, signer);
+	const message = ethers.utils.solidityKeccak256(
+		[
+			"bytes32",
+			"bytes32",
+			"bytes32",
+			"uint256",
+			"uint256",
+			"uint256",
+			"uint256"
+		],
+		[nonce, propositionId, marketId, wager, odds, close, end]
+	);
+	return signMessage(message, signer);
 }

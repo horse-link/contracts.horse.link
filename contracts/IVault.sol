@@ -6,9 +6,10 @@ import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 interface IVault is IERC20Metadata {
     function asset() external view returns (IERC20Metadata assetTokenAddress);
 
-    function deposit(uint256 assets, address receiver)
-        external
-        returns (uint256 shares);
+    function deposit(
+        uint256 assets,
+        address receiver
+    ) external returns (uint256 shares);
 
     function getPerformance() external view returns (uint256);
 

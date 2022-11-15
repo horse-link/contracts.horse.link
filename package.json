@@ -5,9 +5,9 @@
   "scripts": {
     "prepare": "husky install",
     "postinstall": "npx hardhat compile",
-    "hh:compile": "npx hardhat compile && npx hardhat size-contracts",
-    "hh:deploy": "npx hardhat compile && npx ts-node scripts/deploy/index.ts",
-    "hh:upgrade": "npx hardhat compile && npx ts-node scripts/deploy/index.ts upgrade-contracts",
+    "hh:compile": "npx hardhat compile",
+    "verify:uat": "npx hardhat --network goerli etherscan-verify",
+    "deploy:uat": "npx hardhat compile && npx hardhat deploy --network goerli --tags oracle,registryToken,vault,market --export ./exports/goerli.json && npx hardhat --network goerli etherscan-verify",
     "hh:node": "npx hardhat node --hostname localhost",
     "test": "npx hardhat test",
     "coverage": "npx hardhat coverage",
@@ -18,15 +18,11 @@
   "dependencies": {
     "@chainlink/contracts": "^0.5.1",
     "@ethersproject/providers": "^5.0.0",
-    "@nomiclabs/hardhat-ethers": "^2.2.1",
-    "@nomiclabs/hardhat-waffle": "^2.0.1",
     "@openzeppelin/contracts": "^4.7.3",
-    "@typechain/ethers-v5": "^8.0.5",
-    "@typechain/hardhat": "^3.1.0",
     "chai": "^4.3.4",
     "dotenv": "^10.0.0",
     "ethereum-waffle": "^3.2.2",
-    "ethers": "^5.0.0",
+    "ethers": "^5.7.2",
     "hardhat": "^2.4.0",
     "hardhat-contract-sizer": "^2.0.3",
     "keccak": "^3.0.1",
@@ -43,10 +39,13 @@
   },
   "devDependencies": {
     "@ethersproject/hardware-wallets": "^5.4.0",
+    "@nomiclabs/hardhat-ethers": "npm:hardhat-deploy-ethers",
     "@nomiclabs/hardhat-etherscan": "^2.1.6",
     "@openzeppelin/contracts-upgradeable": "^4.4.2",
     "@openzeppelin/hardhat-upgrades": "^1.10.0",
     "@remix-project/remixd": "^0.6.1",
+    "@typechain/ethers-v5": "^8.0.5",
+    "@typechain/hardhat": "^3.1.0",
     "@types/dotenv": "^8.2.0",
     "@types/mocha": "^9.0.0",
     "@types/node": "^15.12.4",
@@ -56,8 +55,11 @@
     "eslint": "^8.13.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
+    "hardhat-deploy": "^0.11.19",
+    "hardhat-deploy-ethers": "^0.3.0-beta.13",
     "hardhat-gas-reporter": "^1.0.8",
     "husky": "^7.0.2",
+    "lint-staged": "^13.0.3",
     "prettier": "^2.4.0",
     "prettier-plugin-solidity": "^1.0.0-beta.18",
     "pretty-quick": "^3.1.1",
@@ -65,7 +67,7 @@
   },
   "lint-staged": {
     "*.ts": [
-      "eslint",
+      "eslint --fix",
       "prettier --write"
     ]
   }

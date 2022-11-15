@@ -9,18 +9,18 @@ type MarketOracleContractorArgs = [];
 const network = process.env.HARDHAT_NETWORK ?? "hardhat";
 
 export const constructorArguments = (): MarketOracleContractorArgs => {
-  return [];
+	return [];
 };
 
 export const deploy = async (deployer, setAddresses) => {
-  console.log("deploying marketOracle");
-  const signer = deployer ?? (await getSignerForDeployer());
-  const factory = new MarketOracle__factory(signer);
-  const args = constructorArguments();
-  const contract = await factory.deploy(...args);
-  await contract.deployTransaction.wait(1);
-  console.log(`deployed marketOracle to address ${contract.address}`);
-  setAddresses({ marketOracle: contract.address });
-  //await verifyOnEtherscan(contract.address, args);
-  return contract as Contract;
+	console.log("deploying marketOracle");
+	const signer = deployer ?? (await getSignerForDeployer());
+	const factory = new MarketOracle__factory(signer);
+	const args = constructorArguments();
+	const contract = await factory.deploy(...args);
+	await contract.deployTransaction.wait(1);
+	console.log(`deployed marketOracle to address ${contract.address}`);
+	setAddresses({ marketOracle: contract.address });
+	//await verifyOnEtherscan(contract.address, args);
+	return contract as Contract;
 };
