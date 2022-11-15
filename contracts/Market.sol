@@ -134,7 +134,7 @@ contract Market is Ownable, IMarket {
     ) private view returns (int256) {
         address underlying = _vault.asset();
         assert(underlying != address(0));
-        
+
         int256 p = int256(IERC20(underlying).allowance(address(_vault), _self)); //TODO: check that typecasting to a signed int is safe
 
         if (p == 0) {
@@ -198,14 +198,14 @@ contract Market is Ownable, IMarket {
             "back: Oracle result already set for this market"
         );
 
-        IERC20Metadata underlying = _vault.asset();
+        address underlying = _vault.asset();
 
         // add underlying to the market
         uint256 payout = _getPayout(propositionId, wager, odds);
 
         // escrow
-        underlying.transferFrom(msg.sender, _self, wager);
-        underlying.transferFrom(address(_vault), _self, (payout - wager));
+        IERC20(underlying).transferFrom(msg.sender, _self, wager);
+        IERC20(underlying).transferFrom(address(_vault), _self, (payout - wager));
 
         // add to the market
         _marketTotal[marketId] += wager;
