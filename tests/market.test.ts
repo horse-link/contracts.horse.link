@@ -380,7 +380,7 @@ describe("Market", () => {
       expect(balance).to.equal(ethers.utils.parseUnits("1350", USDT_DECIMALS));
     });
 
-    it.only("should settle carol's loosing bet and bobs winning bet by index", async () => {
+    it("should settle carol's loosing bet and bobs winning bet by index", async () => {
       const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
       const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
       const close = 0;
@@ -436,7 +436,7 @@ describe("Market", () => {
       expect(inPlay).to.equal(ethers.utils.parseUnits("450", USDT_DECIMALS));
 
       // carol's bet
-      // Runner 1 for a Win
+      // Runner 2 for a Win
       const carolPropositionId = ethers.utils.formatBytes32String("2");
       nonce = ethers.utils.formatBytes32String("2");
 
@@ -522,6 +522,165 @@ describe("Market", () => {
       const carolBalance = await underlying.balanceOf(carol.address);
       expect(carolBalance).to.equal(
         ethers.utils.parseUnits("900", USDT_DECIMALS)
+      );
+    });
+
+    it("should settle bobs 2 winning bets by index", async () => {
+      const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
+      const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
+      const close = 0;
+      const end = 1000000000000;
+      // Arbitary market ID set by the operator `${today}_${track}_${race}_W${runner}`
+      const marketId = ethers.utils.formatBytes32String("20220115_BNE_1_W");
+
+      // Bobs 1st bet
+
+      // Runner 1 for a Win
+      const bobPropositionId = ethers.utils.formatBytes32String("1");
+      let nonce = ethers.utils.formatBytes32String("1");
+
+      const bobBetSignature = await signBackMessage(
+        nonce,
+        bobPropositionId,
+        marketId,
+        wager,
+        odds,
+        close,
+        end,
+        owner
+      );
+
+      let count = await market.getCount();
+      expect(count).to.equal(0, "First bet should have a 0 index");
+
+      const potentialPayout1 = await market.getPotentialPayout(
+        bobPropositionId,
+        wager,
+        odds
+      );
+
+      expect(
+        await market
+          .connect(bob)
+          .back(
+            nonce,
+            bobPropositionId,
+            marketId,
+            wager,
+            odds,
+            close,
+            end,
+            bobBetSignature
+          )
+      ).to.emit(market, "Placed");
+
+      count = await market.getCount();
+      expect(count).to.equal(1, "Second bet should have a 1 index");
+
+      let inPlayCount = await market.getInPlayCount();
+      expect(inPlayCount).to.equal(1, "In play count should be 1");
+
+      let exposure = await market.getTotalExposure();
+      expect(exposure).to.equal(ethers.utils.parseUnits("350", USDT_DECIMALS));
+
+      let inPlay = await market.getTotalInPlay();
+      expect(inPlay).to.equal(ethers.utils.parseUnits("450", USDT_DECIMALS));
+
+      // Bobs 2nd bet
+      // Runner 1 for a Win again
+
+      nonce = ethers.utils.formatBytes32String("2");
+
+      const bobBetSignature2 = await signBackMessage(
+        nonce,
+        bobPropositionId,
+        marketId,
+        wager,
+        odds,
+        close,
+        end,
+        owner
+      );
+
+      count = await market.getCount();
+      expect(count).to.equal(1, "Second bet should have a 1 index");
+
+      const potentialPayout2 = await market.getPotentialPayout(
+        bobPropositionId,
+        wager,
+        odds
+      );
+
+      expect(
+        await market
+          .connect(bob)
+          .back(
+            nonce,
+            bobPropositionId,
+            marketId,
+            wager,
+            odds,
+            close,
+            end,
+            bobBetSignature2
+          )
+      ).to.emit(market, "Placed");
+
+      count = await market.getCount();
+      expect(count).to.equal(2, "Second bet should have a 2 index");
+
+      inPlayCount = await market.getInPlayCount();
+      expect(inPlayCount).to.equal(2, "In play count should be 2");
+
+      exposure = await market.getTotalExposure();
+
+      expect(exposure).to.equal(
+        ethers.utils.parseUnits("673.5", USDT_DECIMALS)
+      );
+
+      inPlay = await market.getTotalInPlay();
+      expect(inPlay).to.equal(ethers.utils.parseUnits("873.5", USDT_DECIMALS));
+
+      const bobBalancePostBacking = await underlying.balanceOf(bob.address);
+
+      // Lets set the result
+      // Bob won twice
+      await oracle.setResult(
+        marketId,
+        bobPropositionId,
+        "0x0000000000000000000000000000000000000000000000000000000000000000"
+      );
+
+      // Settle Bob's first bet
+      let index = 0;
+      expect(await market.settle(index)).to.emit(market, "Settled");
+
+      exposure = await market.getTotalExposure();
+      expect(exposure).to.equal(
+        ethers.utils.parseUnits("323.5", USDT_DECIMALS)
+      );
+
+      inPlay = await market.getTotalInPlay();
+      expect(inPlay).to.equal(ethers.utils.parseUnits("423.5", USDT_DECIMALS));
+
+      const bobBalance = await underlying.balanceOf(bob.address);
+      expect(bobBalance).to.equal(
+        ethers.utils.parseUnits("1250", USDT_DECIMALS)
+      );
+
+      // Settle Bob's second bet
+      index = 1;
+      expect(await market.settle(index)).to.emit(market, "Settled");
+
+      exposure = await market.getTotalExposure();
+      expect(exposure).to.equal(0);
+
+      inPlay = await market.getTotalInPlay();
+      expect(inPlay).to.equal(0);
+
+      const bobBalance2 = await underlying.balanceOf(bob.address);
+      expect(bobBalance2).to.equal(
+        ethers.utils.parseUnits("1673.5", USDT_DECIMALS)
       );
     });
   });
