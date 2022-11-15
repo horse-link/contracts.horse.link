@@ -132,6 +132,7 @@ contract Market is Ownable, IMarket {
         int256 odds,
         bytes32 propositionId
     ) private view returns (int256) {
+        address underlying = _vault.asset();
         int256 p = int256(_vault.totalAssets()); //TODO: check that typecasting to a signed int is safe
 
         if (p == 0) {

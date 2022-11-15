@@ -99,8 +99,8 @@ contract Vault is Ownable, IVault, ERC20PresetMinterPauser {
     }
 
     // IERC4626
-    function asset() external view returns (IERC20Metadata assetTokenAddress) {
-        return _underlying;
+    function asset() external view returns (address) {
+        return address(_underlying);
     }
 
     // Total amounts of assets deposited in the vault
