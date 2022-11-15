@@ -265,16 +265,16 @@ contract Market is Ownable, IMarket {
         _totalExposure -= _bets[id].payout - _bets[id].amount;
         _inplayCount--;
 
-        IERC20Metadata underlying = _vault.asset();
+        address underlying = _vault.asset();
 
         if (result == true) {
             // Transfer the win to the punter
-            underlying.transfer(_bets[id].owner, _bets[id].payout);
+            IERC20(underlying).transfer(_bets[id].owner, _bets[id].payout);
         }
 
         if (result == false) {
             // Transfer the proceeds to the vault, less market fee
-            underlying.transfer(address(_vault), _bets[id].payout);
+            IERC20(underlying).transfer(address(_vault), _bets[id].payout);
         }
 
         emit Settled(id, _bets[id].payout, result, _bets[id].owner);
