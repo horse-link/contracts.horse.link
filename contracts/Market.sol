@@ -312,8 +312,6 @@ contract Market is Ownable, IMarket {
         _;
     }
 
-    event Claimed(address indexed worker, uint256 amount);
-
     event Placed(
         uint256 index,
         bytes32 propositionId,
