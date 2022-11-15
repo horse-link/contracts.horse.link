@@ -89,12 +89,12 @@ describe("Market", () => {
       .connect(carol)
       .approve(market.address, ethers.constants.MaxUint256);
 
-    //Should get 0 odds if vault has ZERO assets
+    // Should get 0 odds if vault has ZERO assets
     const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
     const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
     const propositionId = ethers.utils.formatBytes32String("1");
     expect(await market.getOdds(wager, odds, propositionId)).to.equal(0);
-    //Should get 0 potential payout if vault has Zero odds
+    // Should get 0 potential payout if vault has Zero odds
     expect(
       await market.getPotentialPayout(propositionId, wager, odds)
     ).to.equal(0);
@@ -245,7 +245,7 @@ describe("Market", () => {
       "Vault should have $650 USDT"
     );
 
-    //Should get expiry after back bet
+    // Should get expiry after back bet
     const expiry = await market.getExpiry(0);
     expect(expiry).to.equal(end + 2592000, "Should have expiry set");
   });
