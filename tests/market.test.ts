@@ -86,10 +86,7 @@ describe("Market", () => {
 
 		await vault
 			.connect(alice)
-			.deposit(
-				ethers.utils.parseUnits("1000", tokenDecimals),
-				alice.address
-			);
+			.deposit(ethers.utils.parseUnits("1000", tokenDecimals), alice.address);
 	});
 
 	it.skip("dummy", async () => {
@@ -129,10 +126,7 @@ describe("Market", () => {
 
 		await underlying
 			.connect(bob)
-			.approve(
-				market.address,
-				ethers.utils.parseUnits("50", tokenDecimals)
-			);
+			.approve(market.address, ethers.utils.parseUnits("50", tokenDecimals));
 
 		const targetOdds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
 
@@ -191,10 +185,7 @@ describe("Market", () => {
 
 		await underlying
 			.connect(bob)
-			.approve(
-				market.address,
-				ethers.utils.parseUnits("100", tokenDecimals)
-			);
+			.approve(market.address, ethers.utils.parseUnits("100", tokenDecimals));
 		// Runner 1 for a Win
 		const propositionId = ethers.utils.formatBytes32String("1");
 		const nonce = ethers.utils.formatBytes32String("1");
@@ -215,16 +206,7 @@ describe("Market", () => {
 
 		await market
 			.connect(bob)
-			.back(
-				nonce,
-				propositionId,
-				marketId,
-				wager,
-				odds,
-				close,
-				end,
-				signature
-			);
+			.back(nonce, propositionId, marketId, wager, odds, close, end, signature);
 
 		balance = await underlying.balanceOf(bob.address);
 		expect(balance).to.equal(
@@ -273,10 +255,7 @@ describe("Market", () => {
 
 		await underlying
 			.connect(carol)
-			.approve(
-				market.address,
-				ethers.utils.parseUnits("200", tokenDecimals)
-			);
+			.approve(market.address, ethers.utils.parseUnits("200", tokenDecimals));
 		// Runner 2 for a Win
 		const propositionId = ethers.utils.formatBytes32String("2");
 		const nonce = ethers.utils.formatBytes32String("2");
@@ -326,8 +305,7 @@ describe("Market", () => {
 			const nonce = ethers.utils.formatBytes32String("1");
 
 			// Arbitary market ID set by the operator `${today}_${track}_${race}_W${runner}`
-			const marketId =
-				ethers.utils.formatBytes32String("20220115_BNE_1_W");
+			const marketId = ethers.utils.formatBytes32String("20220115_BNE_1_W");
 			const betSignature = await signBackMessage(
 				nonce,
 				propositionId,
@@ -389,9 +367,7 @@ describe("Market", () => {
 			expect(inPlay).to.equal(0);
 
 			const balance = await underlying.balanceOf(bob.address);
-			expect(balance).to.equal(
-				ethers.utils.parseUnits("1350", tokenDecimals)
-			);
+			expect(balance).to.equal(ethers.utils.parseUnits("1350", tokenDecimals));
 		});
 	});
 });
