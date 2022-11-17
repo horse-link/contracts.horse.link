@@ -22,7 +22,7 @@ struct Bet {
 	address owner;
 }
 
-contract Market is Ownable, IMarket, ERC721 {
+contract Market is Ownable, IMarket, ERC721, IERC20Metadata {
 	uint256 private constant MAX = 32;
 	int256 private constant PRECISION = 1_000;
 	uint8 private immutable _fee;
@@ -52,7 +52,27 @@ contract Market is Ownable, IMarket, ERC721 {
 	uint256 public immutable timeout;
 	uint256 public immutable min;
 
+	constructor(
+		IVault vault,
+		uint8 fee,
+		address oracle
+	)
+	ERC721("Bet", "BET") {
+		require(address(vault) != address(0), "Invalid address");
+		_self = address(this);
+		_vault = vault;
+		_fee = fee;
+		_oracle = IOracle(oracle);
+
+		timeout = 30 days;
+		min = 1 hours;
+	}
+
 	mapping(address => uint256) private _workerfees;
+
+	function tokenURI(uint256 tokenId) external view returns (string memory) {
+		return string(abi.encodePacked("https://api.horse.link/bets/", tokenId));
+	}
 
 	function getFee() external view returns (uint8) {
 		return _fee;
@@ -92,22 +112,6 @@ contract Market is Ownable, IMarket, ERC721 {
 
 	function _getExpiry(uint64 id) private view returns (uint256) {
 		return _bets[id].payoutDate + timeout;
-	}
-
-	constructor(
-		IVault vault,
-		uint8 fee,
-		address oracle
-	)
-	ERC721("Bet", "BET") {
-		require(address(vault) != address(0), "Invalid address");
-		_self = address(this);
-		_vault = vault;
-		_fee = fee;
-		_oracle = IOracle(oracle);
-
-		timeout = 30 days;
-		min = 1 hours;
 	}
 
 	function getBetByIndex(uint256 index)
