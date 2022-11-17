@@ -235,7 +235,7 @@ contract Market is Ownable, IMarket, ERC721 {
 		uint256 count = _bets.length;
 		uint256 index = count - 1;
 		_marketBets[marketId].push(count);
-		_mint(msg.sender, count);
+		_mint(msg.sender, index);
 
 		_totalInPlay += wager;
 		_totalExposure += (payout - wager);
