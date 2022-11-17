@@ -1,8 +1,13 @@
 // SPDX-License-Identifier: MIT
+/*
+    * @title ERC4626Metadata
+    * @dev Decendant of ERC4626 that takes in an IERC20Metadata instead of an IERC20. 
+    * This allows for the name and symbol to be used contract logic.
+*/
+
 pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
 import "@openzeppelin/contracts/interfaces/IERC20Metadata.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 abstract contract ERC4626Metadata is ERC4626 {
 

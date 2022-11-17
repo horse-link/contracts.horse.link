@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
-import "./Erc4626Metadata.sol";
+import "./ERC4626Metadata.sol";
 import "@openzeppelin/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol";
 import "@openzeppelin/contracts/interfaces/IERC20Metadata.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-
 
 contract Vault is ERC4626Metadata, Ownable {
 
