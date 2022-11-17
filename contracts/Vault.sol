@@ -16,6 +16,8 @@ contract Vault is Ownable, IVault, ERC20PresetMinterPauser {
 
     IERC20Metadata private immutable _underlying;
     address private immutable _self;
+    
+    // These will change to allow multiple markets
     address private _market;
 
     constructor(
@@ -44,6 +46,16 @@ contract Vault is Ownable, IVault, ERC20PresetMinterPauser {
         return _totalSupply;
     }
 
+    function getMarketAllowance() external view returns (uint256) {
+        // // TODO: This will change to allow multiple markets, using msg.sender
+        uint256 allowance = _underlying.allowance(_self, _market);
+        if (allowance > _totalAssets()) {
+            return _totalAssets();
+        }
+        
+        return allowance;
+    }
+
     function getMarket() external view returns (address) {
         return _market;
     }
@@ -53,7 +65,7 @@ contract Vault is Ownable, IVault, ERC20PresetMinterPauser {
 
         _market = market;
 
-        IERC20(_underlying).approve(_market, max);
+        _underlying.approve(_market, max);
     }
 
     function getPerformance() external view returns (uint256) {
@@ -61,7 +73,7 @@ contract Vault is Ownable, IVault, ERC20PresetMinterPauser {
     }
 
     function _getPerformance() private view returns (uint256) {
-        uint256 underlyingBalance = IERC20(_underlying).balanceOf(_self);
+        uint256 underlyingBalance = _underlying.balanceOf(_self);
         if (underlyingBalance > 0)
             return (_totalSupply * 100) / underlyingBalance;
 
@@ -77,7 +89,7 @@ contract Vault is Ownable, IVault, ERC20PresetMinterPauser {
     function _convertToAssets(
         uint256 shares
     ) private view returns (uint256 assets) {
-        uint256 inPlay = IERC20(_underlying).balanceOf(_market);
+        uint256 inPlay = _underlying.balanceOf(_market);
 
         assets = shares / (_totalAssets() - inPlay);
     }
@@ -103,16 +115,13 @@ contract Vault is Ownable, IVault, ERC20PresetMinterPauser {
         return address(_underlying);
     }
 
-    // Total amounts of assets deposited in the vault
+    // Total amounts of assets held in the vault
     function totalAssets() external view returns (uint256) {
-        // return _totalAssets + IERC20(_underlying).balanceOf(_market);
         return _totalAssets();
     }
 
     function _totalAssets() private view returns (uint256) {
-        // return _totalAssets + IERC20(_underlying).balanceOf(_market);
-        // return _totalAssets;
-        return IERC20(_underlying).balanceOf(_self);
+        return _underlying.balanceOf(_self);
     }
 
     // Add underlying tokens to the pool
@@ -129,8 +138,8 @@ contract Vault is Ownable, IVault, ERC20PresetMinterPauser {
         _totalSupply += shares;
         _balances[msg.sender] += shares;
 
-        IERC20(_underlying).transferFrom(receiver, _self, assets);
-        IERC20(_underlying).approve(_market, shares);
+        _underlying.transferFrom(receiver, _self, assets);
+        _underlying.approve(_market, shares);
 
         emit Deposit(receiver, assets);
     }
@@ -148,10 +157,10 @@ contract Vault is Ownable, IVault, ERC20PresetMinterPauser {
     }
 
     function _previewWithdraw(uint256 assets) private view returns (uint256) {
-        uint256 underlyingBalance = IERC20(_underlying).balanceOf(
-            address(this)
+        uint256 underlyingBalance = _underlying.balanceOf(
+            _self
         );
-        uint256 inPlay = IERC20(_underlying).balanceOf(_market);
+        uint256 inPlay = _underlying.balanceOf(_market);
 
         return (assets * underlyingBalance) / (underlyingBalance + inPlay);
     }
@@ -166,8 +175,8 @@ contract Vault is Ownable, IVault, ERC20PresetMinterPauser {
         _balances[msg.sender] -= shares;
         _burn(msg.sender, shares);
 
-        IERC20(_underlying).approve(_market, _totalSupply);
-        IERC20(_underlying).transfer(msg.sender, amount);
+        _underlying.approve(_market, _totalSupply);
+        _underlying.transfer(msg.sender, amount);
 
         emit Withdraw(msg.sender, balance);
     }

@@ -140,9 +140,7 @@ describe("Vault", () => {
 		await underlying.connect(alice).approve(vault.address, amount);
 
 		const originalTotalAssets = await vault.totalAssets();
-		await vault
-			.connect(alice)
-			.deposit(amount, ethers.constants.AddressZero);
+		await vault.connect(alice).deposit(amount, ethers.constants.AddressZero);
 		const totalAssets = await vault.totalAssets();
 		expect(totalAssets).to.equal(originalTotalAssets.add(amount));
 		expect(await vault.balanceOf(alice.address)).to.equal(amount);
@@ -179,9 +177,7 @@ describe("Vault", () => {
 		).to.be.revertedWith("withdraw: You do not have enough shares");
 
 		const receipt = await (
-			await vault
-				.connect(alice)
-				.withdraw(ethers.utils.parseUnits("500", 6))
+			await vault.connect(alice).withdraw(ethers.utils.parseUnits("500", 6))
 		).wait();
 		expect(await vault.balanceOf(alice.address)).to.equal(
 			ethers.utils.parseUnits("500", 6)

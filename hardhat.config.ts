@@ -1,3 +1,5 @@
+import { config as dotenvConfig } from "dotenv";
+dotenvConfig();
 //import "@nomiclabs/hardhat-etherscan";
 //import "@nomiclabs/hardhat-waffle";
 import "@openzeppelin/hardhat-upgrades";
@@ -6,11 +8,8 @@ import "@typechain/hardhat";
 import "hardhat-deploy";
 import "@nomiclabs/hardhat-ethers";
 //import "hardhat-gas-reporter";
-//import "solidity-coverage";
+import "solidity-coverage";
 //import "./scripts/tasks";
-
-import { config as dotenvConfig } from "dotenv";
-dotenvConfig();
 
 const defaultKey =
 	"0000000000000000000000000000000000000000000000000000000000000001";

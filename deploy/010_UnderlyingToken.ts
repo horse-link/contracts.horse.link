@@ -18,20 +18,14 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 		const underlying = await deploy(tokenDetails.deploymentName, {
 			contract: "Token",
 			from: deployer,
-			args: [
-				tokenDetails.name,
-				tokenDetails.symbol,
-				tokenDetails.decimals
-			],
+			args: [tokenDetails.name, tokenDetails.symbol, tokenDetails.decimals],
 			log: true,
 			autoMine: true, // speed up deployment on local network (ganache, hardhat), no effect on live networks,
 			skipIfAlreadyDeployed: true
 		});
 
 		if (underlying.newlyDeployed) {
-			console.log(
-				`${tokenDetails.symbol} deployed at ${underlying.address}`
-			);
+			console.log(`${tokenDetails.symbol} deployed at ${underlying.address}`);
 			await execute(
 				tokenDetails.deploymentName,
 				{ from: deployer, log: true },

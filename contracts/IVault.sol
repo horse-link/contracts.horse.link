@@ -11,6 +11,8 @@ interface IVault {
 
     function getPerformance() external view returns (uint256);
 
+    function getMarket() external view returns (address);
+    function getMarketAllowance() external view returns (uint256);
     function setMarket(address market, uint256 max) external;
 
     function totalAssets() external view returns (uint256);
