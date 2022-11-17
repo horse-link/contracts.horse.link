@@ -1,15 +1,12 @@
-import hre, { ethers } from "hardhat";
+import hre, { ethers, deployments } from "hardhat";
 import { BigNumber, BigNumberish, BytesLike, ethers as tsEthers } from "ethers";
 import chai, { expect } from "chai";
 import {
 	Market,
-	Market__factory,
 	MarketOracle,
-	MarketOracle__factory,
+	Market__factory,
 	Token,
-	Token__factory,
-	Vault,
-	Vault__factory
+	Vault
 } from "../build/typechain";
 import { solidity } from "ethereum-waffle";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
@@ -39,6 +36,13 @@ describe("Market", () => {
 
 	beforeEach(async () => {
 		[owner, alice, bob, carol] = await ethers.getSigners();
+		const fixture = await deployments.fixture([
+			"token",
+			"registry",
+			"vault",
+			"market",
+			"oracle"
+		]);
 
 		underlying = (await ethers.getContractAt(
 			fixture.Usdt.abi,
@@ -59,12 +63,6 @@ describe("Market", () => {
 
 		tokenDecimals = await underlying.decimals();
 
-		underlying = await new Token__factory(owner).deploy(
-			"Mock USDT",
-			"USDT",
-			USDT_DECIMALS
-		);
-		await underlying.deployed();
 		await underlying.mint(
 			owner.address,
 			ethers.utils.parseUnits("1000000", USDT_DECIMALS)
@@ -82,14 +80,6 @@ describe("Market", () => {
 			ethers.utils.parseUnits("1000", USDT_DECIMALS)
 		);
 
-		vault = await new Vault__factory(owner).deploy(underlying.address);
-		await vault.deployed();
-		market = await new Market__factory(owner).deploy(
-			vault.address,
-			FEE,
-			oracle.address
-		);
-		await vault.setMarket(market.address, ethers.constants.MaxUint256);
 		await underlying
 			.connect(alice)
 			.approve(vault.address, ethers.constants.MaxUint256);
@@ -121,24 +111,19 @@ describe("Market", () => {
 			.deposit(ethers.utils.parseUnits("1000", tokenDecimals), alice.address);
 	});
 
-	it.skip("dummy", async () => {
-		expect(true).to.be.true;
-	});
-
-	it("should properties set on deploy", async () => {
-		const fee = await market.getFee();
-		expect(fee).to.equal(FEE, "fee should be set");
-
+	it("should have properties set on deploy", async () => {
 		const inPlay = await market.getTotalInPlay();
-		expect(inPlay).to.equal(0, "Should have $0 in play");
+		expect(inPlay, "Should have $0 in play").to.equal(0);
 
 		const totalExposure = await market.getTotalExposure();
-		expect(totalExposure).to.equal(0, "Should have no exposure");
+		expect(totalExposure, "Should have $0 in play").to.equal(0);
 
 		const vault = await market.getVaultAddress();
-		expect(vault).to.equal(vault, "Should have vault address");
+		expect(vault, "Should have vault address").to.equal(vault);
 
-		expect(await market.getOracleAddress()).to.equal(oracle.address);
+		expect(await market.getOracleAddress(), "Oracle address is wrong").to.equal(
+			oracle.address
+		);
 	});
 
 	it("should get correct odds on a 5:1 punt", async () => {

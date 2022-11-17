@@ -1,4 +1,3 @@
-import { BigNumber, BigNumberish, BytesLike } from "ethers";
 import chai, { expect } from "chai";
 import { ethers, deployments } from "hardhat";
 
@@ -6,7 +5,6 @@ import { solidity } from "ethereum-waffle";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {
 	Market,
-	MarketOracle,
 	Market__factory,
 	Registry,
 	Token,
@@ -21,30 +19,34 @@ describe("Registry", () => {
 	let registry: Registry;
 	let market: Market;
 	let underlying: Token;
-	let token: Token;
 	let owner: SignerWithAddress;
 	let nonTokenHolders: SignerWithAddress;
 
 	beforeEach(async () => {
-		const fixture = await deployments.fixture(["registry", "vault", "market"]);
+		const fixture = await deployments.fixture([
+			"registry",
+			"vault",
+			"market",
+			"oracle"
+		]);
 		[owner, nonTokenHolders] = await ethers.getSigners();
 
-		registry = await ethers.getContractAt(
+		registry = (await ethers.getContractAt(
 			fixture.Registry.abi,
 			fixture.Registry.address
-		);
-		vault = await ethers.getContractAt(
+		)) as Registry;
+		vault = (await ethers.getContractAt(
 			fixture.UsdtVault.abi,
 			fixture.UsdtVault.address
-		);
-		market = await ethers.getContractAt(
+		)) as Vault;
+		market = (await ethers.getContractAt(
 			fixture.UsdtMarket.abi,
 			fixture.UsdtMarket.address
-		);
-		underlying = await ethers.getContractAt(
+		)) as Market;
+		underlying = (await ethers.getContractAt(
 			fixture.Usdt.abi,
 			fixture.Usdt.address
-		);
+		)) as Token;
 	});
 
 	it("should be able to add markets and vaults", async () => {

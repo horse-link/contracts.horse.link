@@ -3,10 +3,11 @@ import { ethers, deployments } from "hardhat";
 import { solidity } from "ethereum-waffle";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { Market, Token, Vault } from "../build/typechain";
+import { getEventData } from "./utils";
 
 chai.use(solidity);
 
-describe.only("Vault", () => {
+describe("Vault", () => {
 	let underlying: Token;
 	let vault: Vault;
 	let market: Market;
@@ -17,7 +18,7 @@ describe.only("Vault", () => {
 
 	beforeEach(async () => {
 		// Import deployments tagged with these values
-		const fixture = await deployments.fixture(["vault", "token"]);
+		const fixture = await deployments.fixture(["vault", "token", "market"]);
 
 		[owner, alice, bob] = await ethers.getSigners();
 
@@ -58,9 +59,8 @@ describe.only("Vault", () => {
 
 	it("should set properties on deploy", async () => {
 		const _token = await vault.asset();
-		expect(_token).to.equal(
-			underlying.address,
-			"Should have token address as token"
+		expect(_token, "Should have token address as token").to.equal(
+			underlying.address
 		);
 
 		const vaultName = await vault.name();
@@ -78,10 +78,10 @@ describe.only("Vault", () => {
 		).to.equal(`HL${underlyingSymbol}`);
 
 		const vaultPerformance = await vault.getPerformance();
-		expect(vaultPerformance).to.equal(0, "Should have no values");
+		expect(vaultPerformance, "Should have no performance value").to.equal(0);
 
 		const _market = await vault.getMarket();
-		expect(_market).to.equal(market.address, "Should have market address");
+		expect(_market, "Should have market address").to.equal(market.address);
 	});
 
 	it("Should allow msg.sender to receive shares when receiver address is address zero", async () => {
@@ -107,7 +107,7 @@ describe.only("Vault", () => {
 	});
 
 	it("Should get previewWithdraw amount", async () => {
-		const amount = ethers.utils.parseUnits("200", 6);
+		const amount = ethers.utils.parseUnits("200", underlyingDecimals);
 		await underlying.connect(bob).approve(vault.address, amount);
 
 		await vault.connect(bob).deposit(amount, bob.address);
@@ -116,7 +116,7 @@ describe.only("Vault", () => {
 	});
 
 	it("Should not allow user to withdraw more than maxWithdraw", async () => {
-		const amount = ethers.utils.parseUnits("1000", 6);
+		const amount = ethers.utils.parseUnits("1000", underlyingDecimals);
 		await underlying.connect(alice).approve(vault.address, amount);
 
 		await vault.connect(alice).deposit(amount, alice.address);
@@ -129,7 +129,7 @@ describe.only("Vault", () => {
 					alice.address,
 					alice.address
 				)
-		).to.be.revertedWith("withdraw: You do not have enough shares");
+		).to.be.revertedWith("ERC4626: withdraw more than max");
 
 		const receipt = await (
 			await vault
@@ -140,16 +140,22 @@ describe.only("Vault", () => {
 					alice.address
 				)
 		).wait();
-		expect(await vault.balanceOf(alice.address)).to.equal(
-			ethers.utils.parseUnits("500", 6)
-		);
+		expect(
+			await vault.balanceOf(alice.address),
+			"Balance of shares is wrong"
+		).to.equal(ethers.utils.parseUnits("500", underlyingDecimals));
 
-		expect(await underlying.balanceOf(alice.address)).to.equal(
-			ethers.utils.parseUnits("1500", 6)
-		);
+		expect(
+			await underlying.balanceOf(alice.address),
+			"Balance of underlying assets is wrong"
+		).to.equal(ethers.utils.parseUnits("1500", underlyingDecimals));
 
 		const event = getEventData("Withdraw", vault, receipt);
-		expect(event.who).to.equal(alice.address);
-		expect(event.value).to.equal(amount);
+		expect(event.sender, "Sender should be alice").to.equal(alice.address);
+		expect(event.receiver, "Receiver should be alice").to.equal(alice.address);
+		expect(
+			event.assets,
+			"Assets should be the amount of assets requested"
+		).to.equal(ethers.utils.parseUnits("500", underlyingDecimals));
 	});
 });

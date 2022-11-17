@@ -53,18 +53,16 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 			}
 		}
 
-		// 1. Approve the Vault contract to spend the tokens
-		// 2. Deposit a bunch of tokens
+		const token: Token = await ethers.getContractAt("Token", tokenAddress);
 		if (!network.tags.production) {
-			const token: Token = await ethers.getContractAt("Token", tokenAddress);
-			//get deployer signer from hardhat-deploy
 			const signer = await ethers.getSigner(deployer);
 			const receipt = await token
 				.connect(signer)
 				.approve(vaultDeployment.address, ethers.constants.MaxUint256);
 			await receipt.wait();
-			const balance = await token.balanceOf(signer.address);
-
+		}
+		if (!network.tags.production && !network.tags.testing) {
+			const balance = await token.balanceOf(deployer);
 			await execute(
 				tokenDetails.vaultName,
 				{

@@ -42,4 +42,10 @@ contract Vault is ERC4626Metadata, Ownable {
         return _market;
     }
 
+    // If receiver is omitted, use the sender
+    function deposit(uint256 assets, address receiver) public override returns (uint256) {
+        if (receiver == address(0)) receiver = _msgSender();
+        return super.deposit(assets, receiver);
+    }
+
 }
