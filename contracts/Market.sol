@@ -195,7 +195,7 @@ contract Market is Ownable, IMarket {
             "back: Oracle result already set for this market"
         );
 
-        IERC20Metadata underlying = _vault.asset();
+        IERC20Metadata underlying = IERC20Metadata(_vault.asset());
 
         // add underlying to the market
         uint256 payout = _getPayout(propositionId, wager, odds);
@@ -259,9 +259,9 @@ contract Market is Ownable, IMarket {
         _bets[id].settled = true;
         _totalInPlay -= _bets[id].amount;
         _totalExposure -= _bets[id].payout - _bets[id].amount;
-        _inplayCount--;
+        _inplayCount --;
 
-        IERC20Metadata underlying = _vault.asset();
+        IERC20Metadata underlying = IERC20Metadata(_vault.asset());
 
         if (result == true) {
             // Transfer the win to the punter

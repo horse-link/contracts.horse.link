@@ -3,10 +3,6 @@ import "hardhat-deploy";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 
-/*
- * Deploy a test ERC-20 token to be used as an underlying token in the Vault contract
- * This is skipped if the network is not tagged as "test" in hardhat.config.ts
- */
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	const { deployments, getNamedAccounts } = hre;
 	const { deploy } = deployments;

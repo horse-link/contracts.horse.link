@@ -33,7 +33,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 			skipIfAlreadyDeployed: false
 		});
 
-		if (deployResult.newlyDeployed && !network.tags.local) {
+		if (deployResult.newlyDeployed && !network.tags.testing) {
 			// Add vault to registry
 			await execute(
 				"Registry",
@@ -46,4 +46,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 export default func;
 func.tags = ["vault"];
-func.dependencies = ["registry", "underlying"];
+func.dependencies = ["underlying", "registry"];

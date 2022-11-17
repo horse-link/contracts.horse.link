@@ -6,7 +6,7 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { RegistryToken } from "../deployData/settings";
 
 /*
- * Deploy a test ERC-20 token to be used as an underlying token in the Vault contract
+ * Deploy a test ERC-20 token to be used as the governance token for a Registry contract
  * The token will not be redeployed unless the "fresh" tag is used
  */
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
