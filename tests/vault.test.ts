@@ -1,10 +1,8 @@
-import { BigNumber, BigNumberish, BytesLike } from "ethers";
 import chai, { expect } from "chai";
 import { ethers, deployments } from "hardhat";
 import { solidity } from "ethereum-waffle";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { Market, HorseLinkVault, Token, Vault } from "../build/typechain";
-import { getEventData } from "./utils";
+import { Market, Token, Vault } from "../build/typechain";
 
 chai.use(solidity);
 
