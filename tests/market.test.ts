@@ -22,7 +22,7 @@ type Signature = {
 
 chai.use(solidity);
 
-describe("Market", () => {
+describe.only("Market", () => {
 	let underlying: Token;
 	let vault: Vault;
 	let market: Market;
@@ -173,7 +173,7 @@ describe("Market", () => {
 		);
 	});
 
-	it("should allow Bob a $100 punt at 5:1", async () => {
+	it.only("should allow Bob a $100 punt at 5:1", async () => {
 		let balance = await underlying.balanceOf(bob.address);
 		expect(balance).to.equal(
 			ethers.utils.parseUnits("1000", USDT_DECIMALS),
@@ -248,6 +248,9 @@ describe("Market", () => {
 		// Should get expiry after back bet
 		const expiry = await market.getExpiry(0);
 		expect(expiry).to.equal(end + 2592000, "Should have expiry set");
+
+		const tokenOwner = await market.ownerOf(1);
+		expect(tokenOwner, "Bob should have a bet NFT").to.equal(bob.address);
 	});
 
 	it("should allow Carol a $200 punt at 2:1", async () => {

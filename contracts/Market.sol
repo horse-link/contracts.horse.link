@@ -3,6 +3,7 @@ pragma solidity =0.8.10;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 import {IBet} from "./IBet.sol";
 import "./IVault.sol";
@@ -21,7 +22,7 @@ struct Bet {
 	address owner;
 }
 
-contract Market is Ownable, IMarket {
+contract Market is Ownable, IMarket, ERC721 {
 	uint256 private constant MAX = 32;
 	int256 private constant PRECISION = 1_000;
 	uint8 private immutable _fee;
@@ -97,7 +98,8 @@ contract Market is Ownable, IMarket {
 		IVault vault,
 		uint8 fee,
 		address oracle
-	) {
+	)
+	ERC721("Bet", "BET") {
 		require(address(vault) != address(0), "Invalid address");
 		_self = address(this);
 		_vault = vault;
@@ -233,6 +235,7 @@ contract Market is Ownable, IMarket {
 		uint256 count = _bets.length;
 		uint256 index = count - 1;
 		_marketBets[marketId].push(count);
+		_mint(msg.sender, count);
 
 		_totalInPlay += wager;
 		_totalExposure += (payout - wager);
@@ -297,6 +300,8 @@ contract Market is Ownable, IMarket {
 			// Transfer the proceeds to the vault, less market fee
 			underlying.transfer(address(_vault), _bets[id].payout);
 		}
+
+		_burn(id);
 
 		emit Settled(id, _bets[id].payout, result, _bets[id].owner);
 	}
