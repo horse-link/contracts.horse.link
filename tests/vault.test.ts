@@ -77,6 +77,12 @@ describe("Vault", () => {
 			"Symbol should be same as underling with HL prefix"
 		).to.equal(`HL${underlyingSymbol}`);
 
+		const underlyingDecimals = await underlying.decimals();
+		const vaultDecimals = await vault.decimals();
+		expect(vaultDecimals, "Decimals should be same as underlying").to.equal(
+			underlyingDecimals
+		);
+
 		const vaultPerformance = await vault.getPerformance();
 		expect(vaultPerformance, "Should have no performance value").to.equal(0);
 
