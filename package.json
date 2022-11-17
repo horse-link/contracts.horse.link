@@ -8,6 +8,7 @@
     "hh:compile": "npx hardhat compile",
     "verify:uat": "npx hardhat --network goerli etherscan-verify",
     "deploy:uat": "npx hardhat compile && npx hardhat deploy --network goerli --tags underlying,oracle,registryToken,vault,market --export ./exports/goerli.json && npx hardhat --network goerli etherscan-verify",
+    "deploy:local": "npx hardhat compile && npx hardhat deploy --network localhost --tags underlying,oracle,registryToken,vault,market --export ./exports/localhost.json",
     "hh:node": "npx hardhat node --hostname localhost",
     "test": "npx hardhat test",
     "coverage": "npx hardhat coverage",
