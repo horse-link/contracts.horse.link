@@ -83,4 +83,73 @@ describe.only("Vault", () => {
 		const _market = await vault.getMarket();
 		expect(_market).to.equal(market.address, "Should have market address");
 	});
+
+	it("Should allow msg.sender to receive shares when receiver address is address zero", async () => {
+		const amount = ethers.utils.parseUnits("100", underlyingDecimals);
+		await underlying.connect(alice).approve(vault.address, amount);
+
+		const originalTotalAssets = await vault.totalAssets();
+		await vault.connect(alice).deposit(amount, ethers.constants.AddressZero);
+		const totalAssets = await vault.totalAssets();
+		expect(totalAssets).to.equal(originalTotalAssets.add(amount));
+		expect(await vault.balanceOf(alice.address)).to.equal(amount);
+		const vaultPerformance = await vault.getPerformance();
+		expect(vaultPerformance).to.equal(100);
+	});
+
+	it("Should get user maxWithdraw amount", async () => {
+		const amount = ethers.utils.parseUnits("100", underlyingDecimals);
+		await underlying.connect(alice).approve(vault.address, amount);
+
+		await vault.connect(alice).deposit(amount, alice.address);
+		const maxWithdraw = await vault.maxWithdraw(alice.address);
+		expect(maxWithdraw).to.equal(amount);
+	});
+
+	it("Should get previewWithdraw amount", async () => {
+		const amount = ethers.utils.parseUnits("200", 6);
+		await underlying.connect(bob).approve(vault.address, amount);
+
+		await vault.connect(bob).deposit(amount, bob.address);
+		const previewWithdraw = await vault.previewWithdraw(amount);
+		expect(previewWithdraw).to.equal(amount);
+	});
+
+	it("Should not allow user to withdraw more than maxWithdraw", async () => {
+		const amount = ethers.utils.parseUnits("1000", 6);
+		await underlying.connect(alice).approve(vault.address, amount);
+
+		await vault.connect(alice).deposit(amount, alice.address);
+
+		await expect(
+			vault
+				.connect(alice)
+				.withdraw(
+					ethers.utils.parseUnits("1001", underlyingDecimals),
+					alice.address,
+					alice.address
+				)
+		).to.be.revertedWith("withdraw: You do not have enough shares");
+
+		const receipt = await (
+			await vault
+				.connect(alice)
+				.withdraw(
+					ethers.utils.parseUnits("500", underlyingDecimals),
+					alice.address,
+					alice.address
+				)
+		).wait();
+		expect(await vault.balanceOf(alice.address)).to.equal(
+			ethers.utils.parseUnits("500", 6)
+		);
+
+		expect(await underlying.balanceOf(alice.address)).to.equal(
+			ethers.utils.parseUnits("1500", 6)
+		);
+
+		const event = getEventData("Withdraw", vault, receipt);
+		expect(event.who).to.equal(alice.address);
+		expect(event.value).to.equal(amount);
+	});
 });
