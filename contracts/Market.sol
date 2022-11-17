@@ -155,10 +155,7 @@ contract Market is Ownable, IMarket {
         address underlying = _vault.asset();
         assert(underlying != address(0));
 
-        uint256 x = _vault.getMarketAllowance();
-        if (x == 0) return 0;
-
-        int256 p = int256(x); // TODO: check that typecasting to a signed int is safe
+        int256 p = int256(_vault.getMarketAllowance()); // TODO: check that typecasting to a signed int is safe
 
         if (p == 0) return 0;
 
