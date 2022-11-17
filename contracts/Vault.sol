@@ -10,6 +10,7 @@ contract Vault is ERC4626Metadata, Ownable {
     //Mapping address => uint256
     mapping(address => uint256) public marketAllowance;
     address private _market;
+    uint8 private immutable _decimals;
 
     constructor(IERC20Metadata asset_)
     ERC4626Metadata(
@@ -18,7 +19,14 @@ contract Vault is ERC4626Metadata, Ownable {
     ERC20(
         string(abi.encodePacked("HL ", asset_.name())),
         string(abi.encodePacked("HL", asset_.symbol()))
-    ) {}
+    ) {
+        _decimals = IERC20Metadata(asset_).decimals();
+    }
+
+    // Override decimals to be the same as the underlying asset
+    function decimals() public view override returns (uint8) {
+        return _decimals;
+    }
 
     function setMarket(address market, uint256 max) public onlyOwner {
         require(_market == address(0), "setMarket: Market already set");
