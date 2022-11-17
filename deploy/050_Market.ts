@@ -43,7 +43,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 				marketDeployment.address,
 				ethers.constants.MaxUint256
 			);
-			if (!network.tags.local) {
+			if (!network.tags.testing) {
 				await execute(
 					"Registry",
 					{ from: deployer, log: true },
@@ -55,6 +55,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 		const token: Token = await ethers.getContractAt("Token", tokenAddress);
 		if (!network.tags.production) {
+			const token: Token = await ethers.getContractAt("Token", tokenAddress);
+			//get deployer signer from hardhat-deploy
 			const signer = await ethers.getSigner(deployer);
 			const receipt = await token
 				.connect(signer)
