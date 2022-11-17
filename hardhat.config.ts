@@ -35,12 +35,12 @@ export default {
 		hardhat: {
 			chainId: 1337,
 			saveDeployment: false,
-			tags: ["local", "test"]
+			tags: ["local", "testing"]
 		},
 		localhost: {
 			url: defaultRpcUrl,
 			saveDeployment: false,
-			tags: ["local", "test"]
+			tags: ["local"]
 		},
 		goerli: {
 			url: process.env.GOERLI_URL || defaultRpcUrl,
@@ -51,7 +51,7 @@ export default {
 					apiKey: process.env.ETHERSCAN_API_KEY
 				}
 			},
-			tags: ["uat", "test"]
+			tags: ["uat"]
 		},
 		mainnet: {
 			url: process.env.MAINNET_URL || defaultRpcUrl,

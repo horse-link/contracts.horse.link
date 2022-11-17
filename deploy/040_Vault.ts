@@ -16,7 +16,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 	for (const tokenDetails of UnderlyingTokens) {
 		let tokenAddress: string;
-		if (network.tags.production || network.tags.uat) {
+		if (network.tags.production) {
 			tokenAddress = namedAccounts[tokenDetails.deploymentName];
 		} else {
 			const tokenDeployment = await deployments.get(
@@ -33,7 +33,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 			skipIfAlreadyDeployed: false
 		});
 
-		if (deployResult.newlyDeployed && !network.tags.local) {
+		if (deployResult.newlyDeployed && !network.tags.testing) {
 			// Add vault to registry
 			await execute(
 				"Registry",
