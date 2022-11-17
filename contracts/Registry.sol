@@ -53,6 +53,7 @@ contract Registry {
     }
 
     function setThreshold(uint256 threshold) external onlyOwner {
+        require(threshold != _threshold, "setThreshold: Threshold already set");
         _threshold = threshold;
         emit ThresholdUpdated(threshold);
     }

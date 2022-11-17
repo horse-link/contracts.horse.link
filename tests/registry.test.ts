@@ -26,11 +26,7 @@ describe("Registry", () => {
 	let nonTokenHolders: SignerWithAddress;
 
 	beforeEach(async () => {
-		const fixture = await deployments.fixture([
-			"registry",
-			"vault",
-			"market"
-		]);
+		const fixture = await deployments.fixture(["registry", "vault", "market"]);
 		[owner, nonTokenHolders] = await ethers.getSigners();
 
 		registry = await ethers.getContractAt(
@@ -52,7 +48,7 @@ describe("Registry", () => {
 	});
 
 	it("should be able to add markets and vaults", async () => {
-		//Deploy a new market
+		// Deploy a new market
 
 		const market_count = await registry.marketCount();
 		expect(market_count).to.equal(0, "Should have no markets");
@@ -104,8 +100,8 @@ describe("Registry", () => {
 			"addMarket: Market already added"
 		);
 
-		await registry.addVault(vault.address);
-		const vault_count2 = await registry.vaultCount();
-		expect(vault_count2).to.equal(1, "Should have 1 vault");
+		// await registry.addVault(vault.address);
+		// const vault_count2 = await registry.vaultCount();
+		// expect(vault_count2).to.equal(1, "Should have 1 vault");
 	});
 });

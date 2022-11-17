@@ -38,7 +38,7 @@ contract Vault is Ownable, IVault, ERC20PresetMinterPauser {
     function totalSupply()
         public
         view
-        override(IERC20, ERC20)
+        override
         returns (uint256)
     {
         return _totalSupply;
