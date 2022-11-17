@@ -116,7 +116,7 @@ describe("Market", () => {
 		expect(inPlay, "Should have $0 in play").to.equal(0);
 
 		const totalExposure = await market.getTotalExposure();
-		expect(totalExposure, "Should have $0 in play").to.equal(0);
+		expect(totalExposure, "Should have $0 exposure").to.equal(0);
 
 		const vault = await market.getVaultAddress();
 		expect(vault, "Should have vault address").to.equal(vault);
