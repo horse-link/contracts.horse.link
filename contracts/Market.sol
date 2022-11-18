@@ -3,6 +3,7 @@ pragma solidity =0.8.10;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 import {IBet} from "./IBet.sol";
 import "./IVault.sol";
@@ -21,7 +22,7 @@ struct Bet {
 	address owner;
 }
 
-contract Market is Ownable, IMarket {
+contract Market is Ownable, IMarket, ERC721, IERC20Metadata {
 	uint256 private constant MAX = 32;
 	int256 private constant PRECISION = 1_000;
 	uint8 private immutable _fee;
@@ -51,7 +52,27 @@ contract Market is Ownable, IMarket {
 	uint256 public immutable timeout;
 	uint256 public immutable min;
 
+	constructor(
+		IVault vault,
+		uint8 fee,
+		address oracle
+	)
+	ERC721("Bet", "BET") {
+		require(address(vault) != address(0), "Invalid address");
+		_self = address(this);
+		_vault = vault;
+		_fee = fee;
+		_oracle = IOracle(oracle);
+
+		timeout = 30 days;
+		min = 1 hours;
+	}
+
 	mapping(address => uint256) private _workerfees;
+
+	function tokenURI(uint256 tokenId) external view returns (string memory) {
+		return string(abi.encodePacked("https://api.horse.link/bets/", tokenId));
+	}
 
 	function getFee() external view returns (uint8) {
 		return _fee;
@@ -91,21 +112,6 @@ contract Market is Ownable, IMarket {
 
 	function _getExpiry(uint64 id) private view returns (uint256) {
 		return _bets[id].payoutDate + timeout;
-	}
-
-	constructor(
-		IVault vault,
-		uint8 fee,
-		address oracle
-	) {
-		require(address(vault) != address(0), "Invalid address");
-		_self = address(this);
-		_vault = vault;
-		_fee = fee;
-		_oracle = IOracle(oracle);
-
-		timeout = 30 days;
-		min = 1 hours;
 	}
 
 	function getBetByIndex(uint256 index)
@@ -233,6 +239,7 @@ contract Market is Ownable, IMarket {
 		uint256 count = _bets.length;
 		uint256 index = count - 1;
 		_marketBets[marketId].push(count);
+		_mint(msg.sender, index);
 
 		_totalInPlay += wager;
 		_totalExposure += (payout - wager);
@@ -297,6 +304,8 @@ contract Market is Ownable, IMarket {
 			// Transfer the proceeds to the vault, less market fee
 			underlying.transfer(address(_vault), _bets[id].payout);
 		}
+
+		_burn(id);
 
 		emit Settled(id, _bets[id].payout, result, _bets[id].owner);
 	}
