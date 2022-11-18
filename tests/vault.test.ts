@@ -86,6 +86,11 @@ describe("Vault", () => {
 			vaultSymbol,
 			"Symbol should be same as underling with HL prefix"
 		).to.equal(`HL${underlyingSymbol}`);
+
+		const vaultDecimals = await vault.decimals();
+		expect(vaultDecimals, "Decimals should be same as underlying").to.equal(
+			underlyingDecimals
+		);
 	});
 
 	it("Should only allow owner to set market", async () => {
