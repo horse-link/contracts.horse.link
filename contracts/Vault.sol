@@ -17,6 +17,7 @@ contract Vault is Ownable, IVault, ERC20PresetMinterPauser {
     IERC20Metadata private immutable _underlying;
     address private immutable _self;
     address private _market;
+    uint8 private immutable _decimals;
 
     constructor(
         IERC20Metadata underlying
@@ -33,6 +34,12 @@ contract Vault is Ownable, IVault, ERC20PresetMinterPauser {
 
         _self = address(this);
         _underlying = underlying;
+        _decimals = IERC20Metadata(underlying).decimals();
+    }
+
+    // Override decimals to be the same as the underlying asset
+    function decimals() public view override(ERC20, IERC20Metadata) returns (uint8) {
+        return _decimals;
     }
 
     function totalSupply()
