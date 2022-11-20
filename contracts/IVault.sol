@@ -1,10 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity =0.8.10;
 
-import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
-
-interface IVault is IERC20Metadata {
-    function asset() external view returns (IERC20Metadata assetTokenAddress);
+interface IVault {
+    function asset() external view returns (address);
 
     function deposit(
         uint256 assets,
@@ -13,6 +11,8 @@ interface IVault is IERC20Metadata {
 
     function getPerformance() external view returns (uint256);
 
+    function getMarket() external view returns (address);
+    function getMarketAllowance() external view returns (uint256);
     function setMarket(address market, uint256 max) external;
 
     function totalAssets() external view returns (uint256);

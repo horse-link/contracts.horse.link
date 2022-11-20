@@ -153,16 +153,17 @@ contract Market is Ownable, IMarket, ERC721, IERC20Metadata {
 		return _getOdds(wager, odds, propositionId);
 	}
 
-	function _getOdds(
-		int256 wager,
-		int256 odds,
-		bytes32 propositionId
-	) private view returns (int256) {
-		int256 p = int256(_vault.totalAssets()); //TODO: check that typecasting to a signed int is safe
+    function _getOdds(
+        int256 wager,
+        int256 odds,
+        bytes32 propositionId
+    ) private view returns (int256) {
+        address underlying = _vault.asset();
+        assert(underlying != address(0));
 
-		if (p == 0) {
-			return 0;
-		}
+        int256 p = int256(_vault.getMarketAllowance()); // TODO: check that typecasting to a signed int is safe
+
+        if (p == 0) return 0;
 
 		// f(wager) = odds - odds*(wager/pool)
 		if (_potentialPayout[propositionId] > uint256(p)) {
@@ -221,14 +222,14 @@ contract Market is Ownable, IMarket, ERC721, IERC20Metadata {
 			"back: Oracle result already set for this market"
 		);
 
-		IERC20Metadata underlying = _vault.asset();
+        address underlying = _vault.asset();
 
 		// add underlying to the market
 		uint256 payout = _getPayout(propositionId, wager, odds);
 
-		// escrow
-		underlying.transferFrom(msg.sender, _self, wager);
-		underlying.transferFrom(address(_vault), _self, (payout - wager));
+        // escrow
+        IERC20(underlying).transferFrom(msg.sender, _self, wager);
+        IERC20(underlying).transferFrom(address(_vault), _self, (payout - wager));
 
 		// add to the market
 		_marketTotal[marketId] += wager;
@@ -293,17 +294,17 @@ contract Market is Ownable, IMarket, ERC721, IERC20Metadata {
 		_totalExposure -= _bets[id].payout - _bets[id].amount;
 		_inplayCount--;
 
-		IERC20Metadata underlying = _vault.asset();
+        address underlying = _vault.asset();
 
-		if (result == true) {
-			// Transfer the win to the punter
-			underlying.transfer(_bets[id].owner, _bets[id].payout);
-		}
+        if (result == true) {
+            // Transfer the win to the punter
+            IERC20(underlying).transfer(_bets[id].owner, _bets[id].payout);
+        }
 
-		if (result == false) {
-			// Transfer the proceeds to the vault, less market fee
-			underlying.transfer(address(_vault), _bets[id].payout);
-		}
+        if (result == false) {
+            // Transfer the proceeds to the vault, less market fee
+            IERC20(underlying).transfer(address(_vault), _bets[id].payout);
+        }
 
 		_burn(id);
 

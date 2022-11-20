@@ -30,9 +30,9 @@ contract Registry {
     }
 
     function addVault(IVault vault) external onlyTokenHolders {
-        IERC20Metadata underlying = vault.asset();
+        address underlying = vault.asset();
         require(
-            address(_underlying[address(underlying)]) == address(0),
+            _underlying[underlying].asset() == address(0),
             "addVault: Vault with this underlying token already added"
         );
 
@@ -53,6 +53,7 @@ contract Registry {
     }
 
     function setThreshold(uint256 threshold) external onlyOwner {
+        require(threshold != _threshold, "setThreshold: Threshold already set");
         _threshold = threshold;
         emit ThresholdUpdated(threshold);
     }

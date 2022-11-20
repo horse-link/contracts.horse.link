@@ -118,6 +118,7 @@ describe("Market", () => {
 		expect(vault).to.equal(vault, "Should have vault address");
 
 		expect(await market.getOracleAddress()).to.equal(oracle.address);
+		// expect(await vault.getMarketAllowance()).to.equal(0);
 	});
 
 	it("should get correct odds on a 5:1 punt", async () => {
