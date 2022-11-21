@@ -564,24 +564,13 @@ function signSetResultMessage(
 function signBackMessage(
 	nonce: string,
 	propositionId: string,
-	marketId: string,
-	wager: BigNumber,
 	odds: BigNumber,
 	close: number,
 	end: number,
 	signer: SignerWithAddress
 ) {
 	const message = ethers.utils.solidityKeccak256(
-		[
-			"bytes32",
-			"bytes32",
-			"bytes32",
-			"uint256",
-			"uint256",
-			"uint256",
-			"uint256"
-		],
-		[nonce, propositionId, marketId, wager, odds, close, end]
+		`${nonce}-${propositionId}-${odds}-${close}-${end}`
 	);
 	return signMessage(message, signer);
 }
