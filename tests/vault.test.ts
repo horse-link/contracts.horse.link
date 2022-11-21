@@ -56,11 +56,11 @@ describe("Vault", () => {
 		);
 	});
 
-	it("Mock USDT has correreturn the correct symbol", async () => {
+	it("Should return the correct symbol", async () => {
 		expect(await underlying.symbol()).to.equal("USDT");
 	});
 
-	it("should set properties on deploy", async () => {
+	it("Should set properties on deploy", async () => {
 		const vaultPerformance = await vault.getPerformance();
 		expect(vaultPerformance).to.equal(0, "Should have no values");
 

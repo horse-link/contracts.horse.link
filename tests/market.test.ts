@@ -528,8 +528,7 @@ describe("Market", () => {
 
 async function signMessage(message: string, signer: SignerWithAddress) {
 	const sig = await signer.signMessage(ethers.utils.arrayify(message));
-	const { v, r, s } = ethers.utils.splitSignature(sig);
-	return { v, r, s };
+	return sig;
 }
 
 function makeSetResultMessage(
@@ -543,16 +542,16 @@ function makeSetResultMessage(
 	return message;
 }
 
-function signSetResultMessage(
+async function signSetResultMessage(
 	marketId: BytesLike,
 	propositionId: BytesLike,
 	signer: SignerWithAddress
-): Promise<Signature> {
+): Promise<string> {
 	const settleMessage = makeSetResultMessage(marketId, propositionId);
-	return signMessage(settleMessage, signer);
+	return await signMessage(settleMessage, signer);
 }
 
-function signBackMessage(
+async function signBackMessage(
 	nonce: string,
 	propositionId: string,
 	odds: BigNumber,
@@ -564,5 +563,5 @@ function signBackMessage(
 		["bytes32", "bytes32", "uint256", "uint256", "uint256"],
 		[nonce, propositionId, odds, close, end]
 	);
-	return signMessage(message, signer);
+	return await signMessage(message, signer);
 }
