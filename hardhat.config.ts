@@ -51,7 +51,6 @@ export default {
 					apiKey: process.env.ETHERSCAN_API_KEY
 				}
 			},
-			gasMultiplier: 2,
 			tags: ["uat"]
 		},
 		mainnet: {
@@ -85,11 +84,17 @@ export default {
 			default: 0,
 			goerli: `privatekey://${process.env.GOERLI_DEPLOYER}`
 		},
+		faucet: {
+			default: "0xF919eaF2E37aAC718Aa19668b9071ee42c02c081"
+		},
 		Usdt: {
-			goerli: "0xaF2929Ed6758B0bD9575e1F287b85953B08E50BC"
+			mainnet: "0xdac17f958d2ee523a2206206994597c13d831ec7"
+		},
+		Usdc: {
+			mainnet: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
 		},
 		Dai: {
-			goerli: "0x70b481B732822Af9beBc895779A6e261DC3D6C8B"
+			mainnet: "0x6B175474E89094C44Da98b954EedeAC495271d0F"
 		}
 	},
 	namedSigners: {

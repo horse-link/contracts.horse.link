@@ -1,5 +1,5 @@
 import "@nomiclabs/hardhat-ethers";
-import { parseEther } from "ethers/lib/utils";
+import { parseUnits } from "ethers/lib/utils";
 import "hardhat-deploy";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
@@ -31,7 +31,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 				{ from: deployer, log: true },
 				"mint",
 				deployer,
-				parseEther(tokenDetails.mintAmount)
+				parseUnits(tokenDetails.mintAmount, tokenDetails.decimals)
 			);
 			console.log(
 				`Minted ${tokenDetails.mintAmount} ${tokenDetails.symbol} to deployer`
