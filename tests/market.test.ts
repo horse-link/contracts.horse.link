@@ -570,5 +570,6 @@ function signBackMessage(
 	signer: SignerWithAddress
 ) {
 	const message = `${nonce}-${propositionId}-${odds}-${close}-${end}`;
-	return signMessage(message, signer);
+	const hash = ethers.utils.solidityKeccak256(["string"], [message]);
+	return signMessage(hash, signer);
 }

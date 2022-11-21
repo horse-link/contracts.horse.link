@@ -222,6 +222,10 @@ contract Market is Ownable, IMarket, ERC721, IERC20Metadata {
 			"back: Oracle result already set for this market"
 		);
 
+		// check the signature
+		bytes32 hash = keccak256(nonce, propositionId, odds, close, end);
+		require(onlyMarketOwner(hash) == true, "back: Invalid signature");
+
         address underlying = _vault.asset();
 
 		// add underlying to the market
@@ -311,16 +315,16 @@ contract Market is Ownable, IMarket, ERC721, IERC20Metadata {
 		emit Settled(id, _bets[id].payout, result, _bets[id].owner);
 	}
 
-	modifier onlyMarketOwner(
+	private onlyMarketOwner(
 		bytes32 messageHash,
 		SignatureLib.Signature calldata signature
-	) {
-		//bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
-		require(
-			SignatureLib.recoverSigner(messageHash, signature) == owner(),
-			"onlyMarketOwner: Invalid signature"
-		);
-		_;
+	) view returns (bool) {
+		// require(
+		// 	SignatureLib.recoverSigner(messageHash, signature) == owner(),
+		// 	"onlyMarketOwner: Invalid signature"
+		// );
+		
+		return SignatureLib.recoverSigner(messageHash, signature) == owner();
 	}
 
 	event Placed(
