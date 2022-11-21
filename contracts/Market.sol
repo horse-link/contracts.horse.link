@@ -205,8 +205,64 @@ contract Market is Ownable, ERC721 {
 
 		return (uint256(trueOdds) * wager) / 1_000_000;
 	}
-
 	function back(
+		bytes32 nonce,
+		bytes32 propositionId,
+		bytes32 marketId,
+		uint256 wager,
+		uint256 odds,
+		uint256 close,
+		uint256 end,
+		SignatureLib.Signature calldata signature
+	) external returns (uint256) {
+		require(
+			end > block.timestamp && block.timestamp > close,
+			"back: Invalid date"
+		);
+
+		// check the oracle first
+		require(
+			IOracle(_oracle).checkResult(marketId, propositionId) == false,
+			"back: Oracle result already set for this market"
+		);
+
+		bytes32 messageHash = keccak256(abi.encodePacked(nonce, propositionId, odds, close, end));
+		
+		require(
+			SignatureLib.recoverSigner(messageHash, signature) == owner(),
+			"onlyMarketOwner: Invalid signature"
+		);
+
+        address underlying = _vault.asset();
+
+		// add underlying to the market
+		uint256 payout = _getPayout(propositionId, wager, odds);
+
+        // escrow
+        IERC20(underlying).transferFrom(msg.sender, _self, wager);
+        IERC20(underlying).transferFrom(address(_vault), _self, (payout - wager));
+
+		// add to the market
+		_marketTotal[marketId] += wager;
+
+		_bets.push(
+			Bet(propositionId, marketId, wager, payout, end, false, msg.sender)
+		);
+
+		// use _getCount() to avoid stack too deep
+		_marketBets[marketId].push(_getCount());
+		_mint(msg.sender, _getCount() - 1);
+
+		_totalInPlay += wager;
+		_totalExposure += (payout - wager);
+		_inplayCount++;
+
+		emit Placed(_getCount() - 1, propositionId, marketId, wager, payout, msg.sender);
+
+		return _getCount();
+	}
+
+	function back2(
 		bytes32 nonce,
 		bytes32 propositionId,
 		bytes32 marketId,
@@ -253,22 +309,7 @@ contract Market is Ownable, ERC721 {
 			Bet(propositionId, marketId, wager, payout, end, false, msg.sender)
 		);
 
-		// uint256 count = _bets.length;
-		// uint256 index = count - 1;
-		// _marketBets[marketId].push(count);
-		// _mint(msg.sender, index);
-
-		// _totalInPlay += wager;
-		// _totalExposure += (payout - wager);
-		// _inplayCount++;
-
-		// emit Placed(index, propositionId, marketId, wager, payout, msg.sender);
-
-		// return count; // token ID
-
-		//uint256 count = _bets.length;
-		//uint256 index = count - 1;
-
+		// use _getCount() to avoid stack too deep
 		_marketBets[marketId].push(_getCount());
 		_mint(msg.sender, _getCount() - 1);
 

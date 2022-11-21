@@ -22,7 +22,7 @@ type Signature = {
 
 chai.use(solidity);
 
-describe("Market", () => {
+describe.only("Market", () => {
 	let underlying: Token;
 	let vault: Vault;
 	let market: Market;
@@ -526,9 +526,17 @@ describe("Market", () => {
 	});
 });
 
+async function signMessageAsString(message: string, signer: SignerWithAddress) {
+	const sig = await signer.signMessage(ethers.utils.arrayify(message));
+	// const { v, r, s } = ethers.utils.splitSignature(sig);
+	// return { v, r, s };
+	return sig;
+}
+
 async function signMessage(message: string, signer: SignerWithAddress) {
 	const sig = await signer.signMessage(ethers.utils.arrayify(message));
-	return sig;
+	const { v, r, s } = ethers.utils.splitSignature(sig);
+	return { v, r, s };
 }
 
 function makeSetResultMessage(
@@ -546,9 +554,18 @@ async function signSetResultMessage(
 	marketId: BytesLike,
 	propositionId: BytesLike,
 	signer: SignerWithAddress
-): Promise<string> {
+): Promise<Signature> {
 	const settleMessage = makeSetResultMessage(marketId, propositionId);
 	return await signMessage(settleMessage, signer);
+}
+
+async function signSetResultMessageAsString(
+	marketId: BytesLike,
+	propositionId: BytesLike,
+	signer: SignerWithAddress
+): Promise<string> {
+	const settleMessage = makeSetResultMessage(marketId, propositionId);
+	return await signMessageAsString(settleMessage, signer);
 }
 
 async function signBackMessage(
@@ -558,7 +575,7 @@ async function signBackMessage(
 	close: number,
 	end: number,
 	signer: SignerWithAddress
-) {
+): Promise<Signature> {
 	const message = ethers.utils.solidityKeccak256(
 		["bytes32", "bytes32", "uint256", "uint256", "uint256"],
 		[nonce, propositionId, odds, close, end]
