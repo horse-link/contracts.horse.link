@@ -104,7 +104,7 @@ describe("Market", () => {
 			.deposit(ethers.utils.parseUnits("1000", USDT_DECIMALS), alice.address);
 	});
 
-	it("should properties set on deploy", async () => {
+	it("Should properties set on deploy", async () => {
 		const fee = await market.getFee();
 		expect(fee).to.equal(FEE, "fee should be set");
 
@@ -121,7 +121,7 @@ describe("Market", () => {
 		// expect(await vault.getMarketAllowance()).to.equal(0);
 	});
 
-	it("should get correct odds on a 5:1 punt", async () => {
+	it("Should get correct odds on a 5:1 punt", async () => {
 		const balance = await underlying.balanceOf(bob.address);
 		expect(balance).to.equal(
 			ethers.utils.parseUnits("1000", USDT_DECIMALS),
@@ -174,7 +174,7 @@ describe("Market", () => {
 		);
 	});
 
-	it("should allow Bob a $100 punt at 5:1", async () => {
+	it("Should allow Bob a $100 punt at 5:1", async () => {
 		let balance = await underlying.balanceOf(bob.address);
 		expect(balance).to.equal(
 			ethers.utils.parseUnits("1000", USDT_DECIMALS),
@@ -213,8 +213,6 @@ describe("Market", () => {
 		const signature = await signBackMessage(
 			nonce,
 			propositionId,
-			marketId,
-			wager,
 			odds,
 			close,
 			end,
@@ -228,6 +226,7 @@ describe("Market", () => {
 		expect(await market.getMarketTotal(marketId)).to.equal(
 			ethers.utils.parseUnits("100", USDT_DECIMALS)
 		);
+
 		balance = await underlying.balanceOf(bob.address);
 		expect(balance).to.equal(
 			ethers.utils.parseUnits("900", USDT_DECIMALS),
@@ -254,7 +253,7 @@ describe("Market", () => {
 		expect(tokenOwner, "Bob should have a bet NFT").to.equal(bob.address);
 	});
 
-	it("should allow Carol a $200 punt at 2:1", async () => {
+	it("Should allow Carol a $200 punt at 2:1", async () => {
 		let balance = await underlying.balanceOf(bob.address);
 		expect(balance).to.equal(
 			ethers.utils.parseUnits("1000", USDT_DECIMALS),
@@ -292,8 +291,6 @@ describe("Market", () => {
 		const betSignature = await signBackMessage(
 			nonce,
 			propositionId,
-			marketId,
-			wager,
 			odds,
 			close,
 			end,
@@ -336,8 +333,6 @@ describe("Market", () => {
 			const betSignature = await signBackMessage(
 				nonce,
 				propositionId,
-				marketId,
-				wager,
 				odds,
 				close,
 				end,
@@ -399,8 +394,6 @@ describe("Market", () => {
 			const betSignature = await signBackMessage(
 				nonce,
 				propositionId,
-				marketId,
-				wager,
 				odds,
 				close,
 				end,
@@ -439,7 +432,7 @@ describe("Market", () => {
 			expect(vaultBalanceAfter).to.equal(vaultBalanceBefore.add(bet[1]));
 		});
 
-		it("should settle bobs winning bet by index", async () => {
+		it("Should settle bobs winning bet by index", async () => {
 			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
 			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
 			const close = 0;
@@ -458,8 +451,6 @@ describe("Market", () => {
 			const betSignature = await signBackMessage(
 				nonce,
 				propositionId,
-				marketId,
-				wager,
 				odds,
 				close,
 				end,
@@ -564,24 +555,14 @@ function signSetResultMessage(
 function signBackMessage(
 	nonce: string,
 	propositionId: string,
-	marketId: string,
-	wager: BigNumber,
 	odds: BigNumber,
 	close: number,
 	end: number,
 	signer: SignerWithAddress
 ) {
 	const message = ethers.utils.solidityKeccak256(
-		[
-			"bytes32",
-			"bytes32",
-			"bytes32",
-			"uint256",
-			"uint256",
-			"uint256",
-			"uint256"
-		],
-		[nonce, propositionId, marketId, wager, odds, close, end]
+		["bytes32", "bytes32", "uint256", "uint256", "uint256"],
+		[nonce, propositionId, odds, close, end]
 	);
 	return signMessage(message, signer);
 }

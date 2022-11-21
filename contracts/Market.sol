@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity =0.8.10;
+pragma abicoder v2;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -221,6 +222,11 @@ contract Market is Ownable, IMarket, ERC721 {
 			IOracle(_oracle).checkResult(marketId, propositionId) == false,
 			"back: Oracle result already set for this market"
 		);
+		bytes32 messageHash = keccak256(abi.encodePacked(nonce, propositionId, odds, close, end));
+		// require(
+		// 	SignatureLib.recoverSigner(messageHash, signature) == owner(),
+		// 	"onlyMarketOwner: Invalid signature"
+		// );
 
         address underlying = _vault.asset();
 
@@ -309,18 +315,6 @@ contract Market is Ownable, IMarket, ERC721 {
 		_burn(id);
 
 		emit Settled(id, _bets[id].payout, result, _bets[id].owner);
-	}
-
-	modifier onlyMarketOwner(
-		bytes32 messageHash,
-		SignatureLib.Signature calldata signature
-	) {
-		//bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
-		require(
-			SignatureLib.recoverSigner(messageHash, signature) == owner(),
-			"onlyMarketOwner: Invalid signature"
-		);
-		_;
 	}
 
 	event Placed(
