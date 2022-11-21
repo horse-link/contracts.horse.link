@@ -315,10 +315,10 @@ contract Market is Ownable, IMarket, ERC721, IERC20Metadata {
 		emit Settled(id, _bets[id].payout, result, _bets[id].owner);
 	}
 
-	private onlyMarketOwner(
+	function onlyMarketOwner(
 		bytes32 messageHash,
 		SignatureLib.Signature calldata signature
-	) view returns (bool) {
+	) private view returns (bool) {
 		// require(
 		// 	SignatureLib.recoverSigner(messageHash, signature) == owner(),
 		// 	"onlyMarketOwner: Invalid signature"
