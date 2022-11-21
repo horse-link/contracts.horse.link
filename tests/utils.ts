@@ -4,7 +4,7 @@ export const getEventData = (
 	eventName: string,
 	contract: ethers.Contract,
 	txResult: ethers.ContractReceipt
-): any => {
+): unknown => {
 	if (!Array.isArray(txResult.logs)) return null;
 	for (const log of txResult.logs) {
 		try {
