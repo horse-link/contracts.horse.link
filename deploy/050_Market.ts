@@ -19,7 +19,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	for (const tokenDetails of UnderlyingTokens) {
 		const vaultDeployment = await deployments.get(tokenDetails.vaultName);
 		let tokenAddress: string;
-		if (network.tags.production || network.tags.uat) {
+		if (network.tags.production) {
 			tokenAddress = namedAccounts[tokenDetails.deploymentName];
 		} else {
 			const tokenDeployment = await deployments.get(
@@ -56,15 +56,18 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 		const token: Token = await ethers.getContractAt("Token", tokenAddress);
 		if (!network.tags.production) {
 			const token: Token = await ethers.getContractAt("Token", tokenAddress);
-			//get deployer signer from hardhat-deploy
+
+			//Allow the Vault to spend the Deployer's tokens
 			const signer = await ethers.getSigner(deployer);
+			console.log(
+				`Approving Vault to spend tokens for deployer ${signer.address}`
+			);
 			const receipt = await token
 				.connect(signer)
 				.approve(vaultDeployment.address, ethers.constants.MaxUint256);
 			await receipt.wait();
-		}
-		if (!network.tags.production && !network.tags.testing) {
-			const balance = await token.balanceOf(deployer);
+
+			const balance = await token.balanceOf(signer.address);
 			await execute(
 				tokenDetails.vaultName,
 				{

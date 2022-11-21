@@ -30,14 +30,14 @@ contract Registry {
     }
 
     function addVault(address vault) external onlyTokenHolders {
-        address asset = IVault(vault).asset();
+        address assetAddress = IVault(vault).asset();
         require(
-            _vaultByAsset[asset] == address(0),
-            "addVault: Vault with this asset already added"
+            IVault(_vaultByAsset[assetAddress]).asset() == address(0),
+            "addVault: Vault with this asset token already added"
         );
 
         vaults.push(vault);
-        _vaultByAsset[asset] = vault; 
+        _vaultByAsset[assetAddress] = vault; 
 
         emit VaultAdded(vault);
     }
@@ -53,6 +53,7 @@ contract Registry {
     }
 
     function setThreshold(uint256 threshold) external onlyOwner {
+        require(threshold != _threshold, "setThreshold: Threshold already set");
         _threshold = threshold;
         emit ThresholdUpdated(threshold);
     }

@@ -3,6 +3,7 @@ pragma solidity =0.8.10;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 import {IBet} from "./IBet.sol";
 import "./IVault.sol";
@@ -21,7 +22,7 @@ struct Bet {
 	address owner;
 }
 
-contract Market is Ownable, IMarket {
+contract Market is Ownable, IMarket, ERC721 {
 	uint256 private constant MAX = 32;
 	int256 private constant PRECISION = 1_000;
 	uint8 private immutable _fee;
@@ -51,7 +52,27 @@ contract Market is Ownable, IMarket {
 	uint256 public immutable timeout;
 	uint256 public immutable min;
 
+	constructor(
+		IVault vault,
+		uint8 fee,
+		address oracle
+	)
+	ERC721("Bet", "BET") {
+		require(address(vault) != address(0), "Invalid address");
+		_self = address(this);
+		_vault = vault;
+		_fee = fee;
+		_oracle = IOracle(oracle);
+
+		timeout = 30 days;
+		min = 1 hours;
+	}
+
 	mapping(address => uint256) private _workerfees;
+
+	function tokenURI(uint256 tokenId) public view override returns (string memory) {
+		return string(abi.encodePacked("https://api.horse.link/bet/", tokenId));
+	}
 
 	function getFee() external view returns (uint8) {
 		return _fee;
@@ -93,21 +114,6 @@ contract Market is Ownable, IMarket {
 		return _bets[id].payoutDate + timeout;
 	}
 
-	constructor(
-		IVault vault,
-		uint8 fee,
-		address oracle
-	) {
-		require(address(vault) != address(0), "Invalid address");
-		_self = address(this);
-		_vault = vault;
-		_fee = fee;
-		_oracle = IOracle(oracle);
-
-		timeout = 30 days;
-		min = 1 hours;
-	}
-
 	function getBetByIndex(uint256 index)
 		external
 		view
@@ -147,16 +153,17 @@ contract Market is Ownable, IMarket {
 		return _getOdds(wager, odds, propositionId);
 	}
 
-	function _getOdds(
-		int256 wager,
-		int256 odds,
-		bytes32 propositionId
-	) private view returns (int256) {
-		int256 p = int256(_vault.totalAssets()); //TODO: check that typecasting to a signed int is safe
+    function _getOdds(
+        int256 wager,
+        int256 odds,
+        bytes32 propositionId
+    ) private view returns (int256) {
+        address underlying = _vault.asset();
+        assert(underlying != address(0));
 
-		if (p == 0) {
-			return 0;
-		}
+        int256 p = int256(_vault.getMarketAllowance()); // TODO: check that typecasting to a signed int is safe
+
+        if (p == 0) return 0;
 
 		// f(wager) = odds - odds*(wager/pool)
 		if (_potentialPayout[propositionId] > uint256(p)) {
@@ -214,15 +221,14 @@ contract Market is Ownable, IMarket {
 			IOracle(_oracle).checkResult(marketId, propositionId) == false,
 			"back: Oracle result already set for this market"
 		);
-
-        IERC20Metadata underlying = IERC20Metadata(_vault.asset());
+        address underlying = _vault.asset();
 
 		// add underlying to the market
 		uint256 payout = _getPayout(propositionId, wager, odds);
 
-		// escrow
-		underlying.transferFrom(msg.sender, _self, wager);
-		underlying.transferFrom(address(_vault), _self, (payout - wager));
+        // escrow
+        IERC20(underlying).transferFrom(msg.sender, _self, wager);
+        IERC20(underlying).transferFrom(address(_vault), _self, (payout - wager));
 
 		// add to the market
 		_marketTotal[marketId] += wager;
@@ -233,6 +239,7 @@ contract Market is Ownable, IMarket {
 		uint256 count = _bets.length;
 		uint256 index = count - 1;
 		_marketBets[marketId].push(count);
+		_mint(msg.sender, index);
 
 		_totalInPlay += wager;
 		_totalExposure += (payout - wager);
@@ -286,17 +293,19 @@ contract Market is Ownable, IMarket {
         _totalExposure -= _bets[id].payout - _bets[id].amount;
         _inplayCount --;
 
-        IERC20Metadata underlying = IERC20Metadata(_vault.asset());
+        address underlying = _vault.asset();
 
-		if (result == true) {
-			// Transfer the win to the punter
-			underlying.transfer(_bets[id].owner, _bets[id].payout);
-		}
+        if (result == true) {
+            // Transfer the win to the punter
+            IERC20(underlying).transfer(_bets[id].owner, _bets[id].payout);
+        }
 
-		if (result == false) {
-			// Transfer the proceeds to the vault, less market fee
-			underlying.transfer(address(_vault), _bets[id].payout);
-		}
+        if (result == false) {
+            // Transfer the proceeds to the vault, less market fee
+            IERC20(underlying).transfer(address(_vault), _bets[id].payout);
+        }
+
+		_burn(id);
 
 		emit Settled(id, _bets[id].payout, result, _bets[id].owner);
 	}

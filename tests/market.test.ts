@@ -254,6 +254,9 @@ describe("Market", () => {
 		// Should get expiry after back bet
 		const expiry = await market.getExpiry(0);
 		expect(expiry).to.equal(end + 2592000, "Should have expiry set");
+
+		const tokenOwner = await market.ownerOf(0);
+		expect(tokenOwner, "Bob should have a bet NFT").to.equal(bob.address);
 	});
 
 	it("should allow Carol a $200 punt at 2:1", async () => {
@@ -469,7 +472,7 @@ describe("Market", () => {
 			);
 
 			let count = await market.getCount();
-			expect(count).to.equal(0, "First bet should have a 0 index");
+			expect(count, "There should be no bets").to.equal(0);
 
 			expect(
 				await market
@@ -487,10 +490,13 @@ describe("Market", () => {
 			).to.emit(market, "Placed");
 
 			count = await market.getCount();
-			expect(count).to.equal(1, "Second bet should have a 1 index");
+			expect(count).to.equal(1, "There should be 1 bet");
+
+			const bet = await market.getBetByIndex(0);
+			expect(bet[0], "Bet amount should be same as wager").to.equal(wager);
 
 			const inPlayCount = await market.getInPlayCount();
-			expect(inPlayCount).to.equal(1, "In play count should be 1");
+			expect(inPlayCount, "In play count should be 1").to.equal(1);
 
 			let exposure = await market.getTotalExposure();
 			expect(exposure).to.equal(ethers.utils.parseUnits("350", USDT_DECIMALS));
@@ -498,6 +504,8 @@ describe("Market", () => {
 			let inPlay = await market.getTotalInPlay();
 			expect(inPlay).to.equal(ethers.utils.parseUnits("100", USDT_DECIMALS));
 
+			const nftBalance = await market.balanceOf(bob.address);
+			expect(nftBalance).to.equal(1, "Bob should have 1 NFT");
 			await oracle.setResult(
 				marketId,
 				propositionId,
@@ -513,6 +521,9 @@ describe("Market", () => {
 				params: [end + 7200]
 			});
 			expect(await market.settle(index)).to.emit(market, "Settled");
+
+			const newNftBalance = await market.balanceOf(bob.address);
+			expect(newNftBalance).to.equal(0, "Bob should have no NFTs now");
 
 			await expect(market.settle(index)).to.be.revertedWith(
 				"settle: Bet has already settled"
