@@ -13,8 +13,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	const { deploy, execute } = deployments;
 
 	const oracle = await deployments.get("MarketOracle");
-	//const signatureLib = await deployments.get("SignatureLib");
-
 	const namedAccounts = await getNamedAccounts();
 	const deployer = namedAccounts.deployer;
 
