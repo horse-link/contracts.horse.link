@@ -569,8 +569,6 @@ function signBackMessage(
 	end: number,
 	signer: SignerWithAddress
 ) {
-	const message = ethers.utils.solidityKeccak256(
-		`${nonce}-${propositionId}-${odds}-${close}-${end}`
-	);
+	const message = `${nonce}-${propositionId}-${odds}-${close}-${end}`;
 	return signMessage(message, signer);
 }
