@@ -40,7 +40,7 @@ contract Vault is Ownable, IVault, ERC20PresetMinterPauser {
     }
 
     // Override decimals to be the same as the underlying asset
-    function decimals() public view override(ERC20, IERC20Metadata) returns (uint8) {
+    function decimals() public view override(ERC20) returns (uint8) {
         return _decimals;
     }
 

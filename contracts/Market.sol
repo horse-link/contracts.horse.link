@@ -22,7 +22,7 @@ struct Bet {
 	address owner;
 }
 
-contract Market is Ownable, IMarket, ERC721, IERC20Metadata {
+contract Market is Ownable, IMarket, ERC721 {
 	uint256 private constant MAX = 32;
 	int256 private constant PRECISION = 1_000;
 	uint8 private immutable _fee;
@@ -70,8 +70,8 @@ contract Market is Ownable, IMarket, ERC721, IERC20Metadata {
 
 	mapping(address => uint256) private _workerfees;
 
-	function tokenURI(uint256 tokenId) external view returns (string memory) {
-		return string(abi.encodePacked("https://api.horse.link/bets/", tokenId));
+	function tokenURI(uint256 tokenId) public view override returns (string memory) {
+		return string(abi.encodePacked("https://api.horse.link/bet/", tokenId));
 	}
 
 	function getFee() external view returns (uint8) {
