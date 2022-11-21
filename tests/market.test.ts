@@ -67,11 +67,33 @@ describe.only("Market", () => {
 
 		vault = await new Vault__factory(owner).deploy(underlying.address);
 		await vault.deployed();
-		market = await new Market__factory(owner).deploy(
-			vault.address,
-			FEE,
-			oracle.address
-		);
+
+		const Lib = await ethers.getContractFactory("SignatureLib");
+		const lib = await Lib.deploy();
+		await lib.deployed();
+
+		// const signatureLib = await ethers.getContractFactory("SignatureLib");
+		// market = await new Market__factory().deploy(
+		// 	vault.address,
+		// 	FEE,
+		// 	oracle.address
+		// );
+
+		// const marketFactory = await ethers.getContractFactory("Market", {
+		// 	signer: owner,
+		// 	libraries: {
+		// 		SignatureLib: lib.address
+		// 	}
+		// });
+
+		// https://www.npmjs.com/package/hardhat-deploy?activeTab=readme#handling-contract-using-libraries
+		// https://stackoverflow.com/questions/71389974/how-can-i-link-library-and-contract-in-one-file
+		// market = await marketFactory.deploy();
+		market = await new Market__factory(
+			"contracts/SignatureLib.sol:SignatureLib",
+			owner
+		).deploy(vault.address, FEE, oracle.address);
+
 		await vault.setMarket(market.address, ethers.constants.MaxUint256);
 		await underlying
 			.connect(alice)
