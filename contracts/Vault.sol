@@ -16,6 +16,7 @@ contract Vault is ERC4626Metadata, Ownable {
     // These will change to allow multiple markets
     address private _market;
     uint8 private immutable _decimals;
+    address private _self;
 
     constructor(IERC20Metadata asset_)
     ERC4626Metadata(
@@ -30,6 +31,7 @@ contract Vault is ERC4626Metadata, Ownable {
             "Underlying address is invalid"
         );
         _decimals = IERC20Metadata(asset_).decimals();
+        _self = address(this);
     }
 
     // Override decimals to be the same as the underlying asset
@@ -87,8 +89,8 @@ contract Vault is ERC4626Metadata, Ownable {
     }
 
     function getMarketAllowance() external view withMarket() returns (uint256) {
-        // // TODO: This will change to allow multiple markets, using msg.sender
-        uint256 allowance = ERC20(asset()).allowance(address(this), _market); //'this' should be `_self`
+        // TODO: This will change to allow multiple markets, using msg.sender
+        uint256 allowance = ERC20(asset()).allowance(_self, _market);
         if (allowance > totalAssets()) {
             return totalAssets();
         }
