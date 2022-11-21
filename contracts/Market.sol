@@ -205,6 +205,7 @@ contract Market is Ownable, ERC721 {
 
 		return (uint256(trueOdds) * wager) / 1_000_000;
 	}
+
 	function back(
 		bytes32 nonce,
 		bytes32 propositionId,
@@ -226,7 +227,7 @@ contract Market is Ownable, ERC721 {
 			"back: Oracle result already set for this market"
 		);
 
-		bytes32 messageHash = keccak256(abi.encodePacked(nonce, propositionId, odds, close, end));
+		bytes32 messageHash = keccak256(abi.encodePacked(nonce, marketId, propositionId, odds, close, end));
 		
 		require(
 			SignatureLib.recoverSigner(messageHash, signature) == owner(),
@@ -262,103 +263,6 @@ contract Market is Ownable, ERC721 {
 		return _getCount();
 	}
 
-	function back2(
-		bytes32 nonce,
-		bytes32 propositionId,
-		bytes32 marketId,
-		uint256 wager,
-		uint256 odds,
-		uint256 close,
-		uint256 end,
-		// SignatureLib.Signature calldata signature
-		bytes calldata signature
-	) external returns (uint256) {
-		require(
-			end > block.timestamp && block.timestamp > close,
-			"back: Invalid date"
-		);
-
-		// check the oracle first
-		require(
-			IOracle(_oracle).checkResult(marketId, propositionId) == false,
-			"back: Oracle result already set for this market"
-		);
-		bytes32 messageHash = keccak256(abi.encodePacked(nonce, propositionId, odds, close, end));
-		
-		// require(
-		// 	SignatureLib.recoverSigner(messageHash, signature) == owner(),
-		// 	"onlyMarketOwner: Invalid signature"
-		// );
-
-		address _signer = recoverSigner(messageHash, signature);
-		require(_signer == owner(), "onlyMarketOwner: Invalid signature");
-
-        address underlying = _vault.asset();
-
-		// add underlying to the market
-		uint256 payout = _getPayout(propositionId, wager, odds);
-
-        // escrow
-        IERC20(underlying).transferFrom(msg.sender, _self, wager);
-        IERC20(underlying).transferFrom(address(_vault), _self, (payout - wager));
-
-		// add to the market
-		_marketTotal[marketId] += wager;
-
-		_bets.push(
-			Bet(propositionId, marketId, wager, payout, end, false, msg.sender)
-		);
-
-		// use _getCount() to avoid stack too deep
-		_marketBets[marketId].push(_getCount());
-		_mint(msg.sender, _getCount() - 1);
-
-		_totalInPlay += wager;
-		_totalExposure += (payout - wager);
-		_inplayCount++;
-
-		emit Placed(_getCount() - 1, propositionId, marketId, wager, payout, msg.sender);
-
-		return _getCount();
-	}
-
-	function recoverSigner(bytes32 message, bytes memory signature)
-        internal
-        pure
-        returns (address)
-    {
-        uint8 v;
-        bytes32 r;
-        bytes32 s;
-
-        (v, r, s) = splitSignature(signature);
-
-        return ecrecover(message, v, r, s);
-    }
-
-	function splitSignature(bytes memory signature)
-        internal
-        pure
-        returns (uint8, bytes32, bytes32)
-    {
-        require(signature.length == 65);
-
-        bytes32 r;
-        bytes32 s;
-        uint8 v;
-
-        assembly {
-            // first 32 bytes, after the length prefix
-            r := mload(add(signature, 32))
-            // second 32 bytes
-            s := mload(add(signature, 64))
-            // final byte (first byte of the next 32 bytes)
-            v := byte(0, mload(add(signature, 96)))
-        }
-
-        return (v, r, s);
-    }
-
 	function settle(uint256 index) external {
 		Bet memory bet = _bets[index];
 		require(bet.settled == false, "settle: Bet has already settled");
@@ -368,28 +272,6 @@ contract Market is Ownable, ERC721 {
 		);
 		_settle(index, result);
 	}
-
-	// function settleMarket(
-	//     uint256 from,
-	//     uint256 to,
-	//     bytes32 marketId
-	// ) external {
-	//     for (uint256 i = from; i < to; i++) {
-	//         uint256 index = _marketBets[marketId][i];
-
-	//         if (!_bets[index].settled) {
-	//             bytes32 propositionId = IOracle(_oracle).getResult(
-	//                 _bets[index].marketId
-	//             );
-
-	//             if (_bets[index].propositionId == propositionId) {
-	//                 _settle(index, true);
-	//             } else {
-	//                 _settle(index, false);
-	//             }
-	//         }
-	//     }
-	// }
 
 	function _settle(uint256 id, bool result) private {
 		require(

@@ -186,6 +186,29 @@ describe("Market", () => {
 		);
 	});
 
+	it("Should now allow a bet with an invalid signature", async () => {
+		const propositionId = ethers.utils.formatBytes32String("1");
+		const nonce = ethers.utils.formatBytes32String("1");
+		const marketId = ethers.utils.formatBytes32String("20220115-BNE-R1-w");
+		const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
+		const close = 0;
+		const end = 1000000000000;
+
+		const signature = await signBackMessage(
+			nonce,
+			marketId,
+			propositionId,
+			odds,
+			close,
+			end,
+			owner
+		);
+
+		await market
+			.connect(bob)
+			.back(nonce, propositionId, marketId, wager, odds, close, end, signature);
+	});
+
 	it("Should allow Bob a $100 punt at 5:1", async () => {
 		let balance = await underlying.balanceOf(bob.address);
 		expect(balance).to.equal(
@@ -224,6 +247,7 @@ describe("Market", () => {
 
 		const signature = await signBackMessage(
 			nonce,
+			marketId,
 			propositionId,
 			odds,
 			close,
@@ -302,6 +326,7 @@ describe("Market", () => {
 		const marketId = ethers.utils.formatBytes32String("20220115-BNE-R1-w");
 		const betSignature = await signBackMessage(
 			nonce,
+			marketId,
 			propositionId,
 			odds,
 			close,
@@ -344,6 +369,7 @@ describe("Market", () => {
 			const marketId = ethers.utils.formatBytes32String("20220115_BNE_1_W");
 			const betSignature = await signBackMessage(
 				nonce,
+				marketId,
 				propositionId,
 				odds,
 				close,
@@ -405,6 +431,7 @@ describe("Market", () => {
 			const marketId = ethers.utils.formatBytes32String("20220115_BNE_1_W");
 			const betSignature = await signBackMessage(
 				nonce,
+				marketId,
 				propositionId,
 				odds,
 				close,
@@ -462,6 +489,7 @@ describe("Market", () => {
 			const marketId = ethers.utils.formatBytes32String("20220115_BNE_1_W");
 			const betSignature = await signBackMessage(
 				nonce,
+				marketId,
 				propositionId,
 				odds,
 				close,
@@ -540,8 +568,6 @@ describe("Market", () => {
 
 async function signMessageAsString(message: string, signer: SignerWithAddress) {
 	const sig = await signer.signMessage(ethers.utils.arrayify(message));
-	// const { v, r, s } = ethers.utils.splitSignature(sig);
-	// return { v, r, s };
 	return sig;
 }
 
@@ -582,6 +608,7 @@ async function signSetResultMessageAsString(
 
 async function signBackMessage(
 	nonce: string,
+	marketId: string,
 	propositionId: string,
 	odds: BigNumber,
 	close: number,
@@ -589,8 +616,8 @@ async function signBackMessage(
 	signer: SignerWithAddress
 ): Promise<Signature> {
 	const message = ethers.utils.solidityKeccak256(
-		["bytes32", "bytes32", "uint256", "uint256", "uint256"],
-		[nonce, propositionId, odds, close, end]
+		["bytes32", "bytes32", "bytes32", "uint256", "uint256", "uint256"],
+		[nonce, marketId, propositionId, odds, close, end]
 	);
 	return await signMessage(message, signer);
 }
