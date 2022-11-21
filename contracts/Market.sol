@@ -88,6 +88,10 @@ contract Market is Ownable, ERC721 {
 	}
 
 	function getCount() external view returns (uint256) {
+		return _getCount();
+	}
+
+	function _getCount() private view returns (uint256) {
 		return _bets.length;
 	}
 
@@ -231,7 +235,7 @@ contract Market is Ownable, ERC721 {
 		// );
 
 		address _signer = recoverSigner(messageHash, signature);
-		// address _signer = SignatureLib.recoverSigner(messageHash, signature);
+		require(_signer == owner(), "onlyMarketOwner: Invalid signature");
 
         address underlying = _vault.asset();
 
@@ -264,16 +268,17 @@ contract Market is Ownable, ERC721 {
 
 		//uint256 count = _bets.length;
 		//uint256 index = count - 1;
-		_marketBets[marketId].push(_bets.length);
-		_mint(msg.sender, _bets.length - 1);
+
+		_marketBets[marketId].push(_getCount());
+		_mint(msg.sender, _getCount() - 1);
 
 		_totalInPlay += wager;
 		_totalExposure += (payout - wager);
 		_inplayCount++;
 
-		emit Placed(_bets.length - 1, propositionId, marketId, wager, payout, msg.sender);
+		emit Placed(_getCount() - 1, propositionId, marketId, wager, payout, msg.sender);
 
-		return _bets.length; // token ID
+		return _getCount();
 	}
 
 	function recoverSigner(bytes32 message, bytes memory signature)
