@@ -75,7 +75,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 					log: true
 				},
 				"deposit",
-				balance.div(2),
+				balance.div(10),
 				deployer
 			);
 		}
