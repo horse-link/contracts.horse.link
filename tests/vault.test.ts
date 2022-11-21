@@ -84,10 +84,7 @@ describe("Vault", () => {
 		);
 
 		const vaultPerformance = await vault.getPerformance();
-		expect(
-			vaultPerformance,
-			"Should have unchanged performance value"
-		).to.equal(100);
+		expect(vaultPerformance, "Should have no performance value").to.equal(0);
 
 		const _market = await vault.getMarket();
 		expect(_market, "Should have market address").to.equal(market.address);
@@ -124,7 +121,7 @@ describe("Vault", () => {
 		expect(previewWithdraw).to.equal(amount);
 	});
 
-	it.only("Should not allow user to withdraw more than maxWithdraw", async () => {
+	it("Should not allow user to withdraw more than maxWithdraw", async () => {
 		const amount = ethers.utils.parseUnits("1000", underlyingDecimals);
 		await underlying.connect(alice).approve(vault.address, amount);
 
@@ -160,7 +157,7 @@ describe("Vault", () => {
 		).to.equal(ethers.utils.parseUnits("1500", underlyingDecimals));
 
 		const event = getEventData("Withdraw", vault, receipt);
-		expect(event.sender, "Sender should be alice").to.equal(alice.address);
+		expect(event.caller, "Caller should be alice").to.equal(alice.address);
 		expect(event.receiver, "Receiver should be alice").to.equal(alice.address);
 		expect(
 			event.assets,

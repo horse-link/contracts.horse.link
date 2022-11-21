@@ -159,7 +159,7 @@ contract Market is Ownable, IMarket, ERC721 {
         bytes32 propositionId
     ) private view returns (int256) {
         address underlying = _vault.asset();
-        assert(underlying != address(0));
+        require(underlying != address(0), "Invalid underlying address");
 
         int256 p = int256(_vault.getMarketAllowance()); // TODO: check that typecasting to a signed int is safe
 

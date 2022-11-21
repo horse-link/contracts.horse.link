@@ -69,7 +69,7 @@ describe("Market", () => {
 		);
 		await underlying.transfer(
 			alice.address,
-			ethers.utils.parseUnits("2000", USDT_DECIMALS)
+			ethers.utils.parseUnits("2000000", USDT_DECIMALS)
 		);
 		await underlying.transfer(
 			bob.address,
@@ -118,32 +118,34 @@ describe("Market", () => {
 		const totalExposure = await market.getTotalExposure();
 		expect(totalExposure, "Should have $0 exposure").to.equal(0);
 
-		const vault = await market.getVaultAddress();
-		expect(vault, "Should have vault address").to.equal(vault);
+		const vaultAddress = await market.getVaultAddress();
+		expect(vaultAddress, "Should have vault address").to.equal(vault.address);
 
 		expect(await market.getOracleAddress(), "Oracle address is wrong").to.equal(
 			oracle.address
 		);
+
+		expect(
+			await vault.getMarketAllowance(),
+			"Market allowance is wrong"
+		).to.equal(await vault.totalAssets());
 	});
 
 	it("should get correct odds on a 5:1 punt", async () => {
 		const balance = await underlying.balanceOf(bob.address);
-		expect(balance).to.equal(
-			ethers.utils.parseUnits("1000", USDT_DECIMALS),
-			"Should have $1,000 USDT"
+		expect(balance, "Should have $1,000 USDT").to.equal(
+			ethers.utils.parseUnits("1000", USDT_DECIMALS)
 		);
 
 		// check vault balance
 		const vaultBalance = await underlying.balanceOf(vault.address);
-		expect(vaultBalance).to.equal(
-			ethers.utils.parseUnits("1000", USDT_DECIMALS),
-			"Should have $1,000 USDT in vault"
+		expect(vaultBalance, "Should have $1,000 USDT in vault").to.equal(
+			ethers.utils.parseUnits("1000", USDT_DECIMALS)
 		);
 
 		const totalAssets = await vault.totalAssets();
-		expect(totalAssets).to.equal(
-			ethers.utils.parseUnits("1000", USDT_DECIMALS),
-			"Should have $1,000 USDT total assets"
+		expect(totalAssets, "Should have $1,000 USDT total assets").to.equal(
+			ethers.utils.parseUnits("1000", USDT_DECIMALS)
 		);
 
 		await underlying
@@ -161,10 +163,10 @@ describe("Market", () => {
 			propositionId
 		);
 
-		expect(trueOdds).to.equal(
-			4750000,
+		expect(
+			trueOdds,
 			"Should have true odds of 1:4.75 on $50 in a $1,000 pool"
-		);
+		).to.equal(4750000);
 
 		const potentialPayout = await market.getPotentialPayout(
 			propositionId,

@@ -54,7 +54,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 		}
 
 		const token: Token = await ethers.getContractAt("Token", tokenAddress);
-		if (!network.tags.production) {
+		if (!network.tags.production && !network.tags.testing) {
 			const token: Token = await ethers.getContractAt("Token", tokenAddress);
 
 			//Allow the Vault to spend the Deployer's tokens

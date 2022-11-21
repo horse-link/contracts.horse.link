@@ -86,6 +86,16 @@ contract Vault is ERC4626Metadata, Ownable {
         return super.deposit(assets, receiver);
     }
 
+    function getMarketAllowance() external view withMarket() returns (uint256) {
+        // // TODO: This will change to allow multiple markets, using msg.sender
+        uint256 allowance = ERC20(asset()).allowance(address(this), _market); //'this' should be `_self`
+        if (allowance > totalAssets()) {
+            return totalAssets();
+        }
+        
+        return allowance;
+    }
+
     modifier onlyMarket() {
         require(_market != address(0), "onlyMarket: Market not set");
         require(
