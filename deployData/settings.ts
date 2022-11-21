@@ -15,7 +15,7 @@ export const UnderlyingTokens: TokenDeployDetails[] = [
 		vaultName: "UsdtVault",
 		marketName: "UsdtMarket",
 		decimals: 6,
-		mintAmount: "1000000"
+		mintAmount: "1000000000"
 	},
 	{
 		name: "Mock DAI",
@@ -24,7 +24,7 @@ export const UnderlyingTokens: TokenDeployDetails[] = [
 		vaultName: "DaiVault",
 		marketName: "DaiMarket",
 		decimals: 18,
-		mintAmount: "1000000"
+		mintAmount: "1000000000"
 	}
 ];
 
