@@ -71,7 +71,7 @@ contract Market is Ownable, IMarket, ERC721 {
 
 	mapping(address => uint256) private _workerfees;
 
-	function tokenURI(uint256 tokenId) public view override returns (string memory) {
+	function tokenURI(uint256 tokenId) public pure override returns (string memory) {
 		return string(abi.encodePacked("https://api.horse.link/bet/", tokenId));
 	}
 
@@ -223,10 +223,10 @@ contract Market is Ownable, IMarket, ERC721 {
 			"back: Oracle result already set for this market"
 		);
 		bytes32 messageHash = keccak256(abi.encodePacked(nonce, propositionId, odds, close, end));
-		// require(
-		// 	SignatureLib.recoverSigner(messageHash, signature) == owner(),
-		// 	"onlyMarketOwner: Invalid signature"
-		// );
+		require(
+			SignatureLib.recoverSigner(messageHash, signature) == owner(),
+			"onlyMarketOwner: Invalid signature"
+		);
 
         address underlying = _vault.asset();
 
