@@ -126,11 +126,11 @@ describe.only("Market", () => {
 		const totalExposure = await market.getTotalExposure();
 		expect(totalExposure).to.equal(0, "Should have no exposure");
 
-		const vault = await market.getVaultAddress();
-		expect(vault).to.equal(vault, "Should have vault address");
+		const vaultAddress = await market.getVaultAddress();
+		expect(vaultAddress).to.equal(vault.address, "Should have vault address");
 
 		expect(await market.getOracleAddress()).to.equal(oracle.address);
-		// expect(await vault.getMarketAllowance()).to.equal(0);
+		expect(await vault.getMarketAllowance()).to.equal(1000000000);
 	});
 
 	it("Should get correct odds on a 5:1 punt", async () => {
