@@ -13,8 +13,18 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	const { deploy, execute } = deployments;
 
 	const oracle = await deployments.get("MarketOracle");
+	//const signatureLib = await deployments.get("SignatureLib");
+
 	const namedAccounts = await getNamedAccounts();
 	const deployer = namedAccounts.deployer;
+
+	const signatureLib = await deploy("SignatureLib", {
+		contract: "SignatureLib",
+		from: deployer,
+		log: true,
+		autoMine: true,
+		skipIfAlreadyDeployed: true
+	});
 
 	for (const tokenDetails of UnderlyingTokens) {
 		const vaultDeployment = await deployments.get(tokenDetails.vaultName);
@@ -33,7 +43,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 			args: [vaultDeployment.address, 0, oracle.address],
 			log: true,
 			autoMine: true,
-			skipIfAlreadyDeployed: false
+			skipIfAlreadyDeployed: false,
+			libraries: {
+				SignatureLib: signatureLib.address
+			}
 		});
 		if (marketDeployment?.newlyDeployed) {
 			await execute(

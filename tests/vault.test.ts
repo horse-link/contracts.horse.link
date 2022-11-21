@@ -1,4 +1,4 @@
-import { BigNumber, BigNumberish, BytesLike } from "ethers";
+// import { BigNumber, BigNumberish, BytesLike } from "ethers";
 import chai, { expect } from "chai";
 import { ethers, deployments } from "hardhat";
 import { solidity } from "ethereum-waffle";
@@ -56,7 +56,7 @@ describe("Vault", () => {
 		);
 	});
 
-	it("Should return the correct symbol", async () => {
+	it.only("Should return the correct symbol", async () => {
 		expect(await underlying.symbol()).to.equal("USDT");
 	});
 
