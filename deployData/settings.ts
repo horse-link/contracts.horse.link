@@ -33,3 +33,23 @@ export const RegistryToken = {
 	symbol: "HL",
 	decimals: 18
 };
+
+export const TestAccounts = [
+	{
+		address: "0x042BC2D085c0584Bd56D62C170C4679e1ee9FC45",
+		prefundAmount: "100000"
+	},
+
+	{
+		address: "0xD7E0f921E336b1DeCbaF65E9501d25B858322aEF",
+		prefundAmount: "100000"
+	},
+	{
+		address: "0x9E6d70d2F2328EE55128b65fad0bBd5D83F44D2b",
+		prefundAmount: "1000000"
+	},
+	{
+		address: "0x5F88eC396607Fc3edb0424E8E6061949e6b624e7",
+		prefundAmount: "1000000"
+	}
+];

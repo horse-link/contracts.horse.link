@@ -20,7 +20,7 @@ describe("Vault", () => {
 	beforeEach(async () => {
 		// Import deployments tagged with these values
 		const fixture = await deployments.fixture([
-			"token",
+			"underlying",
 			"oracle",
 			"vault",
 			"market"
