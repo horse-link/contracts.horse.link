@@ -146,7 +146,6 @@ contract Vault is Ownable, IVault, ERC20PresetMinterPauser {
         _balances[msg.sender] += shares;
 
         _underlying.transferFrom(receiver, _self, assets);
-        _underlying.approve(_market, shares);
 
         emit Deposit(receiver, assets);
     }
@@ -182,7 +181,6 @@ contract Vault is Ownable, IVault, ERC20PresetMinterPauser {
         _balances[msg.sender] -= shares;
         _burn(msg.sender, shares);
 
-        _underlying.approve(_market, _totalSupply);
         _underlying.transfer(msg.sender, amount);
 
         emit Withdraw(msg.sender, balance);
