@@ -59,7 +59,7 @@ contract Market is Ownable, ERC721 {
 		address oracle
 	)
 	ERC721("Bet", "BET") {
-		require(address(vault) != address(0), "Invalid address");
+		assert(address(vault) != address(0));
 		_self = address(this);
 		_vault = vault;
 		_fee = fee;
@@ -164,7 +164,7 @@ contract Market is Ownable, ERC721 {
         bytes32 propositionId
     ) private view returns (int256) {
         address underlying = _vault.asset();
-        assert(underlying != address(0));
+        require(underlying != address(0), "Invalid underlying address");
 
         int256 p = int256(_vault.getMarketAllowance()); // TODO: check that typecasting to a signed int is safe
 
@@ -233,7 +233,6 @@ contract Market is Ownable, ERC721 {
 			IOracle(_oracle).checkResult(marketId, propositionId) == false,
 			"back: Oracle result already set for this market"
 		);
-
         address underlying = _vault.asset();
 
 		// add underlying to the market
@@ -279,10 +278,10 @@ contract Market is Ownable, ERC721 {
 			"_settle: Payout date not reached"
 		);
 
-		_bets[id].settled = true;
-		_totalInPlay -= _bets[id].amount;
-		_totalExposure -= _bets[id].payout - _bets[id].amount;
-		_inplayCount--;
+        _bets[id].settled = true;
+        _totalInPlay -= _bets[id].amount;
+        _totalExposure -= _bets[id].payout - _bets[id].amount;
+        _inplayCount --;
 
         address underlying = _vault.asset();
 

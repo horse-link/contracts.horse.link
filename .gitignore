@@ -28,6 +28,9 @@ build/
 cache/
 artifacts/
 
+# Remix IDE
+.deps/
+
 # Solidty coverage report
 coverage.json
 coverage/

@@ -63,8 +63,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 				);
 			}
 		}
-		// 1. Approve the Vault contract to spend the tokens
-		// 2. Deposit a bunch of tokens
+
+		const token: Token = await ethers.getContractAt("Token", tokenAddress);
 		if (!network.tags.production && !network.tags.testing) {
 			const token: Token = await ethers.getContractAt("Token", tokenAddress);
 
