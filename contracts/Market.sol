@@ -221,17 +221,17 @@ contract Market is Ownable, ERC721 {
 			"back: Invalid date"
 		);
 
-		// check the oracle first
-		require(
-			IOracle(_oracle).checkResult(marketId, propositionId) == false,
-			"back: Oracle result already set for this market"
-		);
-
 		bytes32 messageHash = keccak256(abi.encodePacked(nonce, marketId, propositionId, odds, close, end));
 		
 		require(
 			SignatureLib.recoverSigner(messageHash, signature) == owner(),
-			"onlyMarketOwner: Invalid signature"
+			"back: Invalid signature"
+		);
+
+		// check the oracle first
+		require(
+			IOracle(_oracle).checkResult(marketId, propositionId) == false,
+			"back: Oracle result already set for this market"
 		);
 
         address underlying = _vault.asset();

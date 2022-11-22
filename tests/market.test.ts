@@ -186,27 +186,41 @@ describe("Market", () => {
 		);
 	});
 
-	it("Should now allow a bet with an invalid signature", async () => {
-		const propositionId = ethers.utils.formatBytes32String("1");
-		const nonce = ethers.utils.formatBytes32String("1");
-		const marketId = ethers.utils.formatBytes32String("20220115-BNE-R1-w");
+	it("Should not allow back with invalid signature", async () => {
+		const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
 		const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
 		const close = 0;
-		const end = 1000000000000;
+		const end = 1000000000000000;
 
-		const signature = await signBackMessage(
+		// Runner 1 for a Win
+		const propositionId = ethers.utils.formatBytes32String("1");
+		const nonce = ethers.utils.formatBytes32String("1");
+
+		const marketId = ethers.utils.formatBytes32String("20220115_BNE_1_W");
+		const betSignature = await signBackMessage(
 			nonce,
 			marketId,
 			propositionId,
 			odds,
 			close,
 			end,
-			owner
+			alice // alice should not sign
 		);
 
-		await market
-			.connect(bob)
-			.back(nonce, propositionId, marketId, wager, odds, close, end, signature);
+		await expect(
+			market
+				.connect(bob)
+				.back(
+					nonce,
+					propositionId,
+					marketId,
+					wager,
+					odds,
+					close,
+					end,
+					betSignature
+				)
+		).to.be.revertedWith("back: Invalid signature");
 	});
 
 	it("Should allow Bob a $100 punt at 5:1", async () => {
@@ -355,65 +369,6 @@ describe("Market", () => {
 	});
 
 	describe("Settle", () => {
-		it("Should not allow back if end is invalid or oracle result already set", async () => {
-			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
-			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
-			const close = 0;
-			const end = 0;
-
-			// Runner 1 for a Win
-			const propositionId = ethers.utils.formatBytes32String("1");
-			const nonce = ethers.utils.formatBytes32String("1");
-
-			// Arbitary market ID set by the operator `${today}_${track}_${race}_W${runner}`
-			const marketId = ethers.utils.formatBytes32String("20220115_BNE_1_W");
-			const betSignature = await signBackMessage(
-				nonce,
-				marketId,
-				propositionId,
-				odds,
-				close,
-				end,
-				owner
-			);
-
-			await expect(
-				market
-					.connect(bob)
-					.back(
-						nonce,
-						propositionId,
-						marketId,
-						wager,
-						odds,
-						close,
-						end,
-						betSignature
-					)
-			).to.be.revertedWith("back: Invalid date");
-
-			await oracle.setResult(
-				marketId,
-				propositionId,
-				"0x0000000000000000000000000000000000000000000000000000000000000000"
-			);
-
-			await expect(
-				market
-					.connect(bob)
-					.back(
-						nonce,
-						propositionId,
-						marketId,
-						wager,
-						odds,
-						close,
-						1000000000000,
-						betSignature
-					)
-			).to.be.revertedWith("back: Oracle result already set for this market");
-		});
-
 		it("Should transfer to vault if result not been set", async () => {
 			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
 			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
