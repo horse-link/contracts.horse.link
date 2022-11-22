@@ -7,10 +7,10 @@ import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 contract Registry {
     address[] public markets;
-    IVault[] public vaults;
+    address[] public vaults;
 
-    mapping(address => IVault) private _underlying;
-    mapping(address => address) private _markets;
+    mapping(address => address) private _vaultByAsset;
+    mapping(address => address) private _markets; 
 
     address private immutable _owner;
     IERC20Metadata private immutable _token;
@@ -29,17 +29,17 @@ contract Registry {
         _token = token;
     }
 
-    function addVault(IVault vault) external onlyTokenHolders {
-        address underlying = vault.asset();
+    function addVault(address vault) external onlyTokenHolders {
+        address assetAddress = IVault(vault).asset();
         require(
-            _underlying[underlying].asset() == address(0),
-            "addVault: Vault with this underlying token already added"
+            IVault(_vaultByAsset[assetAddress]).asset() == address(0),
+            "addVault: Vault with this asset token already added"
         );
 
         vaults.push(vault);
-        _underlying[address(underlying)] = vault; // underlying => vault
+        _vaultByAsset[assetAddress] = vault; 
 
-        emit VaultAdded(address(vault));
+        emit VaultAdded(vault);
     }
 
     function addMarket(address market) external onlyTokenHolders {
