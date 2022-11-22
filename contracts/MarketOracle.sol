@@ -5,7 +5,7 @@ import "./IOracle.sol";
 import "./SignatureLib.sol";
 
 contract MarketOracle is IOracle {
-    mapping(bytes32 => bytes32) private _results;
+    mapping(bytes16 => bytes16) private _results;
     address private immutable _owner;
 
     constructor() {
@@ -13,39 +13,39 @@ contract MarketOracle is IOracle {
     }
 
     function checkResult(
-        bytes32 marketId,
-        bytes32 propositionId
+        bytes16 marketId,
+        bytes16 propositionId
     ) external view returns (bool) {
         require(
             propositionId !=
-                0x0000000000000000000000000000000000000000000000000000000000000000,
+                0x00000000000000000000000000000000,
             "getBinaryResult: Invalid propositionId"
         );
         return _results[marketId] == propositionId;
     }
 
-    function getResult(bytes32 marketId) external view returns (bytes32) {
+    function getResult(bytes16 marketId) external view returns (bytes16) {
         require(
             marketId !=
-                0x0000000000000000000000000000000000000000000000000000000000000000,
+                0x00000000000000000000000000000000,
             "getBinaryResult: Invalid propositionId"
         );
         return _results[marketId];
     }
 
     function setResult(
-        bytes32 marketId,
-        bytes32 propositionId,
+        bytes16 marketId,
+        bytes16 propositionId,
         bytes32 sig
     ) external {
         require(
             propositionId !=
-                0x0000000000000000000000000000000000000000000000000000000000000000,
+                0x00000000000000000000000000000000,
             "setBinaryResult: Invalid propositionId"
         );
         require(
             _results[marketId] ==
-                0x0000000000000000000000000000000000000000000000000000000000000000,
+                0x00000000000000000000000000000000,
             "setBinaryResult: Result already set"
         );
         _results[marketId] = propositionId;
@@ -54,7 +54,7 @@ contract MarketOracle is IOracle {
     }
 
     modifier onlyMarketOwner(
-        bytes32 messageHash,
+        bytes16 messageHash,
         SignatureLib.Signature memory sig
     ) {
         require(

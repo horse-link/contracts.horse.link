@@ -11,6 +11,7 @@ import {
 } from "../build/typechain";
 import { solidity } from "ethereum-waffle";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { formatBytes16String } from "./utils";
 
 type Signature = {
 	v: BigNumberish;
@@ -120,7 +121,7 @@ describe("Market", () => {
 		// Should get 0 odds if vault has ZERO assets
 		const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
 		const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
-		const propositionId = ethers.utils.formatBytes32String("1");
+		const propositionId = formatBytes16String("1");
 		expect(await market.getOdds(wager, odds, propositionId)).to.equal(0);
 		// Should get 0 potential payout if vault has Zero odds
 		expect(
@@ -134,7 +135,7 @@ describe("Market", () => {
 
 	it("should have properties set on deploy", async () => {
 		const fee = await market.getFee();
-		expect(fee).to.equal(FEE, "fee should be set");
+		expect(fee, "fee should be set").to.equal(FEE);
 
 		const inPlay = await market.getTotalInPlay();
 		expect(inPlay, "Should have $0 in play").to.equal(0);
@@ -143,7 +144,7 @@ describe("Market", () => {
 		expect(totalExposure, "Should have $0 exposure").to.equal(0);
 
 		const vaultAddress = await market.getVaultAddress();
-		expect(vaultAddress).to.equal(vault.address, "Should have vault address");
+		expect(vaultAddress, "Should have vault address").to.equal(vault.address);
 
 		expect(await market.getOracleAddress()).to.equal(oracle.address);
 		expect(await vault.getMarketAllowance()).to.equal(1000000000);
@@ -165,7 +166,6 @@ describe("Market", () => {
 		expect(totalAssets, "Should have $1,000 USDT total assets").to.equal(
 			ethers.utils.parseUnits("1000", USDT_DECIMALS)
 		);
-
 		await underlying
 			.connect(bob)
 			.approve(market.address, ethers.utils.parseUnits("50", tokenDecimals));
@@ -173,7 +173,7 @@ describe("Market", () => {
 		const targetOdds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
 
 		// Runner 1 for a Win
-		const propositionId = ethers.utils.formatBytes32String("1");
+		const propositionId = formatBytes16String("1");
 
 		const trueOdds = await market.getOdds(
 			ethers.utils.parseUnits("50", USDT_DECIMALS),
@@ -206,10 +206,10 @@ describe("Market", () => {
 		const end = 1000000000000000;
 
 		// Runner 1 for a Win
-		const propositionId = ethers.utils.formatBytes32String("1");
-		const nonce = ethers.utils.formatBytes32String("1");
+		const propositionId = formatBytes16String("1");
+		const nonce = formatBytes16String("1");
 
-		const marketId = ethers.utils.formatBytes32String("20220115_BNE_1_W");
+		const marketId = formatBytes16String("20220115_BNE_1_W");
 		const betSignature = await signBackMessage(
 			nonce,
 			marketId,
@@ -266,11 +266,11 @@ describe("Market", () => {
 			.connect(bob)
 			.approve(market.address, ethers.utils.parseUnits("100", tokenDecimals));
 		// Runner 1 for a Win
-		const propositionId = ethers.utils.formatBytes32String("1");
-		const nonce = ethers.utils.formatBytes32String("1");
+		const propositionId = formatBytes16String("1");
+		const nonce = formatBytes16String("1");
 
 		// Arbitary market ID set by the operator
-		const marketId = ethers.utils.formatBytes32String("20220115-BNE-R1-w");
+		const marketId = formatBytes16String("20220115-BNE-R1-w");
 
 		const signature = await signBackMessage(
 			nonce,
@@ -346,11 +346,11 @@ describe("Market", () => {
 			.connect(carol)
 			.approve(market.address, ethers.utils.parseUnits("200", tokenDecimals));
 		// Runner 2 for a Win
-		const propositionId = ethers.utils.formatBytes32String("2");
-		const nonce = ethers.utils.formatBytes32String("2");
+		const propositionId = formatBytes16String("2");
+		const nonce = formatBytes16String("2");
 
 		// Arbitary market ID set by the operator
-		const marketId = ethers.utils.formatBytes32String("20220115-BNE-R1-w");
+		const marketId = formatBytes16String("20220115-BNE-R1-w");
 		const betSignature = await signBackMessage(
 			nonce,
 			marketId,
@@ -392,11 +392,11 @@ describe("Market", () => {
 			const end = latestBlock.timestamp + 10000;
 
 			// Runner 1 for a Win
-			const propositionId = ethers.utils.formatBytes32String("1");
-			const nonce = ethers.utils.formatBytes32String("1");
+			const propositionId = formatBytes16String("1");
+			const nonce = formatBytes16String("1");
 
 			// Arbitary market ID set by the operator `${today}_${track}_${race}_W${runner}`
-			const marketId = ethers.utils.formatBytes32String("20220115_BNE_1_W");
+			const marketId = formatBytes16String("20220115_BNE_1_W");
 			const betSignature = await signBackMessage(
 				nonce,
 				marketId,
@@ -450,11 +450,11 @@ describe("Market", () => {
 			const end = latestBlock.timestamp + 10000;
 
 			// Runner 1 for a Win
-			const propositionId = ethers.utils.formatBytes32String("1");
-			const nonce = ethers.utils.formatBytes32String("1");
+			const propositionId = formatBytes16String("1");
+			const nonce = formatBytes16String("1");
 
 			// Arbitary market ID set by the operator `${today}_${track}_${race}_W${runner}`
-			const marketId = ethers.utils.formatBytes32String("20220115_BNE_1_W");
+			const marketId = formatBytes16String("20220115_BNE_1_W");
 			const betSignature = await signBackMessage(
 				nonce,
 				marketId,
@@ -550,7 +550,7 @@ function makeSetResultMessage(
 	propositionId: BytesLike
 ): string {
 	const message = ethers.utils.solidityKeccak256(
-		["bytes32", "bytes32"],
+		["bytes16", "bytes16"],
 		[marketId, propositionId]
 	);
 	return message;
@@ -584,7 +584,7 @@ async function signBackMessage(
 	signer: SignerWithAddress
 ): Promise<Signature> {
 	const message = ethers.utils.solidityKeccak256(
-		["bytes32", "bytes32", "bytes32", "uint256", "uint256", "uint256"],
+		["bytes16", "bytes16", "bytes16", "uint256", "uint256", "uint256"],
 		[nonce, marketId, propositionId, odds, close, end]
 	);
 	return await signMessage(message, signer);
