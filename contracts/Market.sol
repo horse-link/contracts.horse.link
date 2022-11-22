@@ -59,7 +59,7 @@ contract Market is Ownable, ERC721 {
 		address oracle
 	)
 	ERC721("Bet", "BET") {
-		require(address(vault) != address(0), "Invalid address");
+		assert(address(vault) != address(0));
 		_self = address(this);
 		_vault = vault;
 		_fee = fee;
