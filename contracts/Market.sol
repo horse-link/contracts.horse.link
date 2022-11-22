@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity =0.8.10;
+pragma abicoder v2;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -22,7 +23,7 @@ struct Bet {
 	address owner;
 }
 
-contract Market is Ownable, IMarket, ERC721 {
+contract Market is Ownable, ERC721 {
 	uint256 private constant MAX = 32;
 	int256 private constant PRECISION = 1_000;
 	uint8 private immutable _fee;
@@ -70,7 +71,7 @@ contract Market is Ownable, IMarket, ERC721 {
 
 	mapping(address => uint256) private _workerfees;
 
-	function tokenURI(uint256 tokenId) public view override returns (string memory) {
+	function tokenURI(uint256 tokenId) public pure override returns (string memory) {
 		return string(abi.encodePacked("https://api.horse.link/bet/", tokenId));
 	}
 
@@ -87,6 +88,10 @@ contract Market is Ownable, IMarket, ERC721 {
 	}
 
 	function getCount() external view returns (uint256) {
+		return _getCount();
+	}
+
+	function _getCount() private view returns (uint256) {
 		return _bets.length;
 	}
 
@@ -216,6 +221,13 @@ contract Market is Ownable, IMarket, ERC721 {
 			"back: Invalid date"
 		);
 
+		bytes32 messageHash = keccak256(abi.encodePacked(nonce, marketId, propositionId, odds, close, end));
+		
+		require(
+			SignatureLib.recoverSigner(messageHash, signature) == owner(),
+			"back: Invalid signature"
+		);
+
 		// check the oracle first
 		require(
 			IOracle(_oracle).checkResult(marketId, propositionId) == false,
@@ -237,18 +249,18 @@ contract Market is Ownable, IMarket, ERC721 {
 		_bets.push(
 			Bet(propositionId, marketId, wager, payout, end, false, msg.sender)
 		);
-		uint256 count = _bets.length;
-		uint256 index = count - 1;
-		_marketBets[marketId].push(count);
-		_mint(msg.sender, index);
+
+		// use _getCount() to avoid stack too deep
+		_marketBets[marketId].push(_getCount());
+		_mint(msg.sender, _getCount() - 1);
 
 		_totalInPlay += wager;
 		_totalExposure += (payout - wager);
 		_inplayCount++;
 
-		emit Placed(index, propositionId, marketId, wager, payout, msg.sender);
+		emit Placed(_getCount() - 1, propositionId, marketId, wager, payout, msg.sender);
 
-		return count; // token ID
+		return _getCount();
 	}
 
 	function settle(uint256 index) external {
@@ -260,28 +272,6 @@ contract Market is Ownable, IMarket, ERC721 {
 		);
 		_settle(index, result);
 	}
-
-	// function settleMarket(
-	//     uint256 from,
-	//     uint256 to,
-	//     bytes32 marketId
-	// ) external {
-	//     for (uint256 i = from; i < to; i++) {
-	//         uint256 index = _marketBets[marketId][i];
-
-	//         if (!_bets[index].settled) {
-	//             bytes32 propositionId = IOracle(_oracle).getResult(
-	//                 _bets[index].marketId
-	//             );
-
-	//             if (_bets[index].propositionId == propositionId) {
-	//                 _settle(index, true);
-	//             } else {
-	//                 _settle(index, false);
-	//             }
-	//         }
-	//     }
-	// }
 
 	function _settle(uint256 id, bool result) private {
 		require(
@@ -309,18 +299,6 @@ contract Market is Ownable, IMarket, ERC721 {
 		_burn(id);
 
 		emit Settled(id, _bets[id].payout, result, _bets[id].owner);
-	}
-
-	modifier onlyMarketOwner(
-		bytes32 messageHash,
-		SignatureLib.Signature calldata signature
-	) {
-		//bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
-		require(
-			SignatureLib.recoverSigner(messageHash, signature) == owner(),
-			"onlyMarketOwner: Invalid signature"
-		);
-		_;
 	}
 
 	event Placed(
