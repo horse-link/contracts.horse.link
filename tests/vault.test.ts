@@ -53,11 +53,14 @@ describe("Vault", () => {
 		);
 	});
 
-	it("Mock USDT has the correct symbol", async () => {
+	it("Should return the correct symbol", async () => {
 		expect(await underlying.symbol()).to.equal("USDT");
 	});
 
-	it("should set properties on deploy", async () => {
+	it("Should set properties on deploy", async () => {
+		const vaultPerformance = await vault.getPerformance();
+		expect(vaultPerformance).to.equal(0, "Should have no values");
+
 		const _token = await vault.asset();
 		expect(_token, "Should have token address as token").to.equal(
 			underlying.address
@@ -82,9 +85,6 @@ describe("Vault", () => {
 		expect(vaultDecimals, "Decimals should be same as underlying").to.equal(
 			underlyingDecimals
 		);
-
-		const vaultPerformance = await vault.getPerformance();
-		expect(vaultPerformance, "Should have no performance value").to.equal(0);
 
 		const _market = await vault.getMarket();
 		expect(_market, "Should have market address").to.equal(market.address);
