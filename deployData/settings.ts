@@ -39,7 +39,6 @@ export const TestAccounts = [
 		address: "0x042BC2D085c0584Bd56D62C170C4679e1ee9FC45",
 		prefundAmount: "100000"
 	},
-
 	{
 		address: "0xD7E0f921E336b1DeCbaF65E9501d25B858322aEF",
 		prefundAmount: "100000"
