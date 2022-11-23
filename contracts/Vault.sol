@@ -35,7 +35,7 @@ contract Vault is ERC4626Metadata, Ownable {
     }
 
     // Override decimals to be the same as the underlying asset
-    function decimals() public view override (ERC20) returns (uint8) {
+    function decimals() public view override returns (uint8) {
         return _decimals;
     }
 
