@@ -39,7 +39,7 @@ export default {
 		},
 		localhost: {
 			url: defaultRpcUrl,
-			saveDeployment: false,
+			saveDeployment: true,
 			tags: ["local"]
 		},
 		goerli: {
