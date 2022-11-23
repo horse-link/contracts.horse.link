@@ -157,7 +157,7 @@ describe("Vault", () => {
 		).to.equal(ethers.utils.parseUnits("1500", underlyingDecimals));
 
 		const event = getEventData("Withdraw", vault, receipt);
-		expect(event.caller, "Caller should be alice").to.equal(alice.address);
+		expect(event.sender, "Sender should be alice").to.equal(alice.address);
 		expect(event.receiver, "Receiver should be alice").to.equal(alice.address);
 		expect(
 			event.assets,
