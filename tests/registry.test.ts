@@ -85,21 +85,21 @@ describe("Registry", () => {
 
 	it("Should be able to add markets and vaults", async () => {
 		const market_count = await registry.marketCount();
-		expect(market_count).to.equal(0, "Should have no markets");
+		expect(market_count, "Should have no markets").to.equal(0);
 
 		const vault_count = await registry.vaultCount();
-		expect(vault_count).to.equal(0, "Should have no vaults");
+		expect(vault_count, "Should have no vaults").to.equal(0);
 
 		await registry.addMarket(market.address);
 		const market_count2 = await registry.marketCount();
-		expect(market_count2).to.equal(1, "Should have 1 market");
+		expect(market_count2, "Should have 1 market").to.equal(1);
 
 		await expect(registry.addMarket(market.address)).to.be.revertedWith(
 			"addMarket: Market already added"
 		);
 
-		// await registry.addVault(vault.address);
-		// const vault_count2 = await registry.vaultCount();
-		// expect(vault_count2).to.equal(1, "Should have 1 vault");
+		await registry.addVault(vault.address);
+		const vault_count2 = await registry.vaultCount();
+		expect(vault_count2, "Should have 1 vault").to.equal(1);
 	});
 });
