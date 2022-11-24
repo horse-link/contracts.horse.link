@@ -19,6 +19,13 @@ type Signature = {
 	s: string;
 };
 
+// MarketId 11 chars
+//AAAAAABBBCC
+// A = date as days since epoch
+// B = location code
+// C = race numbe
+const MARKET_ID = "019123BNE01";
+
 chai.use(solidity);
 
 describe("Market", () => {
@@ -209,7 +216,7 @@ describe("Market", () => {
 		const propositionId = formatBytes16String("1");
 		const nonce = formatBytes16String("1");
 
-		const marketId = formatBytes16String("20220115_BNE_1_W");
+		const marketId = formatBytes16String(MARKET_ID);
 		const betSignature = await signBackMessage(
 			nonce,
 			marketId,
@@ -270,7 +277,7 @@ describe("Market", () => {
 		const nonce = formatBytes16String("1");
 
 		// Arbitary market ID set by the operator
-		const marketId = formatBytes16String("20220115-BNE-R1-w");
+		const marketId = formatBytes16String(MARKET_ID);
 
 		const signature = await signBackMessage(
 			nonce,
@@ -350,7 +357,7 @@ describe("Market", () => {
 		const nonce = formatBytes16String("2");
 
 		// Arbitary market ID set by the operator
-		const marketId = formatBytes16String("20220115-BNE-R1-w");
+		const marketId = formatBytes16String(MARKET_ID);
 		const betSignature = await signBackMessage(
 			nonce,
 			marketId,
@@ -396,7 +403,7 @@ describe("Market", () => {
 			const nonce = formatBytes16String("1");
 
 			// Arbitary market ID set by the operator `${today}_${track}_${race}_W${runner}`
-			const marketId = formatBytes16String("20220115_BNE_1_W");
+			const marketId = formatBytes16String(MARKET_ID);
 			const betSignature = await signBackMessage(
 				nonce,
 				marketId,
@@ -454,7 +461,7 @@ describe("Market", () => {
 			const nonce = formatBytes16String("1");
 
 			// Arbitary market ID set by the operator `${today}_${track}_${race}_W${runner}`
-			const marketId = formatBytes16String("20220115_BNE_1_W");
+			const marketId = formatBytes16String(MARKET_ID);
 			const betSignature = await signBackMessage(
 				nonce,
 				marketId,
