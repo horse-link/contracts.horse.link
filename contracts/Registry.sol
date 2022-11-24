@@ -31,10 +31,7 @@ contract Registry {
 
     function addVault(address vault) external onlyTokenHolders {
         address assetAddress = IVault(vault).asset();
-        require(
-            IVault(_vaultByAsset[assetAddress]).asset() == address(0),
-            "addVault: Vault with this asset token already added"
-        );
+        require(_vaultByAsset[assetAddress] == address(0), "addVault: Vault with this asset token already added");
 
         vaults.push(vault);
         _vaultByAsset[assetAddress] = vault; 
