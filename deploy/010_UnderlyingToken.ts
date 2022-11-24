@@ -3,7 +3,8 @@ import { parseUnits } from "ethers/lib/utils";
 import "hardhat-deploy";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { UnderlyingTokens } from "../deployData/settings";
+import { factory } from "typescript";
+import { UnderlyingTokens, TestAccounts } from "../deployData/settings";
 
 /*
  * Deploy a test ERC-20 token to be used as an underlying token in the Vault contract
@@ -36,6 +37,25 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 			console.log(
 				`Minted ${tokenDetails.mintAmount} ${tokenDetails.symbol} to deployer`
 			);
+			const { faucet } = await getNamedAccounts();
+
+			await execute(
+				tokenDetails.deploymentName,
+				{ from: deployer, log: true },
+				"mint",
+				faucet,
+				parseUnits(tokenDetails.mintAmount, tokenDetails.decimals)
+			);
+
+			for (const testAccount of TestAccounts) {
+				await execute(
+					tokenDetails.deploymentName,
+					{ from: deployer, log: true },
+					"mint",
+					testAccount.address,
+					parseUnits(testAccount.prefundAmount, tokenDetails.decimals)
+				);
+			}
 		}
 	}
 };
