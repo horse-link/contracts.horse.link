@@ -98,8 +98,13 @@ describe("Registry", () => {
 			"addMarket: Market already added"
 		);
 
+		await expect(
+			registry.addVault(ethers.constants.AddressZero),
+			"Should not be able to add null address"
+		).to.be.reverted;
+
 		await registry.addVault(vault.address);
 		const vault_count2 = await registry.vaultCount();
-		expect(vault_count2, "Should have 1 vault").to.equal(1);
+		expect(vault_count2).to.equal(1, "Should have 1 vault");
 	});
 });
