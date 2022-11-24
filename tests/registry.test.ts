@@ -105,6 +105,6 @@ describe("Registry", () => {
 
 		await registry.addVault(vault.address);
 		const vault_count2 = await registry.vaultCount();
-		expect(vault_count2).to.equal(1, "Should have 1 vault");
+		expect(vault_count2, "Should have 1 vault").to.equal(1);
 	});
 });
