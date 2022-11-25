@@ -221,7 +221,14 @@ contract Market is Ownable, ERC721 {
 			"back: Invalid date"
 		);
 
-		bytes32 messageHash = keccak256(abi.encodePacked(nonce, marketId, propositionId, odds, close, end));
+		bytes32 messageHash = keccak256(abi.encodePacked(
+			nonce,
+			propositionId,
+			marketId,
+			odds,
+			close,
+			end
+		));
 		
 		require(
 			SignatureLib.recoverSigner(messageHash, signature) == owner(),
