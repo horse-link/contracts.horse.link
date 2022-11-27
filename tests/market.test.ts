@@ -273,7 +273,8 @@ describe("Market", () => {
 			.connect(bob)
 			.approve(market.address, ethers.utils.parseUnits("100", tokenDecimals));
 		// Runner 1 for a Win
-		const propositionId = formatBytes16String("1");
+		//AAAAAABBBCC
+		const propositionId = formatBytes16String("019450ABC0101W");
 		const nonce = formatBytes16String("1");
 
 		// Arbitary market ID set by the operator
@@ -592,7 +593,7 @@ async function signBackMessage(
 ): Promise<Signature> {
 	const message = ethers.utils.solidityKeccak256(
 		["bytes16", "bytes16", "bytes16", "uint256", "uint256", "uint256"],
-		[nonce, marketId, propositionId, odds, close, end]
+		[nonce, propositionId, marketId, odds, close, end]
 	);
 	return await signMessage(message, signer);
 }
