@@ -23,7 +23,7 @@ type Signature = {
 //AAAAAABBBCC
 // A = date as days since epoch
 // B = location code
-// C = race numbe
+// C = race number
 const MARKET_ID = "019123BNE01";
 
 chai.use(solidity);
