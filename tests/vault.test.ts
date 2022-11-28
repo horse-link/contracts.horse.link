@@ -132,17 +132,22 @@ describe("Vault", () => {
 			let shares = await vault.balanceOf(alice.address);
 			expect(shares).to.equal(ONE_HUNDRED);
 
-			const totalAssets = await vault.totalAssets();
+			let totalAssets = await vault.totalAssets();
 			expect(totalAssets).to.equal(ONE_HUNDRED);
 
 			await vault.connect(bob).deposit(FIFTY, bob.address);
 			shares = await vault.balanceOf(bob.address);
 			expect(shares).to.equal(FIFTY);
+
+			totalAssets = await vault.totalAssets();
+			expect(totalAssets).to.equal(
+				ethers.utils.parseUnits("150", underlyingDecimals)
+			);
 		});
 	});
 
 	describe("Withdraw", () => {
-		it("Should get user maxWithdraw amount", async () => {
+		it("Should get maxWithdraw amount", async () => {
 			const ONE_HUNDRED = ethers.utils.parseUnits("100", underlyingDecimals);
 			await underlying.connect(alice).approve(vault.address, ONE_HUNDRED);
 
@@ -204,6 +209,25 @@ describe("Vault", () => {
 				event.assets,
 				"Assets should be the amount of assets requested"
 			).to.equal(ethers.utils.parseUnits("500", underlyingDecimals));
+		});
+	});
+
+	describe("Redeem", () => {
+		it("Should get maxRedeem amount", async () => {
+			const ONE_HUNDRED = ethers.utils.parseUnits("100", underlyingDecimals);
+			await underlying.connect(alice).approve(vault.address, ONE_HUNDRED);
+
+			await vault.connect(alice).deposit(ONE_HUNDRED, alice.address);
+			const maxRedeem = await vault.maxRedeem(alice.address);
+			expect(maxRedeem).to.equal(ONE_HUNDRED);
+		});
+
+		it("Should get previewRedeem amount", async () => {
+			// const ONE_HUNDRED = ethers.utils.parseUnits("100", underlyingDecimals);
+			// await underlying.connect(alice).approve(vault.address, ONE_HUNDRED);
+
+			const previewRedeem = await vault.previewRedeem(alice.address);
+			expect(previewRedeem).to.equal(0);
 		});
 	});
 });
