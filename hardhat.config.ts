@@ -34,12 +34,12 @@ export default {
 	networks: {
 		hardhat: {
 			chainId: 1337,
-			saveDeployment: false,
+			saveDeployment: true,
 			tags: ["local", "testing"]
 		},
 		localhost: {
 			url: defaultRpcUrl,
-			saveDeployment: false,
+			saveDeployment: true,
 			tags: ["local"]
 		},
 		goerli: {
