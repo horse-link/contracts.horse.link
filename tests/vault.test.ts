@@ -90,26 +90,32 @@ describe("Vault", () => {
 		expect(_market, "Should have market address").to.equal(market.address);
 	});
 
-	it("Should allow msg.sender to receive shares when receiver address is address zero", async () => {
-		const amount = ethers.utils.parseUnits("100", underlyingDecimals);
-		await underlying.connect(alice).approve(vault.address, amount);
+	describe("Deposit and shares", () => {
+		it("Should allow msg.sender to receive shares when receiver address is address zero", async () => {
+			const ONE_HUNDRED = ethers.utils.parseUnits("100", underlyingDecimals);
+			await underlying.connect(alice).approve(vault.address, ONE_HUNDRED);
 
-		const originalTotalAssets = await vault.totalAssets();
-		await vault.connect(alice).deposit(amount, ethers.constants.AddressZero);
-		const totalAssets = await vault.totalAssets();
-		expect(totalAssets).to.equal(originalTotalAssets.add(amount));
-		expect(await vault.balanceOf(alice.address)).to.equal(amount);
-		const vaultPerformance = await vault.getPerformance();
-		expect(vaultPerformance).to.equal(100);
-	});
+			const originalTotalAssets = await vault.totalAssets();
+			expect(originalTotalAssets).to.equal(0);
+			await vault
+				.connect(alice)
+				.deposit(ONE_HUNDRED, ethers.constants.AddressZero);
+			const totalAssets = await vault.totalAssets();
 
-	it("Should preview convert to shares for user", async () => {
-		const amount = ethers.utils.parseUnits("100", underlyingDecimals);
-		await underlying.connect(alice).approve(vault.address, amount);
+			expect(totalAssets).to.equal(ONE_HUNDRED);
+			expect(await vault.balanceOf(alice.address)).to.equal(ONE_HUNDRED);
+			const vaultPerformance = await vault.getPerformance();
+			expect(vaultPerformance).to.equal(100);
+		});
 
-		await vault.connect(alice).previewC(amount, alice.address);
-		const maxWithdraw = await vault.maxWithdraw(alice.address);
-		expect(maxWithdraw).to.equal(amount);
+		it("Should preview deposit for shares for user", async () => {
+			const amount = ethers.utils.parseUnits("100", underlyingDecimals);
+			await underlying.connect(alice).approve(vault.address, amount);
+
+			await vault.connect(alice).deposit(amount, alice.address);
+			const maxWithdraw = await vault.maxWithdraw(alice.address);
+			expect(maxWithdraw).to.equal(amount);
+		});
 	});
 
 	it("Should get user maxWithdraw amount", async () => {
