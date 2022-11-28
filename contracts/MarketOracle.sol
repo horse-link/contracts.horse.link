@@ -50,7 +50,7 @@ contract MarketOracle is IOracle {
     }
 
     modifier onlyMarketOwner(
-        bytes16 messageHash,
+        bytes32 messageHash,
         SignatureLib.Signature memory sig
     ) {
         require(
