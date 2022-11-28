@@ -17,8 +17,7 @@ contract MarketOracle is IOracle {
         bytes16 propositionId
     ) external view returns (bool) {
         require(
-            propositionId !=
-                0x00000000000000000000000000000000,
+            propositionId != bytes16(0),
             "getBinaryResult: Invalid propositionId"
         );
         return _results[marketId] == propositionId;
@@ -26,8 +25,7 @@ contract MarketOracle is IOracle {
 
     function getResult(bytes16 marketId) external view returns (bytes16) {
         require(
-            marketId !=
-                0x00000000000000000000000000000000,
+            marketId != bytes16(0),
             "getBinaryResult: Invalid propositionId"
         );
         return _results[marketId];
@@ -39,13 +37,11 @@ contract MarketOracle is IOracle {
         bytes32 sig
     ) external {
         require(
-            propositionId !=
-                0x00000000000000000000000000000000,
+            propositionId != bytes16(0),
             "setBinaryResult: Invalid propositionId"
         );
         require(
-            _results[marketId] ==
-                0x00000000000000000000000000000000,
+            _results[marketId] == bytes16(0),
             "setBinaryResult: Result already set"
         );
         _results[marketId] = propositionId;
