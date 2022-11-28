@@ -61,27 +61,6 @@ contract Vault is ERC4626Metadata, Ownable {
         return 0;
     }
 
-    function _availableAssets() internal view returns(uint256) {
-        uint256 inPlay = IERC20(asset()).balanceOf(_market);
-        return totalAssets() - inPlay;       
-    }
-
-    function _convertToAssets(uint256 shares, Math.Rounding rounding) internal view override withMarket() returns (uint256 assets) {
-        uint256 supply = totalSupply();      
-        return
-            (supply == 0)
-                ? shares.mulDiv(10**ERC20(asset()).decimals(), 10**decimals(), rounding)
-                : shares.mulDiv(_availableAssets(), supply, rounding);
-    }
-
-    function _convertToShares(uint256 assets, Math.Rounding rounding) internal view override returns (uint256 shares) {
-        uint256 supply = totalSupply();
-        return
-            (assets == 0 || supply == 0)
-                ? assets.mulDiv(10**decimals(), 10**ERC20(asset()).decimals(), rounding)
-                : assets.mulDiv(supply, _availableAssets(), rounding);
-    }
-
     // If receiver is omitted, use the sender
     function deposit(uint256 assets, address receiver) public override returns (uint256) {
         if (receiver == address(0)) receiver = _msgSender();
