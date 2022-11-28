@@ -126,6 +126,7 @@ describe("Vault", () => {
 			const FIFTY = ethers.utils.parseUnits("50", underlyingDecimals);
 
 			await underlying.connect(alice).approve(vault.address, ONE_HUNDRED);
+			await underlying.connect(bob).approve(vault.address, FIFTY);
 
 			await vault.connect(alice).deposit(ONE_HUNDRED, alice.address);
 			let shares = await vault.balanceOf(alice.address);
@@ -136,7 +137,7 @@ describe("Vault", () => {
 
 			await vault.connect(bob).deposit(FIFTY, bob.address);
 			shares = await vault.balanceOf(bob.address);
-			expect(shares).to.equal(ONE_HUNDRED);
+			expect(shares).to.equal(FIFTY);
 		});
 	});
 
