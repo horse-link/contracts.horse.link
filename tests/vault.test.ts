@@ -103,6 +103,15 @@ describe("Vault", () => {
 		expect(vaultPerformance).to.equal(100);
 	});
 
+	it("Should preview convert to shares for user", async () => {
+		const amount = ethers.utils.parseUnits("100", underlyingDecimals);
+		await underlying.connect(alice).approve(vault.address, amount);
+
+		await vault.connect(alice).previewC(amount, alice.address);
+		const maxWithdraw = await vault.maxWithdraw(alice.address);
+		expect(maxWithdraw).to.equal(amount);
+	});
+
 	it("Should get user maxWithdraw amount", async () => {
 		const amount = ethers.utils.parseUnits("100", underlyingDecimals);
 		await underlying.connect(alice).approve(vault.address, amount);
