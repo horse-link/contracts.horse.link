@@ -222,12 +222,16 @@ describe("Vault", () => {
 			expect(maxRedeem).to.equal(ONE_HUNDRED);
 		});
 
-		it("Should get previewRedeem amount", async () => {
-			// const ONE_HUNDRED = ethers.utils.parseUnits("100", underlyingDecimals);
-			// await underlying.connect(alice).approve(vault.address, ONE_HUNDRED);
-
-			const previewRedeem = await vault.previewRedeem(alice.address);
+		it("Should get previewRedeem amount with 0 amount", async () => {
+			const previewRedeem = await vault.previewRedeem(0);
 			expect(previewRedeem).to.equal(0);
+		});
+
+		it("Should get previewRedeem amount with some amount", async () => {
+			const ONE_HUNDRED = ethers.utils.parseUnits("100", underlyingDecimals);
+
+			const previewRedeem = await vault.previewRedeem(ONE_HUNDRED);
+			expect(previewRedeem).to.equal(ONE_HUNDRED);
 		});
 	});
 });

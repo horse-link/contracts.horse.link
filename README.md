@@ -34,7 +34,7 @@ Deployed addresses are saved in `/contracts.json` for each network. This file sh
 ## Hardhat Tasks
 Tasks are located in the `/scripts/tasks` folder.
 A hardhat task allows for easy contract interaction from the command line. To run a contract task, run a command with the following structure:
-```
+```bash
 npx hardhat <taskName>
   --network <networkName>
   [--argName <argValue>]
@@ -43,7 +43,7 @@ For the local hardhat network, use the default `localhost` value for `networkNam
 
 ### Example template tasks
 #### accounts
-```
+```bash
 npx hardhat accounts --network localhost
 ```
 Output:
@@ -52,7 +52,7 @@ Output:
 ```
 #### mint
 Minting the deployed example `Token.sol` as an ERC20 with 0 decimals.
-```
+```bash
 npx hardhat mint --amount 1 --address 0xA39560b08FAF6d8Cd2aAC286479D25E0ea70f510 --network localhost
 ```
 Output:
@@ -64,7 +64,7 @@ minted 1 for address 0xA39560b08FAF6d8Cd2aAC286479D25E0ea70f510
 ```
 #### read-balance
 Reading balance for the deployed example `Token.sol` as an ERC20 with 0 decimals.
-```
+```bash
 npx hardhat read-balance --address 0xA39560b08FAF6d8Cd2aAC286479D25E0ea70f510 --network localhost
 ```
 Output:
