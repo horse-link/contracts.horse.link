@@ -90,10 +90,22 @@ describe("Vault", () => {
 		expect(_market, "Should have market address").to.equal(market.address);
 	});
 
+	it("Should not be able set market twice", async () => {
+		const ONE_HUNDRED = ethers.utils.parseUnits("100", underlyingDecimals);
+		await expect(
+			vault.connect(owner).setMarket(market.address, ONE_HUNDRED)
+		).to.be.revertedWith("setMarket: Market already set");
+	});
+
 	describe("Deposit and shares", () => {
 		beforeEach(async () => {
 			const totalAssets = await vault.totalAssets();
 			expect(totalAssets).to.equal(0);
+		});
+
+		it("Should get 0 market allowance", async () => {
+			const allowance = await vault.getMarketAllowance();
+			expect(allowance).to.equal(0);
 		});
 
 		it("Should allow msg.sender to receive shares when receiver address is address zero", async () => {
