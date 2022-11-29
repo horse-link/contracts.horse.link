@@ -26,13 +26,13 @@ interface IMarket {
 	function getOdds(
 		int256 wager,
 		int256 odds,
-		bytes32 propositionId
+		bytes16 propositionId
 	) external view returns (int256);
 
 	function getOracleAddress() external view returns (address);
 
 	function getPotentialPayout(
-		bytes32 propositionId,
+		bytes16 propositionId,
 		uint256 wager,
 		uint256 odds
 	) external view returns (uint256);
@@ -40,9 +40,9 @@ interface IMarket {
 	function getVaultAddress() external view returns (address);
 
 	function back(
-		bytes32 nonce,
-		bytes32 propositionId,
-		bytes32 marketId,
+		bytes16 nonce,
+		bytes16 propositionId,
+		bytes16 marketId,
 		uint256 wager,
 		uint256 odds,
 		uint256 close,
@@ -51,10 +51,4 @@ interface IMarket {
 	) external returns (uint256);
 
 	function settle(uint256 index) external;
-
-	// function settleMarket(
-	//     uint256 from,
-	//     uint256 to,
-	//     bytes32 marketId
-	// ) external;
 }

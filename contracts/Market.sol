@@ -14,8 +14,8 @@ import "./SignatureLib.sol";
 
 // Put these in the ERC721 contract
 struct Bet {
-	bytes32 propositionId;
-	bytes32 marketId;
+	bytes16 propositionId;
+	bytes16 marketId;
 	uint256 amount;
 	uint256 payout;
 	uint256 payoutDate;
@@ -35,16 +35,16 @@ contract Market is Ownable, ERC721 {
 	Bet[] private _bets;
 
 	// MarketID => Bets Indexes
-	mapping(bytes32 => uint256[]) private _marketBets;
+	mapping(bytes16 => uint256[]) private _marketBets;
 
 	// MarketID => amount bet
-	mapping(bytes32 => uint256) private _marketTotal;
+	mapping(bytes16 => uint256) private _marketTotal;
 
 	// MarketID => PropositionID => amount bet
-	mapping(bytes32 => mapping(uint16 => uint256)) private _marketBetAmount;
+	mapping(bytes16 => mapping(uint16 => uint256)) private _marketBetAmount;
 
 	// PropositionID => amount bet
-	mapping(bytes32 => uint256) private _potentialPayout;
+	mapping(bytes16 => uint256) private _potentialPayout;
 
 	uint256 private _totalInPlay;
 	uint256 private _totalExposure;
@@ -111,7 +111,7 @@ contract Market is Ownable, ERC721 {
 		return _getExpiry(id);
 	}
 
-	function getMarketTotal(bytes32 marketId) external view returns (uint256) {
+	function getMarketTotal(bytes16 marketId) external view returns (uint256) {
 		return _marketTotal[marketId];
 	}
 
@@ -151,7 +151,7 @@ contract Market is Ownable, ERC721 {
 	function getOdds(
 		int256 wager,
 		int256 odds,
-		bytes32 propositionId
+		bytes16 propositionId
 	) external view returns (int256) {
 		if (wager == 0 || odds == 0) return 0;
 
@@ -161,7 +161,7 @@ contract Market is Ownable, ERC721 {
     function _getOdds(
         int256 wager,
         int256 odds,
-        bytes32 propositionId
+        bytes16 propositionId
     ) private view returns (int256) {
         address underlying = _vault.asset();
         require(underlying != address(0), "Invalid underlying address");
@@ -182,7 +182,7 @@ contract Market is Ownable, ERC721 {
 	}
 
 	function getPotentialPayout(
-		bytes32 propositionId,
+		bytes16 propositionId,
 		uint256 wager,
 		uint256 odds
 	) external view returns (uint256) {
@@ -190,7 +190,7 @@ contract Market is Ownable, ERC721 {
 	}
 
 	function _getPayout(
-		bytes32 propositionId,
+		bytes16 propositionId,
 		uint256 wager,
 		uint256 odds
 	) private view returns (uint256) {
@@ -207,9 +207,9 @@ contract Market is Ownable, ERC721 {
 	}
 
 	function back(
-		bytes32 nonce,
-		bytes32 propositionId,
-		bytes32 marketId,
+		bytes16 nonce,
+		bytes16 propositionId,
+		bytes16 marketId,
 		uint256 wager,
 		uint256 odds,
 		uint256 close,
@@ -221,7 +221,14 @@ contract Market is Ownable, ERC721 {
 			"back: Invalid date"
 		);
 
-		bytes32 messageHash = keccak256(abi.encodePacked(nonce, marketId, propositionId, odds, close, end));
+		bytes32 messageHash = keccak256(abi.encodePacked(
+			nonce,
+			propositionId,
+			marketId,
+			odds,
+			close,
+			end
+		));
 		
 		require(
 			SignatureLib.recoverSigner(messageHash, signature) == owner(),
@@ -302,8 +309,8 @@ contract Market is Ownable, ERC721 {
 
 	event Placed(
 		uint256 index,
-		bytes32 propositionId,
-		bytes32 marketId,
+		bytes16 propositionId,
+		bytes16 marketId,
 		uint256 amount,
 		uint256 payout,
 		address indexed owner

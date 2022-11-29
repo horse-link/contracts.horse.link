@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "prepare": "husky install",
-    "hh:compile": "npx hardhat compile",
+    "hh:compile": "npx hardhat compile && npx hardhat deploy --network hardhat --tags underlying,oracle,registryToken,vault,market",
     "verify:uat": "npx hardhat --network goerli etherscan-verify",
     "deploy:local": "npx hardhat compile && npx hardhat deploy --network localhost --tags underlying,oracle,registryToken,vault,market --export ./exports/localhost.json",
     "deploy:uat": "npx hardhat clean && npx hardhat compile && npx hardhat deploy --network goerli --tags underlying,oracle,registryToken,vault,market --export ./exports/goerli.json && npx hardhat --network goerli etherscan-verify",
