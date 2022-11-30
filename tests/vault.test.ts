@@ -90,78 +90,160 @@ describe("Vault", () => {
 		expect(_market, "Should have market address").to.equal(market.address);
 	});
 
-	it("Should allow msg.sender to receive shares when receiver address is address zero", async () => {
-		const amount = ethers.utils.parseUnits("100", underlyingDecimals);
-		await underlying.connect(alice).approve(vault.address, amount);
-
-		const originalTotalAssets = await vault.totalAssets();
-		await vault.connect(alice).deposit(amount, ethers.constants.AddressZero);
-		const totalAssets = await vault.totalAssets();
-		expect(totalAssets).to.equal(originalTotalAssets.add(amount));
-		expect(await vault.balanceOf(alice.address)).to.equal(amount);
-		const vaultPerformance = await vault.getPerformance();
-		expect(vaultPerformance).to.equal(100);
-	});
-
-	it("Should get user maxWithdraw amount", async () => {
-		const amount = ethers.utils.parseUnits("100", underlyingDecimals);
-		await underlying.connect(alice).approve(vault.address, amount);
-
-		await vault.connect(alice).deposit(amount, alice.address);
-		const maxWithdraw = await vault.maxWithdraw(alice.address);
-		expect(maxWithdraw).to.equal(amount);
-	});
-
-	it("Should get previewWithdraw amount", async () => {
-		const amount = ethers.utils.parseUnits("200", underlyingDecimals);
-		await underlying.connect(bob).approve(vault.address, amount);
-
-		await vault.connect(bob).deposit(amount, bob.address);
-		const previewWithdraw = await vault.previewWithdraw(amount);
-		expect(previewWithdraw).to.equal(amount);
-	});
-
-	it("Should not allow user to withdraw more than maxWithdraw", async () => {
-		const amount = ethers.utils.parseUnits("1000", underlyingDecimals);
-		await underlying.connect(alice).approve(vault.address, amount);
-
-		await vault.connect(alice).deposit(amount, alice.address);
-
+	it("Should not be able set market twice", async () => {
+		const ONE_HUNDRED = ethers.utils.parseUnits("100", underlyingDecimals);
 		await expect(
-			vault
-				.connect(alice)
-				.withdraw(
-					ethers.utils.parseUnits("1001", underlyingDecimals),
-					alice.address,
-					alice.address
-				)
-		).to.be.revertedWith("ERC4626: withdraw more than max");
+			vault.connect(owner).setMarket(market.address, ONE_HUNDRED)
+		).to.be.revertedWith("setMarket: Market already set");
+	});
 
-		const receipt = await (
+	describe("Deposit and shares", () => {
+		beforeEach(async () => {
+			const totalAssets = await vault.totalAssets();
+			expect(totalAssets).to.equal(0);
+		});
+
+		it("Should get 0 market allowance", async () => {
+			const allowance = await vault.getMarketAllowance();
+			expect(allowance).to.equal(0);
+		});
+
+		it("Should allow msg.sender to receive shares when receiver address is address zero", async () => {
+			const ONE_HUNDRED = ethers.utils.parseUnits("100", underlyingDecimals);
+			await underlying.connect(alice).approve(vault.address, ONE_HUNDRED);
+
+			const originalTotalAssets = await vault.totalAssets();
+			expect(originalTotalAssets).to.equal(0);
 			await vault
 				.connect(alice)
-				.withdraw(
-					ethers.utils.parseUnits("500", underlyingDecimals),
-					alice.address,
-					alice.address
-				)
-		).wait();
-		expect(
-			await vault.balanceOf(alice.address),
-			"Balance of shares is wrong"
-		).to.equal(ethers.utils.parseUnits("500", underlyingDecimals));
+				.deposit(ONE_HUNDRED, ethers.constants.AddressZero);
+			const totalAssets = await vault.totalAssets();
 
-		expect(
-			await underlying.balanceOf(alice.address),
-			"Balance of underlying assets is wrong"
-		).to.equal(ethers.utils.parseUnits("1500", underlyingDecimals));
+			expect(totalAssets).to.equal(ONE_HUNDRED);
+			expect(await vault.balanceOf(alice.address)).to.equal(ONE_HUNDRED);
+			const vaultPerformance = await vault.getPerformance();
+			expect(vaultPerformance).to.equal(100);
+		});
 
-		const event = getEventData("Withdraw", vault, receipt);
-		expect(event.sender, "Sender should be alice").to.equal(alice.address);
-		expect(event.receiver, "Receiver should be alice").to.equal(alice.address);
-		expect(
-			event.assets,
-			"Assets should be the amount of assets requested"
-		).to.equal(ethers.utils.parseUnits("500", underlyingDecimals));
+		it("Should preview deposit for shares for user", async () => {
+			const ONE_HUNDRED = ethers.utils.parseUnits("100", underlyingDecimals);
+			const previewDeposit = await vault
+				.connect(alice)
+				.previewDeposit(ONE_HUNDRED);
+			expect(previewDeposit).to.equal(ONE_HUNDRED);
+		});
+
+		it("Should deposit assets for two users and receive shares", async () => {
+			const ONE_HUNDRED = ethers.utils.parseUnits("100", underlyingDecimals);
+			const FIFTY = ethers.utils.parseUnits("50", underlyingDecimals);
+
+			await underlying.connect(alice).approve(vault.address, ONE_HUNDRED);
+			await underlying.connect(bob).approve(vault.address, FIFTY);
+
+			await vault.connect(alice).deposit(ONE_HUNDRED, alice.address);
+			let shares = await vault.balanceOf(alice.address);
+			expect(shares).to.equal(ONE_HUNDRED);
+
+			let totalAssets = await vault.totalAssets();
+			expect(totalAssets).to.equal(ONE_HUNDRED);
+
+			await vault.connect(bob).deposit(FIFTY, bob.address);
+			shares = await vault.balanceOf(bob.address);
+			expect(shares).to.equal(FIFTY);
+
+			totalAssets = await vault.totalAssets();
+			expect(totalAssets).to.equal(
+				ethers.utils.parseUnits("150", underlyingDecimals)
+			);
+		});
+	});
+
+	describe("Withdraw", () => {
+		it("Should get maxWithdraw amount", async () => {
+			const ONE_HUNDRED = ethers.utils.parseUnits("100", underlyingDecimals);
+			await underlying.connect(alice).approve(vault.address, ONE_HUNDRED);
+
+			await vault.connect(alice).deposit(ONE_HUNDRED, alice.address);
+			const maxWithdraw = await vault.maxWithdraw(alice.address);
+			expect(maxWithdraw).to.equal(ONE_HUNDRED);
+		});
+
+		it("Should get previewWithdraw amount", async () => {
+			const amount = ethers.utils.parseUnits("200", underlyingDecimals);
+			await underlying.connect(bob).approve(vault.address, amount);
+
+			await vault.connect(bob).deposit(amount, bob.address);
+			const previewWithdraw = await vault.previewWithdraw(amount);
+			expect(previewWithdraw).to.equal(amount);
+		});
+
+		it("Should not allow user to withdraw more than maxWithdraw", async () => {
+			const amount = ethers.utils.parseUnits("1000", underlyingDecimals);
+			await underlying.connect(alice).approve(vault.address, amount);
+
+			await vault.connect(alice).deposit(amount, alice.address);
+
+			await expect(
+				vault
+					.connect(alice)
+					.withdraw(
+						ethers.utils.parseUnits("1001", underlyingDecimals),
+						alice.address,
+						alice.address
+					)
+			).to.be.revertedWith("ERC4626: withdraw more than max");
+
+			const receipt = await (
+				await vault
+					.connect(alice)
+					.withdraw(
+						ethers.utils.parseUnits("500", underlyingDecimals),
+						alice.address,
+						alice.address
+					)
+			).wait();
+			expect(
+				await vault.balanceOf(alice.address),
+				"Balance of shares is wrong"
+			).to.equal(ethers.utils.parseUnits("500", underlyingDecimals));
+
+			expect(
+				await underlying.balanceOf(alice.address),
+				"Balance of underlying assets is wrong"
+			).to.equal(ethers.utils.parseUnits("1500", underlyingDecimals));
+
+			const event = getEventData("Withdraw", vault, receipt);
+			expect(event.sender, "Sender should be alice").to.equal(alice.address);
+			expect(event.receiver, "Receiver should be alice").to.equal(
+				alice.address
+			);
+			expect(
+				event.assets,
+				"Assets should be the amount of assets requested"
+			).to.equal(ethers.utils.parseUnits("500", underlyingDecimals));
+		});
+	});
+
+	describe("Redeem", () => {
+		it("Should get maxRedeem amount", async () => {
+			const ONE_HUNDRED = ethers.utils.parseUnits("100", underlyingDecimals);
+			await underlying.connect(alice).approve(vault.address, ONE_HUNDRED);
+
+			await vault.connect(alice).deposit(ONE_HUNDRED, alice.address);
+			const maxRedeem = await vault.maxRedeem(alice.address);
+			expect(maxRedeem).to.equal(ONE_HUNDRED);
+		});
+
+		it("Should get previewRedeem amount with 0 amount", async () => {
+			const previewRedeem = await vault.previewRedeem(0);
+			expect(previewRedeem).to.equal(0);
+		});
+
+		it("Should get previewRedeem amount with some amount", async () => {
+			const ONE_HUNDRED = ethers.utils.parseUnits("100", underlyingDecimals);
+
+			const previewRedeem = await vault.previewRedeem(ONE_HUNDRED);
+			expect(previewRedeem).to.equal(ONE_HUNDRED);
+		});
 	});
 });

@@ -10,7 +10,7 @@ contract Vault is ERC4626Metadata, Ownable {
 
     using Math for uint256;
 
-    //Mapping address => uint256
+    // Mapping address => uint256
     mapping(address => uint256) public marketAllowance;
     
     // These will change to allow multiple markets
