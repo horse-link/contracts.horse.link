@@ -246,4 +246,26 @@ describe("Vault", () => {
 			expect(previewRedeem).to.equal(ONE_HUNDRED);
 		});
 	});
+
+	describe("Redeeming and Withdrawing with an active Market", () => {
+		//Investor A: Deposits 100 underlying
+		//Investor B: Deposits 900 underlying
+		//Investor A has 100 shares, 10% of the pool
+		//Investor B has 900 shares, 90% of the pool
+		//The Market transfers out 100 underlying to cover a bet
+		//The Market totalExposure is now 100
+		//The Vault totalLockedAssets is now 100
+		//The Vault totalAssets should remain the same
+		//The Vault totalSupply should remain the same
+		//InvestorA's maxRedeem should be reduced by their share of the withdrawn amount
+		//InvestorB's maxRedeem should be reduced by their share of the withdrawn amount
+		//InvestorA's maxWithdraw should be reduced by their share of the withdrawn amount
+		//InvestorB's maxWithdraw should be reduced by their share of the withdrawn amount
+		//InvestorA cannot redeem more than their maxRedeem
+		//InvestorA cannot withdraw more than their maxWithdraw
+		//The market loses the bet and the cover amount is lost
+		//The Vault totalLockedAssets is now 0
+		//The Vault totalAssets should have gone down by the cover amount
+		//InvestorA's maxRedeem should be equal to their share balance
+	});
 });

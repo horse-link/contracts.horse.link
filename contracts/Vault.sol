@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 import "./ERC4626Metadata.sol";
+import "./Market.sol";
 import "@openzeppelin/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol";
 import "@openzeppelin/contracts/interfaces/IERC20Metadata.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -75,6 +76,24 @@ contract Vault is ERC4626Metadata, Ownable {
         }
         
         return allowance;
+    }
+
+
+    // Total Assets = amount held by the vault, plus amount lent to the market and therefore locked
+    function totalAssets() public view override returns (uint256) {
+        return IERC20(asset()).balanceOf(address(this)) + totalAssetsLocked();
+    }
+
+    function totalAssetsLocked() public view returns (uint256) {
+        return IMarket(_market).getTotalExposure();
+    }
+
+    /** @dev See {IERC4626-maxRedeem}. */
+    function maxRedeem(address owner) public view override returns (uint256) {
+        uint256 shareBalance = balanceOf(owner);
+        // A fraction of the total assets is locked is locked for the owner, propotional to their holdings.
+        uint256 sharesLockedForOwner = shareBalance * totalAssetsLocked() / totalAssets();
+        return shareBalance - sharesLockedForOwner;
     }
 
     modifier onlyMarket() {
