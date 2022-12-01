@@ -15,6 +15,8 @@ describe("Vault", () => {
 	let alice: SignerWithAddress;
 	let bob: SignerWithAddress;
 	let underlyingDecimals: number;
+	// 90 days in seconds
+	const lockDuration = 7776000;
 
 	beforeEach(async () => {
 		// Import deployments tagged with these values
@@ -29,7 +31,8 @@ describe("Vault", () => {
 
 		vault = (await ethers.getContractAt(
 			fixture.UsdtVault.abi,
-			fixture.UsdtVault.address
+			fixture.UsdtVault.address,
+			lockDuration
 		)) as Vault;
 
 		market = (await ethers.getContractAt(
@@ -221,6 +224,56 @@ describe("Vault", () => {
 				event.assets,
 				"Assets should be the amount of assets requested"
 			).to.equal(ethers.utils.parseUnits("500", underlyingDecimals));
+		});
+
+		it("Should not allow user to withdraw before the lock up period ends", async () => {
+			const amount = ethers.utils.parseUnits("1000", underlyingDecimals);
+			await underlying.connect(alice).approve(vault.address, amount);
+
+			const timestamp = (await provider.getBlock(blockNumber)).timestamp;
+			await vault.connect(alice).deposit(amount, alice.address);
+
+			const lockedTime = await vault.lockedTime(alice.address);
+
+			expect(lockedTime).to.equal(timestamp + lockDuration);
+			await expect(
+				vault
+					.connect(alice)
+					.withdraw(
+						ethers.utils.parseUnits("100", underlyingDecimals),
+						alice.address,
+						alice.address
+					)
+			).to.be.revertedWith("withdraw: Locked time not passed");
+
+			// const receipt = await (
+			// 	await vault
+			// 		.connect(alice)
+			// 		.withdraw(
+			// 			ethers.utils.parseUnits("500", underlyingDecimals),
+			// 			alice.address,
+			// 			alice.address
+			// 		)
+			// ).wait();
+			// expect(
+			// 	await vault.balanceOf(alice.address),
+			// 	"Balance of shares is wrong"
+			// ).to.equal(ethers.utils.parseUnits("500", underlyingDecimals));
+
+			// expect(
+			// 	await underlying.balanceOf(alice.address),
+			// 	"Balance of underlying assets is wrong"
+			// ).to.equal(ethers.utils.parseUnits("1500", underlyingDecimals));
+
+			// const event = getEventData("Withdraw", vault, receipt);
+			// expect(event.sender, "Sender should be alice").to.equal(alice.address);
+			// expect(event.receiver, "Receiver should be alice").to.equal(
+			// 	alice.address
+			// );
+			// expect(
+			// 	event.assets,
+			// 	"Assets should be the amount of assets requested"
+			// ).to.equal(ethers.utils.parseUnits("500", underlyingDecimals));
 		});
 	});
 
