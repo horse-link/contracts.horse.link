@@ -551,7 +551,7 @@ describe("Market", () => {
 			const end = latestBlock.timestamp + 10000;
 			const marketId = formatBytes16String(MARKET_ID);
 
-			for (let i = 1; i <= 10; i++) {
+			for (let i = 1; i <= 3; i++) {
 				const propositionId = formatBytes16String(i.toString());
 				const nonce = formatBytes16String(i.toString());
 
@@ -583,7 +583,7 @@ describe("Market", () => {
 			}
 
 			const count = await market.getCount();
-			expect(count, "There should be 10 bets").to.equal(10);
+			expect(count, "There should be 3 bets").to.equal(3);
 
 			await hre.network.provider.request({
 				method: "evm_setNextBlockTimestamp",
@@ -597,28 +597,16 @@ describe("Market", () => {
 				"0x0000000000000000000000000000000000000000000000000000000000000000"
 			);
 
-			// const index = 0;
-			// await expect(market.settle(index)).to.be.revertedWith(
-			// 	"_settle: Payout date not reached"
-			// );
+			await market.settleMarket(formatBytes16String(MARKET_ID), 0, 2);
 
-			await market.settleMarket(MARKET_ID);
+			// const nftBalance = await market.balanceOf(bob.address);
+			// expect(nftBalance).to.equal(1, "Bob should have no NFTs now");
 
-			// const newNftBalance = await market.balanceOf(bob.address);
-			// expect(newNftBalance).to.equal(0, "Bob should have no NFTs now");
-
-			// await expect(market.settle(index)).to.be.revertedWith(
-			// 	"settle: Bet has already settled"
-			// );
-
-			// exposure = await market.getTotalExposure();
+			// const exposure = await market.getTotalExposure();
 			// expect(exposure).to.equal(0);
 
-			// inPlay = await market.getTotalInPlay();
-			// expect(inPlay).to.equal(0);
-
-			// const balance = await underlying.balanceOf(bob.address);
-			// expect(balance).to.equal(ethers.utils.parseUnits("1350", tokenDecimals));
+			const inPlay = await market.getTotalInPlay();
+			expect(inPlay).to.equal(0);
 		});
 	});
 

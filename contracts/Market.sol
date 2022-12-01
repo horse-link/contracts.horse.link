@@ -278,6 +278,9 @@ contract Market is Ownable, ERC721 {
 	}
 
 	function settleMarket(bytes16 marketId, uint256 from, uint256 to) external {
+		assert(from <= _marketBets[marketId].length);
+		assert(to <= _marketBets[marketId].length);
+		
 		for (uint256 i = from; i < to; i++) {
 			uint256 index = _marketBets[marketId][i];
 			Bet memory bet = _bets[index];
