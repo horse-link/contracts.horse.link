@@ -555,7 +555,7 @@ describe("Market", () => {
 			expect(isSigner).to.equal(true);
 		});
 
-		it("should not allow a alice to grant a new signer", async () => {
+		it("should not allow alice to grant a new signer", async () => {
 			const newSigner = await ethers.Wallet.createRandom();
 			await expect(
 				market.connect(alice).grantSigner(newSigner.address)
