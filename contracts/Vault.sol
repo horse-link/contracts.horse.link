@@ -12,13 +12,20 @@ contract Vault is ERC4626Metadata, Ownable {
 
     // Mapping address => uint256
     mapping(address => uint256) public marketAllowance;
+
+    // Mapping address => uint256
+    // Unix time until receiver can withdraw from vault
+    mapping(address => uint256) public lockedTime;
     
+    // Duration of lock up period in seconds
+    uint256 public lockDuration;
+
     // These will change to allow multiple markets
     address private _market;
     uint8 private immutable _decimals;
     address private _self;
 
-    constructor(IERC20Metadata asset_)
+    constructor(IERC20Metadata asset_, uint256 lockDuration_)
     ERC4626Metadata(
         asset_
     ) 
@@ -30,6 +37,7 @@ contract Vault is ERC4626Metadata, Ownable {
             address(asset_) != address(0),
             "Underlying address is invalid"
         );
+        lockDuration = lockDuration_;
         _decimals = IERC20Metadata(asset_).decimals();
         _self = address(this);
     }
@@ -64,7 +72,19 @@ contract Vault is ERC4626Metadata, Ownable {
     // If receiver is omitted, use the sender
     function deposit(uint256 assets, address receiver) public override returns (uint256) {
         if (receiver == address(0)) receiver = _msgSender();
+        // Set lock time
+        lockedTime[receiver] = block.timestamp + lockDuration;
         return super.deposit(assets, receiver);
+    }
+
+    // If receiver is omitted, use the sender
+    function withdraw(uint256 assets, address receiver, address owner) public override returns (uint256) {
+        if (receiver == address(0)) receiver = _msgSender();
+        require(
+            block.timestamp >= lockedTime[receiver],
+            "withdraw: Locked time not passed"
+        );
+        return super.withdraw(assets, receiver, owner);
     }
 
     function getMarketAllowance() external view withMarket returns (uint256) {
