@@ -277,6 +277,20 @@ contract Market is Ownable, ERC721 {
 		_settle(index, result);
 	}
 
+	function settleMarket(bytes16 marketId, uint256 from, uint256 to) external {
+		for (uint256 i < from; i < to; i++) {
+			uint256 index = _marketBets[marketId][i];
+			Bet memory bet = _bets[index];
+			if (bet.settled == false) {
+				bool result = IOracle(_oracle).checkResult(
+					bet.marketId,
+					bet.propositionId
+				);
+				_settle(index, result);
+			}
+		}
+	}
+
 	function _settle(uint256 id, bool result) private {
 		require(
 			_bets[id].payoutDate < block.timestamp,
