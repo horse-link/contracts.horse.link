@@ -20,7 +20,7 @@ type Signature = {
 };
 
 // MarketId 11 chars
-//AAAAAABBBCC
+// AAAAAABBBCC
 // A = date as days since epoch
 // B = location code
 // C = race number
@@ -538,6 +538,39 @@ describe("Market", () => {
 
 			const balance = await underlying.balanceOf(bob.address);
 			expect(balance).to.equal(ethers.utils.parseUnits("1350", tokenDecimals));
+		});
+	});
+
+	describe("ACL", () => {
+		it("should not be a valid signer", async () => {
+			const newSigner = await ethers.Wallet.createRandom();
+			const isSigner = await market.isSigner(newSigner.address);
+			expect(isSigner).to.equal(false);
+		});
+
+		it("should allow a new signer to be granted by owner", async () => {
+			const newSigner = await ethers.Wallet.createRandom();
+			await market.connect(owner).grantSigner(newSigner.address);
+			const isSigner = await market.isSigner(newSigner.address);
+			expect(isSigner).to.equal(true);
+		});
+
+		it("should not allow a alice to grant a new signer", async () => {
+			const newSigner = await ethers.Wallet.createRandom();
+			await expect(
+				market.connect(alice).grantSigner(newSigner.address)
+			).to.be.revertedWith("Ownable: caller is not the owner");
+		});
+
+		it("should allow a new signer to be revoked by owner", async () => {
+			const newSigner = await ethers.Wallet.createRandom();
+			await market.connect(owner).grantSigner(newSigner.address);
+			let isSigner = await market.isSigner(newSigner.address);
+			expect(isSigner).to.equal(true);
+
+			await market.connect(owner).revokeSigner(newSigner.address);
+			isSigner = await market.isSigner(newSigner.address);
+			expect(isSigner).to.equal(false);
 		});
 	});
 });
