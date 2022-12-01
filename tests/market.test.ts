@@ -539,6 +539,87 @@ describe("Market", () => {
 			const balance = await underlying.balanceOf(bob.address);
 			expect(balance).to.equal(ethers.utils.parseUnits("1350", tokenDecimals));
 		});
+
+		it("Should settle all bets in a market", async () => {
+			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
+			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
+			const close = 0;
+
+			const latestBlockNumber = await ethers.provider.getBlockNumber();
+			const latestBlock = await ethers.provider.getBlock(latestBlockNumber);
+
+			const end = latestBlock.timestamp + 10000;
+			const marketId = formatBytes16String(MARKET_ID);
+
+			for (let i = 1; i <= 10; i++) {
+				const propositionId = formatBytes16String(i.toString());
+				const nonce = formatBytes16String(i.toString());
+
+				// Arbitary market ID set by the operator `${today}_${track}_${race}_W${runner}`
+				const betSignature = await signBackMessage(
+					nonce,
+					marketId,
+					propositionId,
+					odds,
+					close,
+					end,
+					owner
+				);
+
+				expect(
+					await market
+						.connect(bob)
+						.back(
+							nonce,
+							propositionId,
+							marketId,
+							wager,
+							odds,
+							close,
+							end,
+							betSignature
+						)
+				).to.emit(market, "Placed");
+			}
+
+			const count = await market.getCount();
+			expect(count, "There should be 10 bets").to.equal(10);
+
+			await hre.network.provider.request({
+				method: "evm_setNextBlockTimestamp",
+				params: [end + 7200]
+			});
+
+			// Set the winner to H1
+			await oracle.setResult(
+				marketId,
+				formatBytes16String("1"),
+				"0x0000000000000000000000000000000000000000000000000000000000000000"
+			);
+
+			// const index = 0;
+			// await expect(market.settle(index)).to.be.revertedWith(
+			// 	"_settle: Payout date not reached"
+			// );
+
+			await market.settleMarket(MARKET_ID);
+
+			// const newNftBalance = await market.balanceOf(bob.address);
+			// expect(newNftBalance).to.equal(0, "Bob should have no NFTs now");
+
+			// await expect(market.settle(index)).to.be.revertedWith(
+			// 	"settle: Bet has already settled"
+			// );
+
+			// exposure = await market.getTotalExposure();
+			// expect(exposure).to.equal(0);
+
+			// inPlay = await market.getTotalInPlay();
+			// expect(inPlay).to.equal(0);
+
+			// const balance = await underlying.balanceOf(bob.address);
+			// expect(balance).to.equal(ethers.utils.parseUnits("1350", tokenDecimals));
+		});
 	});
 
 	describe("ACL", () => {
