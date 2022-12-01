@@ -26,7 +26,7 @@ struct Bet {
 contract Market is Ownable, ERC721 {
 	uint256 private constant MAX = 32;
 	int256 private constant PRECISION = 1_000;
-	uint8 private immutable _fee;
+	uint8 private immutable _margin;
 	IVault private immutable _vault;
 	address private immutable _self;
 	IOracle private immutable _oracle;
@@ -55,14 +55,14 @@ contract Market is Ownable, ERC721 {
 
 	constructor(
 		IVault vault,
-		uint8 fee,
+		uint8 margin,
 		address oracle
 	)
 	ERC721("Bet", "BET") {
 		assert(address(vault) != address(0));
 		_self = address(this);
 		_vault = vault;
-		_fee = fee;
+		_margin = margin;
 		_oracle = IOracle(oracle);
 
 		timeout = 30 days;
@@ -75,8 +75,8 @@ contract Market is Ownable, ERC721 {
 		return string(abi.encodePacked("https://api.horse.link/bet/", tokenId));
 	}
 
-	function getFee() external view returns (uint8) {
-		return _fee;
+	function getMargin() external view returns (uint8) {
+		return _margin;
 	}
 
 	function getTotalInPlay() external view returns (uint256) {
@@ -298,7 +298,7 @@ contract Market is Ownable, ERC721 {
         }
 
         if (result == false) {
-            // Transfer the proceeds to the vault, less market fee
+            // Transfer the proceeds to the vault, less market margin
             IERC20(underlying).transfer(address(_vault), _bets[id].payout);
         }
 

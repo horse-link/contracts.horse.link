@@ -20,7 +20,7 @@ type Signature = {
 };
 
 // MarketId 11 chars
-//AAAAAABBBCC
+// AAAAAABBBCC
 // A = date as days since epoch
 // B = location code
 // C = race number
@@ -41,7 +41,7 @@ describe("Market", () => {
 
 	const USDT_DECIMALS = 6;
 	const ODDS_DECIMALS = 6;
-	const FEE = 100;
+	const MARGIN = 100;
 
 	beforeEach(async () => {
 		[owner, alice, bob, carol] = await ethers.getSigners();
@@ -105,7 +105,7 @@ describe("Market", () => {
 
 		// https://www.npmjs.com/package/hardhat-deploy?activeTab=readme#handling-contract-using-libraries
 		// https://stackoverflow.com/questions/71389974/how-can-i-link-library-and-contract-in-one-file
-		const args = [vault.address, FEE, oracle.address];
+		const args = [vault.address, MARGIN, oracle.address];
 		market = (await marketFactory.deploy(...args)) as Market;
 
 		await vault.setMarket(market.address, ethers.constants.MaxUint256);
@@ -141,8 +141,8 @@ describe("Market", () => {
 	});
 
 	it("should have properties set on deploy", async () => {
-		const fee = await market.getFee();
-		expect(fee, "fee should be set").to.equal(FEE);
+		const margin = await market.getMargin();
+		expect(margin, "margin should be set").to.equal(MARGIN);
 
 		const inPlay = await market.getTotalInPlay();
 		expect(inPlay, "Should have $0 in play").to.equal(0);
