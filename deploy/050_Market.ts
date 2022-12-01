@@ -54,12 +54,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 				marketDeployment.address,
 				ethers.constants.MaxUint256
 			);
-			await execute(
-				"Market",
-				{ from: deployer, log: true },
-				"grantSigner",
-				"0xF33b9A4efA380Df3B435f755DD2C2AF7fE53C2d1" // key in bitwarden
-			);
+			// await execute(
+			// 	"Market",
+			// 	{ from: deployer, log: true },
+			// 	"grantSigner",
+			// 	"0xF33b9A4efA380Df3B435f755DD2C2AF7fE53C2d1" // key in bitwarden
+			// );
 			if (!network.tags.testing) {
 				await execute(
 					"Registry",
