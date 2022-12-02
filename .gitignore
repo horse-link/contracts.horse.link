@@ -36,3 +36,5 @@ coverage.json
 coverage/
 
 .deps/
+
+venv/
