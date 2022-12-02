@@ -294,7 +294,7 @@ contract Market is Ownable, ERC721 {
 			Bet memory bet = _bets[index];
 			if (bet.settled == false) {
 				bool result = IOracle(_oracle).checkResult(
-					bet.marketId,
+					marketId,
 					bet.propositionId
 				);
 				_settle(index, result);
@@ -309,12 +309,11 @@ contract Market is Ownable, ERC721 {
 		);
 
         _bets[id].settled = true;
-        _totalInPlay -= _bets[id].payout;
+        _totalInPlay -= _bets[id].amount;
         _totalExposure -= _bets[id].payout - _bets[id].amount;
         _inplayCount -= 1;
 
         address underlying = _vault.asset();
-
 		result == true ? IERC20(underlying).transfer(_bets[id].owner, _bets[id].payout) : IERC20(underlying).transfer(address(_vault), _bets[id].payout);
 
 		_burn(id);

@@ -605,8 +605,8 @@ describe("Market", () => {
 
 			await market.settleMarket(formatBytes16String(MARKET_ID));
 
-			// const nftBalance = await market.balanceOf(bob.address);
-			// expect(nftBalance).to.equal(1, "Bob should have no NFTs now");
+			const nftBalance = await market.balanceOf(bob.address);
+			expect(nftBalance).to.equal(0, "Bob should have no NFTs now");
 
 			// const exposure = await market.getTotalExposure();
 			// expect(exposure).to.equal(0);
