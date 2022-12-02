@@ -309,21 +309,13 @@ contract Market is Ownable, ERC721 {
 		);
 
         _bets[id].settled = true;
-        _totalInPlay -= _bets[id].amount;
+        _totalInPlay -= _bets[id].payout;
         _totalExposure -= _bets[id].payout - _bets[id].amount;
         _inplayCount -= 1;
 
         address underlying = _vault.asset();
 
-        if (result == true) {
-            // Transfer the win to the punter
-            IERC20(underlying).transfer(_bets[id].owner, _bets[id].payout);
-        }
-
-        if (result == false) {
-            // Transfer the proceeds to the vault, less market fee
-            IERC20(underlying).transfer(address(_vault), _bets[id].payout);
-        }
+		result == true ? IERC20(underlying).transfer(_bets[id].owner, _bets[id].payout) : IERC20(underlying).transfer(address(_vault), _bets[id].payout);
 
 		_burn(id);
 
