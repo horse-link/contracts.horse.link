@@ -343,7 +343,7 @@ contract Market is Ownable, ERC721 {
 	function isValidSignature(bytes32 messageHash, SignatureLib.Signature calldata signature) private view returns (bool) {
 		address signer = SignatureLib.recoverSigner(messageHash, signature);
 		assert(signer != address(0));
-		return _isSigner(signer) == true;
+		return _isSigner(signer);
 	}
 
 	event Placed(
