@@ -11,6 +11,7 @@ import "./IVault.sol";
 import "./IMarket.sol";
 import "./IOracle.sol";
 import "./SignatureLib.sol";
+import "./OddsLib.sol";
 
 // Put these in the ERC721 contract
 struct Bet {
@@ -25,7 +26,6 @@ struct Bet {
 
 contract Market is Ownable, ERC721 {
 	uint256 private constant MAX = 32;
-	int256 private constant PRECISION = 1_000;
 	uint8 private immutable _fee;
 	IVault private immutable _vault;
 	address private immutable _self;
@@ -58,7 +58,7 @@ contract Market is Ownable, ERC721 {
 		uint8 fee,
 		address oracle
 	)
-	ERC721("Bet", "BET") {
+	ERC721("HorseLink Bet Slip", "HLBS") {
 		assert(address(vault) != address(0));
 		_self = address(this);
 		_vault = vault;
@@ -149,36 +149,46 @@ contract Market is Ownable, ERC721 {
 	}
 
 	function getOdds(
-		int256 wager,
-		int256 odds,
+		uint256 wager,
+		uint256 odds,
 		bytes16 propositionId
-	) external view returns (int256) {
-		if (wager == 0 || odds == 0) return 0;
-
+	) external view returns (uint256) {
 		return _getOdds(wager, odds, propositionId);
 	}
 
-    function _getOdds(
-        int256 wager,
-        int256 odds,
-        bytes16 propositionId
-    ) private view returns (int256) {
-        address underlying = _vault.asset();
-        require(underlying != address(0), "Invalid underlying address");
+	function _getOdds(
+		uint256 wager,
+		uint256 odds,
+		bytes16 propositionId
+	) internal view returns (uint256) {
 
-        int256 p = int256(_vault.getMarketAllowance()); // TODO: check that typecasting to a signed int is safe
+		if (wager == 0 || odds == 0) return 0;
 
-        if (p == 0) return 0;
+        uint256 pool = _vault.getMarketAllowance();
+        
+		// If the pool is not sufficient to cover a new bet for this proposition,
+		if (pool == 0) return 0;
 
-		// f(wager) = odds - odds*(wager/pool)
-		if (_potentialPayout[propositionId] > uint256(p)) {
+		// exclude the current total potential payout from the pool
+		if (_potentialPayout[propositionId] > pool) {
 			return 0;
 		}
+		pool -= _potentialPayout[propositionId]; 
 
-		// do not include this guy in the return
-		p -= int256(_potentialPayout[propositionId]);
+		// Calculate the new odds
+		return _getAdjustedOdds(wager, odds, pool);
+	}
 
-		return odds - ((odds * ((wager * PRECISION) / p)) / PRECISION);
+	function _getAdjustedOdds(
+		uint256 wager,
+		uint256 odds,
+		uint256 pool
+	) internal virtual view returns (uint256) {
+		return OddsLib.getLinearAdjustedOdds(
+			wager,
+			odds,
+			pool
+		);
 	}
 
 	function getPotentialPayout(
@@ -194,16 +204,14 @@ contract Market is Ownable, ERC721 {
 		uint256 wager,
 		uint256 odds
 	) private view returns (uint256) {
-		assert(odds > 0);
-		assert(wager > 0);
 
 		// add underlying to the market
-		int256 trueOdds = _getOdds(int256(wager), int256(odds), propositionId);
+		uint256 trueOdds = _getOdds(wager, odds, propositionId);
 		if (trueOdds == 0) {
 			return 0;
 		}
 
-		return (uint256(trueOdds) * wager) / 1_000_000;
+		return (trueOdds * wager) / OddsLib.PRECISION;
 	}
 
 	function back(
@@ -249,8 +257,11 @@ contract Market is Ownable, ERC721 {
         IERC20(underlying).transferFrom(msg.sender, _self, wager);
         IERC20(underlying).transferFrom(address(_vault), _self, (payout - wager));
 
-		// add to the market
+		// add to in play total for this marketId
 		_marketTotal[marketId] += wager;
+
+		// add to the total potential payout for this proposition
+		_potentialPayout[propositionId] += payout;
 
 		_bets.push(
 			Bet(propositionId, marketId, wager, payout, end, false, msg.sender)
