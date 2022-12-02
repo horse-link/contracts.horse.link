@@ -389,7 +389,7 @@ describe("Market", () => {
 		);
 	});
 
-	describe.only("Liquidity", () => {
+	/*describe.only("Liquidity", () => {
 		it("Should not allow a payout greater than the pool", async () => {
 			let vaultBalance = await underlying.balanceOf(vault.address);
 			let largeBet = vaultBalance.div(2);
@@ -432,7 +432,7 @@ describe("Market", () => {
 	
 		it("Should not allow a total payout on a proposition to be greater than the pool", async () => {
 		});
-	});
+	});*/
 
 
 	describe("Settle", () => {
