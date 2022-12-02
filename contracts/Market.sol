@@ -269,7 +269,7 @@ contract Market is Ownable, ERC721 {
 
 	function settle(uint256 index) external {
 		Bet memory bet = _bets[index];
-		require(bet.settled == false, "settle: Bet has already settled");
+		require(!bet.settled, "settle: Bet has already settled");
 		bool result = IOracle(_oracle).checkResult(
 			bet.marketId,
 			bet.propositionId
@@ -282,6 +282,7 @@ contract Market is Ownable, ERC721 {
 	}
 
 	function settleMarketByRange(bytes16 marketId, uint256 from, uint256 to) external {
+		require(from <= to, "settleMarketByRange: Invalid range");
 		_settleMarketByRange(marketId, from, to);	
 	}
 
@@ -292,7 +293,7 @@ contract Market is Ownable, ERC721 {
 		for (uint256 i = from; i <= to; i++) {
 			uint256 tokenId = _marketBets[marketId][i];
 			Bet memory bet = _bets[tokenId];
-			if (bet.settled == false) {
+			if (!bet.settled) {
 				bool result = IOracle(_oracle).checkResult(
 					marketId,
 					bet.propositionId
