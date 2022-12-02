@@ -5,6 +5,7 @@ import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { Token } from "../build/typechain";
 import { UnderlyingTokens } from "../deployData/settings";
+import hardhatConfig from "../hardhat.config";
 /*
  * Deploy a Market contract with an Oracle
  */
@@ -54,12 +55,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 				marketDeployment.address,
 				ethers.constants.MaxUint256
 			);
-			// await execute(
-			// 	"Market",
-			// 	{ from: deployer, log: true },
-			// 	"grantSigner",
-			// 	"0xF33b9A4efA380Df3B435f755DD2C2AF7fE53C2d1" // key in bitwarden
-			// );
+			await execute(
+				tokenDetails.marketName,
+				{ from: deployer, log: true },
+				"grantSigner",
+				namedAccounts.MarketSigner
+			);
 			if (!network.tags.testing) {
 				await execute(
 					"Registry",
