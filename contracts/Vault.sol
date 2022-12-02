@@ -18,7 +18,7 @@ contract Vault is ERC4626Metadata, Ownable {
     mapping(address => uint256) public lockedTime;
     
     // Duration of lock up period in seconds
-    uint256 public lockDuration;
+    uint256 private _lockDuration;
 
     // These will change to allow multiple markets
     address private _market;
@@ -37,7 +37,7 @@ contract Vault is ERC4626Metadata, Ownable {
             address(asset_) != address(0),
             "Underlying address is invalid"
         );
-        lockDuration = lockDuration_;
+        _lockDuration = lockDuration_;
         _decimals = IERC20Metadata(asset_).decimals();
         _self = address(this);
     }
@@ -45,6 +45,10 @@ contract Vault is ERC4626Metadata, Ownable {
     // Override decimals to be the same as the underlying asset
     function decimals() public view override returns (uint8) {
         return _decimals;
+    }
+
+    function getLockDuration() public view returns (uint256) {
+        return _lockDuration;
     }
 
     function setMarket(address market, uint256 max) public onlyOwner {
@@ -73,7 +77,7 @@ contract Vault is ERC4626Metadata, Ownable {
     function deposit(uint256 assets, address receiver) public override returns (uint256) {
         if (receiver == address(0)) receiver = _msgSender();
         // Set lock time
-        lockedTime[receiver] = block.timestamp + lockDuration;
+        lockedTime[receiver] = block.timestamp + _lockDuration;
         return super.deposit(assets, receiver);
     }
 
