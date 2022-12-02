@@ -135,9 +135,9 @@ describe("Market", () => {
 			await market.getPotentialPayout(propositionId, wager, odds)
 		).to.equal(0);
 
-		await vault
-			.connect(alice)
-			.deposit(ethers.utils.parseUnits("1000", tokenDecimals), alice.address);
+		// await vault
+		// 	.connect(alice)
+		// 	.deposit(ethers.utils.parseUnits("1000", tokenDecimals), alice.address);
 	});
 
 	it("should have properties set on deploy", async () => {
@@ -571,6 +571,86 @@ describe("Market", () => {
 			await market.connect(owner).revokeSigner(newSigner.address);
 			isSigner = await market.isSigner(newSigner.address);
 			expect(isSigner).to.equal(false);
+		});
+	});
+
+	describe.only("Donation attack", () => {
+		it("should not allow a donation attack", async () => {
+			const totalSupply = await vault.totalSupply();
+			expect(totalSupply).to.equal(0);
+			await vault
+				.connect(alice)
+				.deposit(ethers.utils.parseUnits("1000", USDT_DECIMALS), alice.address);
+
+			let shares = await vault.balanceOf(alice.address);
+			expect(shares).to.equal(ethers.utils.parseUnits("1000", USDT_DECIMALS));
+
+			// now create the bet
+			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
+			const odds = ethers.utils.parseUnits("10", ODDS_DECIMALS);
+			const close = 0;
+
+			const latestBlockNumber = await ethers.provider.getBlockNumber();
+			const latestBlock = await ethers.provider.getBlock(latestBlockNumber);
+
+			const end = latestBlock.timestamp + 10000;
+
+			// Runner 1 for a Win
+			const propositionId = formatBytes16String("1");
+			const nonce = formatBytes16String("1");
+
+			// Arbitary market ID set by the operator `${today}_${track}_${race}_W${runner}`
+			const marketId = formatBytes16String(MARKET_ID);
+			const betSignature = await signBackMessage(
+				nonce,
+				marketId,
+				propositionId,
+				odds,
+				close,
+				end,
+				owner
+			);
+
+			await underlying.connect(alice).approve(market.address, wager);
+			expect(
+				await market
+					.connect(alice)
+					.back(
+						nonce,
+						propositionId,
+						marketId,
+						wager,
+						odds,
+						close,
+						end,
+						betSignature
+					)
+			).to.emit(market, "Placed");
+
+			const inPlay = await market.getTotalInPlay();
+			expect(inPlay).to.equal(ethers.utils.parseUnits("100", USDT_DECIMALS));
+
+			const exposure = await market.getTotalExposure();
+			expect(exposure).to.equal(ethers.utils.parseUnits("800", USDT_DECIMALS));
+
+			let assets = await vault.totalAssets();
+			expect(assets).to.equal(ethers.utils.parseUnits("200", USDT_DECIMALS));
+
+			// shares should still be the same
+			shares = await vault.balanceOf(alice.address);
+			expect(shares).to.equal(ethers.utils.parseUnits("1000", USDT_DECIMALS));
+
+			await vault
+				.connect(bob)
+				.deposit(ethers.utils.parseUnits("1000", USDT_DECIMALS), bob.address);
+
+			// should get 5x shares for the same amount of USDT
+			shares = await vault.balanceOf(bob.address);
+			expect(shares).to.equal(ethers.utils.parseUnits("5000", USDT_DECIMALS));
+
+			// check the assets
+			assets = await vault.totalAssets();
+			expect(assets).to.equal(ethers.utils.parseUnits("1200", USDT_DECIMALS));
 		});
 	});
 });
