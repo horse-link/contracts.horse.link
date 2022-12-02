@@ -89,7 +89,7 @@ describe("Vault", () => {
 		const _market = await vault.getMarket();
 		expect(_market, "Should have market address").to.equal(market.address);
 
-		const lockDuration = await vault.getLockDuration();
+		const lockDuration = await vault.lockDuration();
 		expect(lockDuration, "Should have market address").to.equal(
 			process.env.VAULT_LOCK_TIME
 		);
