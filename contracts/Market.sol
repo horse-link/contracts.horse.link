@@ -31,7 +31,10 @@ contract Market is Ownable, ERC721 {
 	address private immutable _self;
 	IOracle private immutable _oracle;
 
+	uint256 private _totalInPlay;
 	uint256 private _inplayCount; // running count of bets
+	uint256 private _totalExposure;
+
 	Bet[] private _bets;
 
 	// MarketID => Bets Indexes
@@ -45,9 +48,6 @@ contract Market is Ownable, ERC721 {
 
 	// PropositionID => amount bet
 	mapping(bytes16 => uint256) private _potentialPayout;
-
-	uint256 private _totalInPlay;
-	uint256 private _totalExposure;
 
 	// Can claim after this period regardless
 	uint256 public immutable timeout;
@@ -248,7 +248,7 @@ contract Market is Ownable, ERC721 {
         IERC20(underlying).transferFrom(address(_vault), _self, (payout - wager));
 
 		// add to the market
-		_marketTotal[marketId] += wager;
+		_marketTotal[marketId] += payout;
 
 		_bets.push(
 			Bet(propositionId, marketId, wager, payout, end, false, msg.sender)
@@ -277,10 +277,18 @@ contract Market is Ownable, ERC721 {
 		_settle(index, result);
 	}
 
-	function settleMarket(bytes16 marketId, uint256 from, uint256 to) external {
+	function settleMarket(bytes16 marketId) external {
+		_settleMarketByRange(marketId, 0, _marketBets[marketId].length - 1);
+	}
+
+	function settleMarketByRange(bytes16 marketId, uint256 from, uint256 to) external {
+		_settleMarketByRange(marketId, from, to);	
+	}
+
+	function _settleMarketByRange(bytes16 marketId, uint256 from, uint256 to) private {
 		assert(from <= _marketBets[marketId].length);
 		assert(to <= _marketBets[marketId].length);
-		
+
 		for (uint256 i = from; i < to; i++) {
 			uint256 index = _marketBets[marketId][i];
 			Bet memory bet = _bets[index];
@@ -303,7 +311,7 @@ contract Market is Ownable, ERC721 {
         _bets[id].settled = true;
         _totalInPlay -= _bets[id].amount;
         _totalExposure -= _bets[id].payout - _bets[id].amount;
-        _inplayCount --;
+        _inplayCount -= 1;
 
         address underlying = _vault.asset();
 
