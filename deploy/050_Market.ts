@@ -24,6 +24,14 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 		skipIfAlreadyDeployed: true
 	});
 
+	const oddsLib = await deploy("OddsLib", {
+		contract: "OddsLib",
+		from: deployer,
+		log: true,
+		autoMine: true,
+		skipIfAlreadyDeployed: true
+	});
+
 	for (const tokenDetails of UnderlyingTokens) {
 		const vaultDeployment = await deployments.get(tokenDetails.vaultName);
 		let tokenAddress: string;
@@ -43,7 +51,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 			autoMine: true,
 			skipIfAlreadyDeployed: false,
 			libraries: {
-				SignatureLib: signatureLib.address
+				SignatureLib: signatureLib.address,
+				OddsLib: oddsLib.address
 			}
 		});
 		if (marketDeployment?.newlyDeployed) {
