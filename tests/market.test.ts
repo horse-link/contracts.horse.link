@@ -389,6 +389,52 @@ describe("Market", () => {
 		);
 	});
 
+	describe.only("Liquidity", () => {
+		it("Should not allow a payout greater than the pool", async () => {
+			let vaultBalance = await underlying.balanceOf(vault.address);
+			let largeBet = vaultBalance.div(2);
+	
+			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
+	
+			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
+			const close = 0;
+			const end = 1000000000000;
+	
+			await underlying
+				.connect(bob)
+				.approve(market.address, largeBet);
+			
+			const propositionId = formatBytes16String("019450ABC0101W");
+			const nonce = formatBytes16String("1");
+			const marketId = formatBytes16String(MARKET_ID);
+	
+			const signature = await signBackMessage(
+				nonce,
+				marketId,
+				propositionId,
+				odds,
+				close,
+				end,
+				owner
+			);
+	
+			// Expect call to back() to succeed
+			expect(
+				market
+					.connect(bob)
+					.back(nonce, propositionId, marketId, wager, odds, close, end, signature)
+			).to.not.be.reverted;
+
+			// Get new vault balance
+			vaultBalance = await underlying.balanceOf(vault.address);
+			console.log("vaultBalance is now", vaultBalance.toNumber());
+		});
+	
+		it("Should not allow a total payout on a proposition to be greater than the pool", async () => {
+		});
+	});
+
+
 	describe("Settle", () => {
 		it("Should transfer to vault if result not been set", async () => {
 			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
