@@ -248,7 +248,7 @@ contract Market is Ownable, ERC721 {
         IERC20(underlying).transferFrom(address(_vault), _self, (payout - wager));
 
 		// add to the market
-		_marketTotal[marketId] += payout;
+		_marketTotal[marketId] += wager;
 
 		_bets.push(
 			Bet(propositionId, marketId, wager, payout, end, false, msg.sender)
