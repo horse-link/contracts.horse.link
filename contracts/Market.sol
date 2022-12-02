@@ -12,8 +12,6 @@ import "./IMarket.sol";
 import "./IOracle.sol";
 import "./SignatureLib.sol";
 
-import "hardhat/console.sol";
-
 // Put these in the ERC721 contract
 struct Bet {
 	bytes16 propositionId;
@@ -280,7 +278,6 @@ contract Market is Ownable, ERC721 {
 	}
 
 	function settleMarket(bytes16 marketId) external {
-		console.log("settle market");
 		_settleMarketByRange(marketId, 0, _marketBets[marketId].length - 1);
 	}
 
@@ -292,14 +289,7 @@ contract Market is Ownable, ERC721 {
 		assert(from <= _marketBets[marketId].length);
 		assert(to <= _marketBets[marketId].length);
 
-		console.log("settle market by range");
-		console.log("from", from);
-		console.log("to", to);
-
 		for (uint256 i = from; i <= to; i++) {
-
-			console.log(i);
-
 			uint256 tokenId = _marketBets[marketId][i];
 			Bet memory bet = _bets[tokenId];
 			if (bet.settled == false) {
@@ -349,7 +339,7 @@ contract Market is Ownable, ERC721 {
 		return _signers[signer];
 	}
 
-	function isValidSignature(bytes32 messageHash, SignatureLib.Signature calldata signature) private returns (bool) {
+	function isValidSignature(bytes32 messageHash, SignatureLib.Signature calldata signature) private view returns (bool) {
 		address signer = SignatureLib.recoverSigner(messageHash, signature);
 		assert(signer != address(0));
 		return _isSigner(signer) == true;
