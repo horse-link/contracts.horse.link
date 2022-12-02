@@ -12,6 +12,8 @@ import "./IMarket.sol";
 import "./IOracle.sol";
 import "./SignatureLib.sol";
 
+import "hardhat/console.sol";
+
 // Put these in the ERC721 contract
 struct Bet {
 	bytes16 propositionId;
@@ -255,7 +257,7 @@ contract Market is Ownable, ERC721 {
 		);
 
 		// use _getCount() to avoid stack too deep
-		_marketBets[marketId].push(_getCount());
+		_marketBets[marketId].push(_getCount() - 1);
 		_mint(msg.sender, _getCount() - 1);
 
 		_totalInPlay += wager;
@@ -278,6 +280,7 @@ contract Market is Ownable, ERC721 {
 	}
 
 	function settleMarket(bytes16 marketId) external {
+		console.log("settle market");
 		_settleMarketByRange(marketId, 0, _marketBets[marketId].length - 1);
 	}
 
@@ -289,36 +292,43 @@ contract Market is Ownable, ERC721 {
 		assert(from <= _marketBets[marketId].length);
 		assert(to <= _marketBets[marketId].length);
 
-		for (uint256 i = from; i < to; i++) {
-			uint256 index = _marketBets[marketId][i];
-			Bet memory bet = _bets[index];
+		console.log("settle market by range");
+		console.log("from", from);
+		console.log("to", to);
+
+		for (uint256 i = from; i <= to; i++) {
+
+			console.log(i);
+
+			uint256 tokenId = _marketBets[marketId][i];
+			Bet memory bet = _bets[tokenId];
 			if (bet.settled == false) {
 				bool result = IOracle(_oracle).checkResult(
 					marketId,
 					bet.propositionId
 				);
-				_settle(index, result);
+				_settle(tokenId, result);
 			}
 		}
 	}
 
-	function _settle(uint256 id, bool result) private {
+	function _settle(uint256 tokenId, bool result) private {
 		require(
-			_bets[id].payoutDate < block.timestamp,
+			_bets[tokenId].payoutDate < block.timestamp,
 			"_settle: Payout date not reached"
 		);
 
-        _bets[id].settled = true;
-        _totalInPlay -= _bets[id].amount;
-        _totalExposure -= _bets[id].payout - _bets[id].amount;
+        _bets[tokenId].settled = true;
+        _totalInPlay -= _bets[tokenId].amount;
+        _totalExposure -= _bets[tokenId].payout - _bets[tokenId].amount;
         _inplayCount -= 1;
 
         address underlying = _vault.asset();
-		result == true ? IERC20(underlying).transfer(_bets[id].owner, _bets[id].payout) : IERC20(underlying).transfer(address(_vault), _bets[id].payout);
+		result == true ? IERC20(underlying).transfer(_bets[tokenId].owner, _bets[tokenId].payout) : IERC20(underlying).transfer(address(_vault), _bets[tokenId].payout);
 
-		_burn(id);
+		_burn(tokenId);
 
-		emit Settled(id, _bets[id].payout, result, _bets[id].owner);
+		emit Settled(tokenId, _bets[tokenId].payout, result, _bets[tokenId].owner);
 	}
 
 	function grantSigner(address signer) external onlyOwner {

@@ -540,9 +540,9 @@ describe("Market", () => {
 			expect(balance).to.equal(ethers.utils.parseUnits("1350", tokenDecimals));
 		});
 
-		it("Should settle all bets in a market", async () => {
+		it.only("Should settle all bets in a market", async () => {
 			const marketId = formatBytes16String(MARKET_ID);
-			const inPlay = await market.getTotalInPlay();
+			let inPlay = await market.getTotalInPlay();
 			expect(inPlay).to.equal(0);
 
 			const marketTotal = await market.getMarketTotal(marketId);
@@ -557,7 +557,7 @@ describe("Market", () => {
 
 			const end = latestBlock.timestamp + 10000;
 
-			for (let i = 1; i <= 1; i++) {
+			for (let i = 1; i <= 2; i++) {
 				const propositionId = formatBytes16String(i.toString());
 				const nonce = formatBytes16String(i.toString());
 
@@ -588,8 +588,11 @@ describe("Market", () => {
 				).to.emit(market, "Placed");
 			}
 
+			inPlay = await market.getTotalInPlay();
+			expect(inPlay).to.equal(ethers.utils.parseUnits("200", USDT_DECIMALS));
+
 			const count = await market.getCount();
-			expect(count, "There should be 3 bets").to.equal(1);
+			expect(count, "There should be 2 bets").to.equal(2);
 
 			await hre.network.provider.request({
 				method: "evm_setNextBlockTimestamp",
@@ -611,8 +614,8 @@ describe("Market", () => {
 			// const exposure = await market.getTotalExposure();
 			// expect(exposure).to.equal(0);
 
-			// inPlay = await market.getTotalInPlay();
-			// expect(inPlay).to.equal(0);
+			inPlay = await market.getTotalInPlay();
+			expect(inPlay).to.equal(0);
 		});
 	});
 
