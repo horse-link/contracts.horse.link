@@ -273,7 +273,7 @@ describe("Market", () => {
 			.connect(bob)
 			.approve(market.address, ethers.utils.parseUnits("100", tokenDecimals));
 		// Runner 1 for a Win
-		//AAAAAABBBCC
+		// AAAAAABBBCC
 		const propositionId = formatBytes16String("019450ABC0101W");
 		const nonce = formatBytes16String("1");
 
