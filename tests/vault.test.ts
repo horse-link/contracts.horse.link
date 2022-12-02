@@ -1,5 +1,5 @@
 import chai, { expect } from "chai";
-import { ethers, deployments } from "hardhat";
+import hre, { ethers, deployments } from "hardhat";
 import { solidity } from "ethereum-waffle";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { Market, Token, Vault } from "../build/typechain";
@@ -15,8 +15,6 @@ describe("Vault", () => {
 	let alice: SignerWithAddress;
 	let bob: SignerWithAddress;
 	let underlyingDecimals: number;
-	// 90 days in seconds
-	const lockDuration = 7776000;
 
 	beforeEach(async () => {
 		// Import deployments tagged with these values
@@ -31,8 +29,7 @@ describe("Vault", () => {
 
 		vault = (await ethers.getContractAt(
 			fixture.UsdtVault.abi,
-			fixture.UsdtVault.address,
-			lockDuration
+			fixture.UsdtVault.address
 		)) as Vault;
 
 		market = (await ethers.getContractAt(
@@ -91,6 +88,11 @@ describe("Vault", () => {
 
 		const _market = await vault.getMarket();
 		expect(_market, "Should have market address").to.equal(market.address);
+
+		const lockDuration = await vault.lockDuration();
+		expect(lockDuration, "Should have market address").to.equal(
+			process.env.VAULT_LOCK_TIME
+		);
 	});
 
 	it("Should not be able set market twice", async () => {
@@ -186,6 +188,16 @@ describe("Vault", () => {
 
 			await vault.connect(alice).deposit(amount, alice.address);
 
+			const lockedTime = await (
+				await vault.lockedTime(alice.address)
+			).toNumber();
+
+			// Move past the lock up period
+			await hre.network.provider.request({
+				method: "evm_setNextBlockTimestamp",
+				params: [lockedTime + 1]
+			});
+
 			await expect(
 				vault
 					.connect(alice)
@@ -230,12 +242,17 @@ describe("Vault", () => {
 			const amount = ethers.utils.parseUnits("1000", underlyingDecimals);
 			await underlying.connect(alice).approve(vault.address, amount);
 
-			const timestamp = (await provider.getBlock(blockNumber)).timestamp;
+			const latestBlockNumber = await ethers.provider.getBlockNumber();
+			const latestBlock = await ethers.provider.getBlock(latestBlockNumber);
 			await vault.connect(alice).deposit(amount, alice.address);
 
-			const lockedTime = await vault.lockedTime(alice.address);
+			const lockedTime = await (
+				await vault.lockedTime(alice.address)
+			).toNumber();
 
-			expect(lockedTime).to.equal(timestamp + lockDuration);
+			expect(lockedTime).to.equal(
+				latestBlock.timestamp + Number(process.env.VAULT_LOCK_TIME) + 1
+			);
 			await expect(
 				vault
 					.connect(alice)
@@ -246,34 +263,40 @@ describe("Vault", () => {
 					)
 			).to.be.revertedWith("withdraw: Locked time not passed");
 
-			// const receipt = await (
-			// 	await vault
-			// 		.connect(alice)
-			// 		.withdraw(
-			// 			ethers.utils.parseUnits("500", underlyingDecimals),
-			// 			alice.address,
-			// 			alice.address
-			// 		)
-			// ).wait();
-			// expect(
-			// 	await vault.balanceOf(alice.address),
-			// 	"Balance of shares is wrong"
-			// ).to.equal(ethers.utils.parseUnits("500", underlyingDecimals));
+			// Move past the lock up period
+			await hre.network.provider.request({
+				method: "evm_setNextBlockTimestamp",
+				params: [lockedTime + 1]
+			});
 
-			// expect(
-			// 	await underlying.balanceOf(alice.address),
-			// 	"Balance of underlying assets is wrong"
-			// ).to.equal(ethers.utils.parseUnits("1500", underlyingDecimals));
+			const receipt = await (
+				await vault
+					.connect(alice)
+					.withdraw(
+						ethers.utils.parseUnits("500", underlyingDecimals),
+						alice.address,
+						alice.address
+					)
+			).wait();
+			expect(
+				await vault.balanceOf(alice.address),
+				"Balance of shares is wrong"
+			).to.equal(ethers.utils.parseUnits("500", underlyingDecimals));
 
-			// const event = getEventData("Withdraw", vault, receipt);
-			// expect(event.sender, "Sender should be alice").to.equal(alice.address);
-			// expect(event.receiver, "Receiver should be alice").to.equal(
-			// 	alice.address
-			// );
-			// expect(
-			// 	event.assets,
-			// 	"Assets should be the amount of assets requested"
-			// ).to.equal(ethers.utils.parseUnits("500", underlyingDecimals));
+			expect(
+				await underlying.balanceOf(alice.address),
+				"Balance of underlying assets is wrong"
+			).to.equal(ethers.utils.parseUnits("1500", underlyingDecimals));
+
+			const event = getEventData("Withdraw", vault, receipt);
+			expect(event.sender, "Sender should be alice").to.equal(alice.address);
+			expect(event.receiver, "Receiver should be alice").to.equal(
+				alice.address
+			);
+			expect(
+				event.assets,
+				"Assets should be the amount of assets requested"
+			).to.equal(ethers.utils.parseUnits("500", underlyingDecimals));
 		});
 	});
 

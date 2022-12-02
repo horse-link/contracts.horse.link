@@ -27,7 +27,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 		const deployResult = await deploy(tokenDetails.vaultName, {
 			contract: "Vault",
 			from: deployer,
-			args: [tokenAddress],
+			args: [tokenAddress, process.env.VAULT_LOCK_TIME],
 			log: true,
 			autoMine: true, // speed up deployment on local network (ganache, hardhat), no effect on live networks,
 			skipIfAlreadyDeployed: false
