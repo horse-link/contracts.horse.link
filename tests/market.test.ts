@@ -295,7 +295,7 @@ describe("Market", () => {
 			.back(nonce, propositionId, marketId, wager, odds, close, end, signature);
 
 		expect(await market.getMarketTotal(marketId)).to.equal(
-			ethers.utils.parseUnits("450", USDT_DECIMALS)
+			ethers.utils.parseUnits("100", USDT_DECIMALS)
 		);
 
 		balance = await underlying.balanceOf(bob.address);
