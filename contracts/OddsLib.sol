@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/utils/math/Math.sol";
 
 library OddsLib {
 
-    uint256 internal constant PRECISION = 1 ether;
+    uint256 public constant PRECISION = 1e6;
 
     /*
         * @dev Reduces odds linearly to 0 (when the payout would exceed the free liquidity)
@@ -17,27 +17,14 @@ library OddsLib {
         uint256 wager,
         uint256 odds,
         uint256 maxPayout
-    ) internal pure returns (uint256) {
-		uint256 oddsAdjustment = Math.mulDiv(odds, odds * wager, maxPayout, Math.Rounding.Up);
+    ) external pure returns (uint256) {
+        uint256 unadjustedPayout = odds * wager / PRECISION;
+		uint256 oddsAdjustment = Math.mulDiv(odds, unadjustedPayout, maxPayout, Math.Rounding.Up);
         // If we have gone past the floor, clip to 0
         if (oddsAdjustment > odds) {
             return 0;
         }
         return odds - oddsAdjustment;
-    }
-
-    function getLinearAdjustedOdds2(
-        uint256 wager,
-        uint256 odds,
-        uint256 maxPayout
-    ) internal pure returns (uint256) {
-
-        uint256 unadjustedPayout = odds * wager;
-        uint256 payoutAdjustment = Math.mulDiv(unadjustedPayout, unadjustedPayout, maxPayout, Math.Rounding.Up);
-        if (payoutAdjustment > unadjustedPayout) {
-            return 0;
-        }
-        return (unadjustedPayout - payoutAdjustment) * PRECISION / wager * PRECISION;
     }
 
     /*
@@ -49,18 +36,17 @@ library OddsLib {
     function getCurvedAdjustedOdds(
         uint256 wager,
         uint256 odds,
-        uint256 maxPayout,
-        uint256 coefficient
-    ) internal pure returns (uint256) {
-        uint256 SQRT_PRECISION = 1e9;
-        uint256 potentialPayout = wager * odds * PRECISION;
+        uint256 maxPayout
+    ) external pure returns (uint256) {
+        uint256 SQRT_PRECISION = 1e3;
+        uint256 potentialPayout = wager * odds / PRECISION;
         uint256 adjustedPayout = maxPayout -
             (maxPayout * SQRT_PRECISION) /
             Math.sqrt(
-                coefficient * potentialPayout * PRECISION / maxPayout + (1 * PRECISION),
+                2 * (potentialPayout * PRECISION) / maxPayout + (1 * PRECISION),
                 Math.Rounding.Up
             );
         // Return the odds need to generate this adjusted payout with the given wager
-        return (adjustedPayout * PRECISION) / (wager * PRECISION);
+        return (adjustedPayout * PRECISION) / wager ;
     }
 }
