@@ -19,7 +19,7 @@ contract MarketCurved is Market {
 		uint256 wager,
 		uint256 odds,
 		uint256 pool
-	) internal override view returns (uint256) {
+	) internal override pure returns (uint256) {
 		return OddsLib.getCurvedAdjustedOdds(
 			wager,
 			odds,
