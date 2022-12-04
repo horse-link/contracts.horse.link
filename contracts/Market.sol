@@ -60,7 +60,7 @@ contract Market is Ownable, ERC721 {
 		uint8 margin,
 		address oracle
 	)
-	ERC721("Bet", "BET") {
+	ERC721("Horse Link Bet Slip", "HL-BET") {
 		assert(address(vault) != address(0));
 		_self = address(this);
 		_vault = vault;
