@@ -36,3 +36,6 @@ coverage.json
 coverage/
 
 .deps/
+
+venv/
+venv/bin/
