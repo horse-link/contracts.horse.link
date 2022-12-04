@@ -3,13 +3,10 @@ import chai, { expect } from "chai";
 import { OddsLib } from "../build/typechain";
 import { loadFixture, solidity } from "ethereum-waffle";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { formatBytes16String } from "./utils";
-import { BigNumber } from "ethers";
 
 chai.use(solidity);
 let owner: SignerWithAddress;
 let oddsLib: OddsLib;
-let oddsPrecision: number;
 
 // New odds = Odds - ( Odds * Wager / Pool)
 const linearTestData = [
