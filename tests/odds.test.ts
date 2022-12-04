@@ -1,7 +1,7 @@
-import hre, { ethers, deployments } from "hardhat";
+import { ethers, deployments } from "hardhat";
 import chai, { expect } from "chai";
 import { OddsLib } from "../build/typechain";
-import { loadFixture, solidity } from "ethereum-waffle";
+import { solidity } from "ethereum-waffle";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 
 chai.use(solidity);
