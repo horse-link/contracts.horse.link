@@ -38,4 +38,3 @@ coverage/
 .deps/
 
 venv/
-venv/bin/
