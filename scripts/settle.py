@@ -64,9 +64,12 @@ def main():
     for market in markets:
         contract = load_market(market['address'])
         count = get_inplay_count(contract)
-        print(count)
+        start = count - 50 if count > 50 else 0
 
-        for i in range(count):
+        # settle last 50
+        for i in range(start, count):
+            print(f"Settling bet {i} for market {market['address']}")
+            
             tx_receipt = settle(contract, i)
             print(tx_receipt)
 
