@@ -73,3 +73,19 @@ network is localhost
 token address is 0x47A78de7a881CCa1a0f510efA2E520b447F707Bb
 balance is 1 wei for address 0xA39560b08FAF6d8Cd2aAC286479D25E0ea70f510
 ```
+
+## Running settle script
+
+Setup the local Python environment:
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+Run the script:
+
+```bash
+python scripts/settle.py
+```
