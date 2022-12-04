@@ -25,7 +25,6 @@ struct Bet {
 }
 
 contract Market is Ownable, ERC721 {
-	uint256 private constant MAX = 32;
 	uint8 private immutable _margin;
 
 	IVault private immutable _vault;
