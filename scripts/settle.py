@@ -24,9 +24,9 @@ def load_market(address):
         return contract
 
 
-def get_inplay_count(contract):
-    inplaycount = contract.functions.getInPlayCount().call()
-    return inplaycount
+def get_count(contract):
+    count = contract.functions.getCount().call()
+    return count
 
 
 def settle(contract, index):
