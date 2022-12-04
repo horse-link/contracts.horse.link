@@ -92,14 +92,19 @@ describe("Market", () => {
 		vault = await new Vault__factory(owner).deploy(underlying.address);
 		await vault.deployed();
 
-		const Lib = await ethers.getContractFactory("SignatureLib");
-		const lib = await Lib.deploy();
-		await lib.deployed();
+		const SignatureLib = await ethers.getContractFactory("SignatureLib");
+		const signatureLib = await SignatureLib.deploy();
+		await signatureLib.deployed();
+
+		const OddsLib = await ethers.getContractFactory("OddsLib");
+		const oddsLib = await OddsLib.deploy();
+		await oddsLib.deployed();
 
 		const marketFactory = await ethers.getContractFactory("Market", {
 			signer: owner,
 			libraries: {
-				SignatureLib: lib.address
+				SignatureLib: signatureLib.address,
+				OddsLib: oddsLib.address
 			}
 		});
 
