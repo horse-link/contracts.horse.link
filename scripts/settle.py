@@ -1,18 +1,26 @@
 from web3 import Web3
+from dotenv import load_dotenv
 import json
+import os
+import requests
 
-w3 = Web3(Web3.HTTPProvider(
-    'https://eth-goerli.g.alchemy.com/v2/u5vVYvyI5qgU6UXgDlfImbo4UutLzhTH'))
+load_dotenv()
 
-f = open('../artifacts/contracts/Market.sol/Market.json')
-data = json.load(f)
+node = os.getenv('GOERLI_URL')
+web3 = Web3(Web3.HTTPProvider(node))
+
+
+def get_markets():
+    response = requests.get("https://horse.link/api/config")
+    data = response.json()
+    return data['markets']
 
 
 def load_market(address):
-    with open('../artifacts/contracts/Market.sol/Market.json') as f:
+    with open('./artifacts/contracts/Market.sol/Market.json') as f:
         data = json.load(f)
         abi = data['abi']
-        contract = w3.eth.contract(address=address, abi=abi)
+        contract = web3.eth.contract(address=address, abi=abi)
         return contract
 
 
@@ -26,18 +34,42 @@ def settle(contract, index):
     print(bet)
 
     if bet[3] == False:
-        # tx_hash = contract.functions.settle(index).transact()
-        # tx_receipt = w3.eth.waitForTransactionReceipt(tx_hash)
-        # return tx_receipt
-        return '0x00'
+        account_from = {
+            'private_key': os.getenv('PRIVATE_KEY'),
+            'address': '0x155c21c846b68121ca59879B3CCB5194F5Ae115E',
+        }
+
+        tx = contract.functions.settle(index).buildTransaction(
+            {
+                'from': account_from['address'],
+                'nonce': web3.eth.get_transaction_count(account_from['address']),
+            }
+        )
+
+        tx_create = web3.eth.account.sign_transaction(
+            tx, account_from['private_key'])
+
+        tx_hash = web3.eth.send_raw_transaction(tx_create.rawTransaction)
+        tx_receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
+
+        return tx_receipt
 
 
-contract = load_market('0xD7363dd9a520787d02C223d5f02D86a3e2697675')
-count = get_inplay_count(contract)
-print(count)
+def main():
+
+    # fetch registry contract address from the api
+    markets = get_markets()
+
+    # settle each market
+    for market in markets:
+        contract = load_market(market['address'])
+        count = get_inplay_count(contract)
+        print(count)
+
+        for i in range(count):
+            tx_receipt = settle(contract, i)
+            print(tx_receipt)
 
 
-for i in range(count):
-    tx_receipt = settle(contract, i)
-    print(tx_receipt)
-
+if __name__ == "__main__":
+    main()
