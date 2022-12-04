@@ -63,7 +63,7 @@ def main():
     # settle each market
     for market in markets:
         contract = load_market(market['address'])
-        count = get_inplay_count(contract)
+        count = get_count(contract)
         start = count - 50 if count > 50 else 0
 
         # settle last 50
