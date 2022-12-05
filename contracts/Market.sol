@@ -303,7 +303,7 @@ contract Market is Ownable, ERC721 {
 		}
 	}
 
-	function _settle(uint256 tokenId, bool result) private {
+	function _settle(uint256 tokenId, bool won) private {
 		require(
 			_bets[tokenId].payoutDate < block.timestamp,
 			"_settle: Payout date not reached"
@@ -315,11 +315,19 @@ contract Market is Ownable, ERC721 {
         _inplayCount -= 1;
 
         address underlying = _vault.asset();
-		result == true ? IERC20(underlying).transfer(_bets[tokenId].owner, _bets[tokenId].payout) : IERC20(underlying).transfer(address(_vault), _bets[tokenId].payout);
+		if (won) {
+			// Transfer the win to the punter
+			IERC20(underlying).transfer(_bets[tokenId].owner, _bets[tokenId].payout);
+        }
+
+        if (!won) {
+            // Transfer the proceeds to the vault, less market margin
+            IERC20(underlying).transfer(address(_vault), _bets[tokenId].payout);
+        }
 
 		_burn(tokenId);
 
-		emit Settled(tokenId, _bets[tokenId].payout, result, _bets[tokenId].owner);
+		emit Settled(tokenId, _bets[tokenId].payout, won, _bets[tokenId].owner);
 	}
 
 	function grantSigner(address signer) external onlyOwner {
