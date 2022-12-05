@@ -162,7 +162,7 @@ describe("Market", () => {
 		expect(await vault.getMarketAllowance()).to.equal(1000000000);
 	});
 
-	it.only("Should get correct odds on a 5:1 punt", async () => {
+	it("Should get correct odds on a 5:1 punt", async () => {
 		const balance = await underlying.balanceOf(bob.address);
 		expect(balance, "Should have $1,000 USDT").to.equal(
 			ethers.utils.parseUnits("1000", USDT_DECIMALS)
@@ -204,10 +204,9 @@ describe("Market", () => {
 			targetOdds
 		);
 
-		// 3.81
-		expect(potentialPayout).to.equal(
-			190476190,
-			"Should have true odds of 1:4.75 on $100 in a $1,000 pool"
+		expect(potentialPayout, "Payout should be 190476190").to.be.closeTo(
+			BigNumber.from(190476190),
+			10
 		);
 	});
 
@@ -310,15 +309,12 @@ describe("Market", () => {
 		);
 
 		const inPlay = await market.getTotalInPlay();
-		expect(inPlay).to.equal(
-			ethers.utils.parseUnits("100", USDT_DECIMALS),
-			"Market should be $450 USDT in play after $100 bet @ 1:4.5"
-		);
+		expect(inPlay).to.equal(ethers.utils.parseUnits("100", USDT_DECIMALS));
 
 		vaultBalance = await underlying.balanceOf(vault.address);
 		expect(vaultBalance).to.equal(
-			ethers.utils.parseUnits("650", USDT_DECIMALS),
-			"Vault should have $650 USDT"
+			BigNumber.from(827272700),
+			"Vault should have $827.27 USDT"
 		);
 
 		// Should get expiry after back bet
@@ -586,17 +582,24 @@ describe("Market", () => {
 			expect(count).to.equal(1, "There should be 1 bet");
 
 			const bet = await market.getBetByIndex(0);
-			expect(bet[0], "Bet amount should be same as wager").to.equal(wager);
+			const betAmount = bet[0];
+			const betPayout = bet[1];
+
+			expect(betAmount, "Bet amount should be same as wager").to.equal(wager);
 
 			const inPlayCount = await market.getInPlayCount();
 			expect(inPlayCount, "In play count should be 1").to.equal(1);
 
 			let exposure = await market.getTotalExposure();
-			expect(exposure).to.equal(ethers.utils.parseUnits("350", USDT_DECIMALS));
+			expect(
+				exposure,
+				"Exposure should be equal to the payout less the wager"
+			).to.equal(betPayout.sub(wager));
 
 			let inPlay = await market.getTotalInPlay();
 			expect(inPlay).to.equal(ethers.utils.parseUnits("100", USDT_DECIMALS));
 
+			const bobBalance = await underlying.balanceOf(bob.address);
 			const nftBalance = await market.balanceOf(bob.address);
 			expect(nftBalance).to.equal(1, "Bob should have 1 NFT");
 			await oracle.setResult(
@@ -628,7 +631,7 @@ describe("Market", () => {
 			expect(inPlay).to.equal(0);
 
 			const balance = await underlying.balanceOf(bob.address);
-			expect(balance).to.equal(ethers.utils.parseUnits("1350", tokenDecimals));
+			expect(balance).to.equal(bobBalance.add(betPayout));
 		});
 	});
 });

@@ -21,7 +21,7 @@ library OddsLib {
     ) external pure returns (uint256) {
         assert(odds >= 1 * PRECISION);
         uint256 unadjustedPayout = odds * wager / PRECISION;
-		uint256 oddsAdjustment = Math.mulDiv(odds, unadjustedPayout, liquidity + wager, Math.Rounding.Up);
+		uint256 oddsAdjustment = Math.mulDiv(odds, unadjustedPayout, liquidity + wager, Math.Rounding.Down);
         // If we have gone past the floor, clip to 1
         if (oddsAdjustment > odds) {
             return 1 * PRECISION;
