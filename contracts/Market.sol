@@ -25,8 +25,8 @@ struct Bet {
 }
 
 contract Market is Ownable, ERC721 {
-	uint256 private constant MAX = 32;
-	uint8 private immutable _fee;
+	uint8 private immutable _margin;
+
 	IVault private immutable _vault;
 	address private immutable _self;
 	IOracle private immutable _oracle;
@@ -53,30 +53,31 @@ contract Market is Ownable, ERC721 {
 	uint256 public immutable timeout;
 	uint256 public immutable min;
 
+	mapping(address => bool) private _signers;
+
 	constructor(
 		IVault vault,
-		uint8 fee,
+		uint8 margin,
 		address oracle
 	)
-	ERC721("HorseLink Bet Slip", "HLBS") {
+	ERC721("Horse Link Bet Slip", "HL-BET") {
 		assert(address(vault) != address(0));
 		_self = address(this);
 		_vault = vault;
-		_fee = fee;
+		_margin = margin;
 		_oracle = IOracle(oracle);
+		_signers[owner()] = true;
 
 		timeout = 30 days;
 		min = 1 hours;
 	}
 
-	mapping(address => uint256) private _workerfees;
-
 	function tokenURI(uint256 tokenId) public pure override returns (string memory) {
 		return string(abi.encodePacked("https://api.horse.link/bet/", tokenId));
 	}
 
-	function getFee() external view returns (uint8) {
-		return _fee;
+	function getMargin() external view returns (uint8) {
+		return _margin;
 	}
 
 	function getTotalInPlay() external view returns (uint256) {
@@ -235,13 +236,10 @@ contract Market is Ownable, ERC721 {
 			close,
 			end
 		));
-		
-		require(
-			SignatureLib.recoverSigner(messageHash, signature) == owner(),
-			"back: Invalid signature"
-		);
 
-		// check the oracle first
+		require(isValidSignature(messageHash, signature) == true, "back: Invalid signature");
+
+		// Do not allow a bet placed if we know the result
 		require(
 			IOracle(_oracle).checkResult(marketId, propositionId) == false,
 			"back: Oracle result already set for this market"
@@ -307,13 +305,37 @@ contract Market is Ownable, ERC721 {
         }
 
         if (result == false) {
-            // Transfer the proceeds to the vault, less market fee
+            // Transfer the proceeds to the vault, less market margin
             IERC20(underlying).transfer(address(_vault), _bets[id].payout);
         }
 
 		_burn(id);
 
 		emit Settled(id, _bets[id].payout, result, _bets[id].owner);
+	}
+
+	function grantSigner(address signer) external onlyOwner {
+		require(signer != address(0), "grantSigner: Invalid signer address");
+		_signers[signer] = true;
+	}
+
+	function revokeSigner(address signer) external onlyOwner {
+		require(signer != address(0), "revokeSigner: Invalid signer address");
+		_signers[signer] = false;
+	}
+
+	function isSigner(address signer) external view returns (bool) {
+		return _isSigner(signer);
+	}
+
+	function _isSigner(address signer) private view returns (bool) {
+		return _signers[signer];
+	}
+
+	function isValidSignature(bytes32 messageHash, SignatureLib.Signature calldata signature) private returns (bool) {
+		address signer = SignatureLib.recoverSigner(messageHash, signature);
+		assert(signer != address(0));
+		return _isSigner(signer) == true;
 	}
 
 	event Placed(

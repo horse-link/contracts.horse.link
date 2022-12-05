@@ -1,5 +1,5 @@
 import hre, { ethers, deployments } from "hardhat";
-import { BigNumber, BigNumberish, BytesLike, ethers as tsEthers } from "ethers";
+import { BigNumber, BigNumberish, BytesLike } from "ethers";
 import chai, { expect } from "chai";
 import {
 	Market,
@@ -20,7 +20,7 @@ type Signature = {
 };
 
 // MarketId 11 chars
-//AAAAAABBBCC
+// AAAAAABBBCC
 // A = date as days since epoch
 // B = location code
 // C = race number
@@ -41,7 +41,7 @@ describe("Market", () => {
 
 	const USDT_DECIMALS = 6;
 	const ODDS_DECIMALS = 6;
-	const FEE = 100;
+	const MARGIN = 100;
 
 	beforeEach(async () => {
 		[owner, alice, bob, carol] = await ethers.getSigners();
@@ -92,9 +92,9 @@ describe("Market", () => {
 		vault = await new Vault__factory(owner).deploy(underlying.address);
 		await vault.deployed();
 
-		const Lib = await ethers.getContractFactory("SignatureLib");
-		const lib = await Lib.deploy();
-		await lib.deployed();
+		const SignatureLib = await ethers.getContractFactory("SignatureLib");
+		const signatureLib = await SignatureLib.deploy();
+		await signatureLib.deployed();
 
 		const OddsLib = await ethers.getContractFactory("OddsLib");
 		const oddsLib = await OddsLib.deploy();
@@ -103,14 +103,14 @@ describe("Market", () => {
 		const marketFactory = await ethers.getContractFactory("Market", {
 			signer: owner,
 			libraries: {
-				SignatureLib: lib.address,
+				SignatureLib: signatureLib.address,
 				OddsLib: oddsLib.address
 			}
 		});
 
 		// https://www.npmjs.com/package/hardhat-deploy?activeTab=readme#handling-contract-using-libraries
 		// https://stackoverflow.com/questions/71389974/how-can-i-link-library-and-contract-in-one-file
-		const args = [vault.address, FEE, oracle.address];
+		const args = [vault.address, MARGIN, oracle.address];
 		market = (await marketFactory.deploy(...args)) as Market;
 
 		await vault.setMarket(market.address, ethers.constants.MaxUint256);
@@ -146,8 +146,8 @@ describe("Market", () => {
 	});
 
 	it("should have properties set on deploy", async () => {
-		const fee = await market.getFee();
-		expect(fee, "fee should be set").to.equal(FEE);
+		const margin = await market.getMargin();
+		expect(margin, "margin should be set").to.equal(MARGIN);
 
 		const inPlay = await market.getTotalInPlay();
 		expect(inPlay, "Should have $0 in play").to.equal(0);
@@ -187,6 +187,18 @@ describe("Market", () => {
 		// Runner 1 for a Win
 		const propositionId = formatBytes16String("1");
 
+		// const trueOdds = await market.getOdds(
+		// 	ethers.utils.parseUnits("50", USDT_DECIMALS),
+		// 	targetOdds,
+		// 	propositionId
+		// );
+
+		// expect(
+		// 	trueOdds,
+		// 	"Should have true odds of 1:4.75 on $50 in a $1,000 pool"
+		// ).to.equal(4750000);
+
+		// there still needs to be slippage in the odds
 		const trueOdds = await market.getOdds(
 			ethers.utils.parseUnits("50", USDT_DECIMALS),
 			targetOdds,
@@ -277,7 +289,7 @@ describe("Market", () => {
 			.connect(bob)
 			.approve(market.address, ethers.utils.parseUnits("100", tokenDecimals));
 		// Runner 1 for a Win
-		//AAAAAABBBCC
+		// AAAAAABBBCC
 		const propositionId = formatBytes16String("019450ABC0101W");
 		const nonce = formatBytes16String("1");
 
@@ -389,17 +401,17 @@ describe("Market", () => {
 			"Should have $800 USDT after a $200 bet"
 		);
 	});
-	it.skip("should not allow a donation attack", async () => {
-		// Bob has some USDT but he wants more
-		const bobOriginalBalance = await underlying.balanceOf(bob.address);
+	it.skip("should not allow a betting attack", async () => {
+		// Alice has some USDT but he wants more
+		const aliceOriginalBalance = await underlying.balanceOf(alice.address);
 
-		// Alice is an honest investor and deposits $1000 USDT
+		// Bob is an honest investor and deposits $1000 USDT
 		await vault
-			.connect(alice)
-			.deposit(ethers.utils.parseUnits("1000", USDT_DECIMALS), alice.address);
+			.connect(bob)
+			.deposit(ethers.utils.parseUnits("1000", USDT_DECIMALS), bob.address);
 
-		// Now Bob attacks
-		const wager = ethers.utils.parseUnits("1000", USDT_DECIMALS);
+		// Now Alice attacks
+		const wager = ethers.utils.parseUnits("10000", USDT_DECIMALS);
 		const odds = ethers.utils.parseUnits("10", ODDS_DECIMALS);
 		const close = 0;
 
@@ -419,9 +431,9 @@ describe("Market", () => {
 			end,
 			owner
 		);
-		await underlying.connect(bob).approve(market.address, wager);
+		await underlying.connect(alice).approve(market.address, wager);
 		await market
-			.connect(bob)
+			.connect(alice)
 			.back(
 				nonce,
 				propositionId,
@@ -433,38 +445,40 @@ describe("Market", () => {
 				betSignature
 			);
 
-		// Bob now buys shares
+		// Alice now buys shares
 		await vault
-			.connect(bob)
-			.deposit(ethers.utils.parseUnits("1000", USDT_DECIMALS), bob.address);
+			.connect(alice)
+			.deposit(ethers.utils.parseUnits("100000", USDT_DECIMALS), alice.address);
 
-		// Bob's bet loses
+		// Alice's bet loses
 		await hre.network.provider.request({
 			method: "evm_setNextBlockTimestamp",
 			params: [end + 7200]
 		});
 		await oracle.setResult(
 			marketId,
-			"fail",
+			formatBytes16String("0"),
 			"0x0000000000000000000000000000000000000000000000000000000000000000"
 		);
-		await market.connect(bob).settle(0);
+		await market.connect(alice).settle(0);
 
-		// Bob sells all his shares, smiling
+		// Alice sells all her shares, smiling
 		await vault
-			.connect(bob)
+			.connect(alice)
 			.redeem(
 				ethers.utils.parseUnits("1000", USDT_DECIMALS),
-				bob.address,
-				bob.address
+				alice.address,
+				alice.address
 			);
 
-		// Did Bob profit from the attack?
-		const bobBalance = await underlying.balanceOf(bob.address);
+		// Did Alice profit from the attack?
+		const aliceBalance = await underlying.balanceOf(alice.address);
 		expect(
-			bobBalance,
-			`Bob just made an easy ${bobOriginalBalance.sub(bobBalance).toNumber()}`
-		).to.be.lt(bobOriginalBalance);
+			aliceBalance,
+			`Alice just made an easy ${aliceOriginalBalance
+				.sub(aliceBalance)
+				.toNumber()}`
+		).to.be.lt(aliceOriginalBalance);
 	});
 
 	/*describe.only("Liquidity", () => {
@@ -534,7 +548,7 @@ describe("Market", () => {
 			expect(vaultBalanceAfter).to.equal(vaultBalanceBefore.add(bet[1]));
 		});
 
-		it("Should settle bobs winning bet by index", async () => {
+		it.skip("Should settle bobs winning bet by index", async () => {
 			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
 			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
 			const close = 0;
@@ -632,6 +646,39 @@ describe("Market", () => {
 
 			const balance = await underlying.balanceOf(bob.address);
 			expect(balance).to.equal(bobBalance.add(betPayout));
+		});
+	});
+
+	describe("ACL", () => {
+		it("should not be a valid signer", async () => {
+			const newSigner = await ethers.Wallet.createRandom();
+			const isSigner = await market.isSigner(newSigner.address);
+			expect(isSigner).to.equal(false);
+		});
+
+		it("should allow a new signer to be granted by owner", async () => {
+			const newSigner = await ethers.Wallet.createRandom();
+			await market.connect(owner).grantSigner(newSigner.address);
+			const isSigner = await market.isSigner(newSigner.address);
+			expect(isSigner).to.equal(true);
+		});
+
+		it("should not allow alice to grant a new signer", async () => {
+			const newSigner = await ethers.Wallet.createRandom();
+			await expect(
+				market.connect(alice).grantSigner(newSigner.address)
+			).to.be.revertedWith("Ownable: caller is not the owner");
+		});
+
+		it("should allow a new signer to be revoked by owner", async () => {
+			const newSigner = await ethers.Wallet.createRandom();
+			await market.connect(owner).grantSigner(newSigner.address);
+			let isSigner = await market.isSigner(newSigner.address);
+			expect(isSigner).to.equal(true);
+
+			await market.connect(owner).revokeSigner(newSigner.address);
+			isSigner = await market.isSigner(newSigner.address);
+			expect(isSigner).to.equal(false);
 		});
 	});
 });
