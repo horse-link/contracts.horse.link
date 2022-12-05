@@ -56,10 +56,10 @@ def settle(market, index):
 
 
 def main():
-
     # fetch registry contract address from the api
     markets = get_markets()
     now = datetime.now().timestamp()
+    print(f"Current Time: {now}")
 
     # settle each market
     for market in markets:
@@ -68,7 +68,7 @@ def main():
 
         ## settle each bet in reverse order
         for i in range(count - 1, 0, -1):
-            bet = contract.functions.getBetByIndex(index).call()
+            bet = contract.functions.getBetByIndex(i).call()
                             
             if bet[2] > now - 60 * 60 * 2:
                 if bet[3] == False:
@@ -79,8 +79,10 @@ def main():
                 else:
                     print(f"Bet {i} for market {market['address']} already settled")
             else:
-                yield
+                print(f"Bet {i} for market {market['address']} is too old")
+                break
 
 
 if __name__ == "__main__":
+    print('Starting settle script')
     main()
