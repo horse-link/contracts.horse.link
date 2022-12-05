@@ -62,7 +62,7 @@ const curvedTestData = [
 	}
 ];
 
-describe.only("Odds", () => {
+describe("Odds", () => {
 	beforeEach(async () => {
 		[owner] = await ethers.getSigners();
 		const fixture = await deployments.fixture(["market"]);
