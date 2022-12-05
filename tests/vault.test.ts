@@ -193,11 +193,21 @@ describe("Vault", () => {
 			expect(previewWithdraw).to.equal(amount);
 		});
 
-		it.only("Should not allow user to withdraw more than maxWithdraw", async () => {
+		it("Should not allow user to withdraw more than maxWithdraw", async () => {
 			const amount = ethers.utils.parseUnits("1000", underlyingDecimals);
 			await underlying.connect(alice).approve(vault.address, amount);
 
 			await vault.connect(alice).deposit(amount, alice.address);
+
+			const lockedTime = (
+				await vaultTimeLock.lockedTime(alice.address)
+			).toNumber();
+
+			// Move past the lock up period
+			await hre.network.provider.request({
+				method: "evm_setNextBlockTimestamp",
+				params: [lockedTime + 1]
+			});
 
 			await expect(
 				vault

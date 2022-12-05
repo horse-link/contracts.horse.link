@@ -23,7 +23,7 @@ contract VaultTimeLock is Vault {
     // Override _deposit function to require owner to be receiver
     // Set lock time on owner to block transfers until after lock period
 
-        /**
+    /**
      * @dev Deposit/mint common workflow.
      */
     function _deposit(
