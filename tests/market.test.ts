@@ -89,10 +89,7 @@ describe("Market", () => {
 			ethers.utils.parseUnits("1000", USDT_DECIMALS)
 		);
 
-		vault = await new Vault__factory(owner).deploy(
-			underlying.address,
-			process.env.VAULT_LOCK_TIME
-		);
+		vault = await new Vault__factory(owner).deploy(underlying.address);
 		await vault.deployed();
 
 		const Lib = await ethers.getContractFactory("SignatureLib");

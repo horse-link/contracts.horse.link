@@ -2,7 +2,7 @@ import chai, { expect } from "chai";
 import hre, { ethers, deployments } from "hardhat";
 import { solidity } from "ethereum-waffle";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { Market, Token, Vault } from "../build/typechain";
+import { Market, Token, Vault, VaultTimeLock } from "../build/typechain";
 import { getEventData } from "./utils";
 
 chai.use(solidity);
@@ -10,6 +10,7 @@ chai.use(solidity);
 describe("Vault", () => {
 	let underlying: Token;
 	let vault: Vault;
+	let vaultTimeLock: VaultTimeLock;
 	let market: Market;
 	let owner: SignerWithAddress;
 	let alice: SignerWithAddress;
@@ -18,7 +19,12 @@ describe("Vault", () => {
 
 	beforeEach(async () => {
 		// Import deployments tagged with these values
-		const fixture = await deployments.fixture(["vault", "token", "market"]);
+		const fixture = await deployments.fixture([
+			"vault",
+			"vaultTimeLock",
+			"token",
+			"market"
+		]);
 
 		[owner, alice, bob] = await ethers.getSigners();
 
@@ -31,6 +37,11 @@ describe("Vault", () => {
 			fixture.UsdtVault.abi,
 			fixture.UsdtVault.address
 		)) as Vault;
+
+		vaultTimeLock = (await ethers.getContractAt(
+			fixture.UsdtVault.abi,
+			fixture.UsdtVault.address
+		)) as VaultTimeLock;
 
 		market = (await ethers.getContractAt(
 			fixture.UsdtMarket.abi,
@@ -182,21 +193,11 @@ describe("Vault", () => {
 			expect(previewWithdraw).to.equal(amount);
 		});
 
-		it("Should not allow user to withdraw more than maxWithdraw", async () => {
+		it.only("Should not allow user to withdraw more than maxWithdraw", async () => {
 			const amount = ethers.utils.parseUnits("1000", underlyingDecimals);
 			await underlying.connect(alice).approve(vault.address, amount);
 
 			await vault.connect(alice).deposit(amount, alice.address);
-
-			const lockedTime = await (
-				await vault.lockedTime(alice.address)
-			).toNumber();
-
-			// Move past the lock up period
-			await hre.network.provider.request({
-				method: "evm_setNextBlockTimestamp",
-				params: [lockedTime + 1]
-			});
 
 			await expect(
 				vault
@@ -217,6 +218,7 @@ describe("Vault", () => {
 						alice.address
 					)
 			).wait();
+
 			expect(
 				await vault.balanceOf(alice.address),
 				"Balance of shares is wrong"
@@ -240,28 +242,55 @@ describe("Vault", () => {
 
 		it("Should not allow user to withdraw before the lock up period ends", async () => {
 			const amount = ethers.utils.parseUnits("1000", underlyingDecimals);
-			await underlying.connect(alice).approve(vault.address, amount);
+			await underlying.connect(alice).approve(vaultTimeLock.address, amount);
 
 			const latestBlockNumber = await ethers.provider.getBlockNumber();
 			const latestBlock = await ethers.provider.getBlock(latestBlockNumber);
-			await vault.connect(alice).deposit(amount, alice.address);
+			await vaultTimeLock.connect(alice).deposit(amount, alice.address);
 
-			const lockedTime = await (
-				await vault.lockedTime(alice.address)
+			const lockedTime = (
+				await vaultTimeLock.lockedTime(alice.address)
 			).toNumber();
 
 			expect(lockedTime).to.equal(
 				latestBlock.timestamp + Number(process.env.VAULT_LOCK_TIME) + 1
 			);
 			await expect(
-				vault
+				vaultTimeLock
 					.connect(alice)
 					.withdraw(
 						ethers.utils.parseUnits("100", underlyingDecimals),
 						alice.address,
 						alice.address
 					)
-			).to.be.revertedWith("withdraw: Locked time not passed");
+			).to.be.revertedWith("_withdraw: Locked time not passed");
+
+			// Should not be able to transfer or transferFrom before the lock up period ends
+			await expect(
+				vaultTimeLock
+					.connect(alice)
+					.transfer(
+						alice.address,
+						ethers.utils.parseUnits("100", underlyingDecimals)
+					)
+			).to.be.revertedWith("_transfer: Locked time not passed");
+
+			await vaultTimeLock
+				.connect(alice)
+				.approve(
+					owner.address,
+					ethers.utils.parseUnits("100", underlyingDecimals)
+				);
+
+			await expect(
+				vaultTimeLock
+					.connect(owner)
+					.transferFrom(
+						alice.address,
+						owner.address,
+						ethers.utils.parseUnits("100", underlyingDecimals)
+					)
+			).to.be.revertedWith("_transfer: Locked time not passed");
 
 			// Move past the lock up period
 			await hre.network.provider.request({
@@ -270,7 +299,7 @@ describe("Vault", () => {
 			});
 
 			const receipt = await (
-				await vault
+				await vaultTimeLock
 					.connect(alice)
 					.withdraw(
 						ethers.utils.parseUnits("500", underlyingDecimals),
@@ -279,7 +308,7 @@ describe("Vault", () => {
 					)
 			).wait();
 			expect(
-				await vault.balanceOf(alice.address),
+				await vaultTimeLock.balanceOf(alice.address),
 				"Balance of shares is wrong"
 			).to.equal(ethers.utils.parseUnits("500", underlyingDecimals));
 
@@ -288,7 +317,7 @@ describe("Vault", () => {
 				"Balance of underlying assets is wrong"
 			).to.equal(ethers.utils.parseUnits("1500", underlyingDecimals));
 
-			const event = getEventData("Withdraw", vault, receipt);
+			const event = getEventData("Withdraw", vaultTimeLock, receipt);
 			expect(event.sender, "Sender should be alice").to.equal(alice.address);
 			expect(event.receiver, "Receiver should be alice").to.equal(
 				alice.address
@@ -297,6 +326,38 @@ describe("Vault", () => {
 				event.assets,
 				"Assets should be the amount of assets requested"
 			).to.equal(ethers.utils.parseUnits("500", underlyingDecimals));
+
+			// Should now be able to transfer or transferFrom since the lock up period ends
+			await expect(
+				vaultTimeLock
+					.connect(alice)
+					.transfer(
+						owner.address,
+						ethers.utils.parseUnits("1", underlyingDecimals)
+					)
+			).to.not.be.revertedWith("_transfer: Locked time not passed");
+
+			await vaultTimeLock
+				.connect(alice)
+				.approve(
+					owner.address,
+					ethers.utils.parseUnits("1", underlyingDecimals)
+				);
+
+			await expect(
+				vaultTimeLock
+					.connect(owner)
+					.transferFrom(
+						alice.address,
+						owner.address,
+						ethers.utils.parseUnits("1", underlyingDecimals)
+					)
+			).to.not.be.revertedWith("_transfer: Locked time not passed");
+
+			expect(
+				await vaultTimeLock.balanceOf(owner.address),
+				"Balance of shares is wrong"
+			).to.equal(ethers.utils.parseUnits("2", underlyingDecimals));
 		});
 	});
 
