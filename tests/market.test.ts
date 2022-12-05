@@ -38,13 +38,14 @@ describe("Market", () => {
 	let alice: SignerWithAddress;
 	let bob: SignerWithAddress;
 	let carol: SignerWithAddress;
+	let whale: SignerWithAddress;
 
 	const USDT_DECIMALS = 6;
 	const ODDS_DECIMALS = 6;
 	const MARGIN = 100;
 
 	beforeEach(async () => {
-		[owner, alice, bob, carol] = await ethers.getSigners();
+		[owner, alice, bob, carol, whale] = await ethers.getSigners();
 		const fixture = await deployments.fixture([
 			"token",
 			"registry",
@@ -87,6 +88,10 @@ describe("Market", () => {
 		await underlying.transfer(
 			carol.address,
 			ethers.utils.parseUnits("1000", USDT_DECIMALS)
+		);
+		await underlying.transfer(
+			whale.address,
+			ethers.utils.parseUnits("10000000", USDT_DECIMALS)
 		);
 
 		vault = await new Vault__factory(owner).deploy(underlying.address);
@@ -186,17 +191,6 @@ describe("Market", () => {
 
 		// Runner 1 for a Win
 		const propositionId = formatBytes16String("1");
-
-		// const trueOdds = await market.getOdds(
-		// 	ethers.utils.parseUnits("50", USDT_DECIMALS),
-		// 	targetOdds,
-		// 	propositionId
-		// );
-
-		// expect(
-		// 	trueOdds,
-		// 	"Should have true odds of 1:4.75 on $50 in a $1,000 pool"
-		// ).to.equal(4750000);
 
 		// there still needs to be slippage in the odds
 		const trueOdds = await market.getOdds(
@@ -402,14 +396,85 @@ describe("Market", () => {
 		);
 	});
 
-	/*describe.only("Liquidity", () => {
-		it("Should not allow a payout greater than the pool", async () => {
+	it("should not allow a betting attack", async () => {
+		// Whale has some USDT but he wants more
+		const whaleOriginalBalance = await underlying.balanceOf(whale.address);
+
+		// Bob is an honest investor and deposits $20000 USDT
+		await vault
+			.connect(bob)
+			.deposit(ethers.utils.parseUnits("20000", USDT_DECIMALS), bob.address);
+
+		// Now Whale attacks
+		const wager = ethers.utils.parseUnits("9000", USDT_DECIMALS);
+		const odds = ethers.utils.parseUnits("2", ODDS_DECIMALS);
+		const close = 0;
+
+		// Alice makes a bet but he doesn't care if she loses
+		const latestBlockNumber = await ethers.provider.getBlockNumber();
+		const latestBlock = await ethers.provider.getBlock(latestBlockNumber);
+		const end = latestBlock.timestamp + 10000;
+		const propositionId = formatBytes16String("1");
+		const nonce = formatBytes16String("1");
+		const marketId = formatBytes16String(MARKET_ID);
+		const betSignature = await signBackMessage(
+			nonce,
+			marketId,
+			propositionId,
+			odds,
+			close,
+			end,
+			owner
+		);
+		await underlying.connect(alice).approve(market.address, wager);
+		await market
+			.connect(alice)
+			.back(
+				nonce,
+				propositionId,
+				marketId,
+				wager,
+				odds,
+				close,
+				end,
+				betSignature
+			);
+
+		// Alice now buys shares
+		await vault
+			.connect(alice)
+			.deposit(ethers.utils.parseUnits("100000", USDT_DECIMALS), alice.address);
+
+		// Alice's bet loses
+		await hre.network.provider.request({
+			method: "evm_setNextBlockTimestamp",
+			params: [end + 7200]
 		});
-	
-		it("Should not allow a total payout on a proposition to be greater than the pool", async () => {
-			// For multiple bets on the same proposition, the odds given should reduce for each
-		});
-	});*/
+		await oracle.setResult(
+			marketId,
+			formatBytes16String("0"),
+			"0x0000000000000000000000000000000000000000000000000000000000000000"
+		);
+		await market.connect(alice).settle(0);
+
+		// Alice sells all her shares, smiling
+		await vault
+			.connect(alice)
+			.redeem(
+				ethers.utils.parseUnits("1000", USDT_DECIMALS),
+				alice.address,
+				alice.address
+			);
+
+		// Did Alice profit from the attack?
+		const aliceBalance = await underlying.balanceOf(alice.address);
+		expect(
+			aliceBalance,
+			`Alice just made an easy ${aliceOriginalBalance
+				.sub(aliceBalance)
+				.toNumber()}`
+		).to.be.lt(aliceOriginalBalance);
+	});
 
 	describe("Settle", () => {
 		it("Should transfer to vault if result not been set", async () => {
