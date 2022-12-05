@@ -96,10 +96,15 @@ describe("Market", () => {
 		const lib = await Lib.deploy();
 		await lib.deployed();
 
+		const OddsLib = await ethers.getContractFactory("OddsLib");
+		const oddsLib = await OddsLib.deploy();
+		await oddsLib.deployed();
+
 		const marketFactory = await ethers.getContractFactory("Market", {
 			signer: owner,
 			libraries: {
-				SignatureLib: lib.address
+				SignatureLib: lib.address,
+				OddsLib: oddsLib.address
 			}
 		});
 
@@ -387,6 +392,83 @@ describe("Market", () => {
 			ethers.utils.parseUnits("800", USDT_DECIMALS),
 			"Should have $800 USDT after a $200 bet"
 		);
+	});
+	it.skip("should not allow a donation attack", async () => {
+		// Bob has some USDT but he wants more
+		const bobOriginalBalance = await underlying.balanceOf(bob.address);
+
+		// Alice is an honest investor and deposits $1000 USDT
+		await vault
+			.connect(alice)
+			.deposit(ethers.utils.parseUnits("1000", USDT_DECIMALS), alice.address);
+
+		// Now Bob attacks
+		const wager = ethers.utils.parseUnits("1000", USDT_DECIMALS);
+		const odds = ethers.utils.parseUnits("10", ODDS_DECIMALS);
+		const close = 0;
+
+		// Bob makes a bet but he doesn't care if he loses
+		const latestBlockNumber = await ethers.provider.getBlockNumber();
+		const latestBlock = await ethers.provider.getBlock(latestBlockNumber);
+		const end = latestBlock.timestamp + 10000;
+		const propositionId = formatBytes16String("1");
+		const nonce = formatBytes16String("1");
+		const marketId = formatBytes16String(MARKET_ID);
+		const betSignature = await signBackMessage(
+			nonce,
+			marketId,
+			propositionId,
+			odds,
+			close,
+			end,
+			owner
+		);
+		await underlying.connect(bob).approve(market.address, wager);
+		await market
+			.connect(bob)
+			.back(
+				nonce,
+				propositionId,
+				marketId,
+				wager,
+				odds,
+				close,
+				end,
+				betSignature
+			);
+
+		// Bob now buys shares
+		await vault
+			.connect(bob)
+			.deposit(ethers.utils.parseUnits("1000", USDT_DECIMALS), bob.address);
+
+		// Bob's bet loses
+		await hre.network.provider.request({
+			method: "evm_setNextBlockTimestamp",
+			params: [end + 7200]
+		});
+		await oracle.setResult(
+			marketId,
+			"fail",
+			"0x0000000000000000000000000000000000000000000000000000000000000000"
+		);
+		await market.connect(bob).settle(0);
+
+		// Bob sells all his shares, smiling
+		await vault
+			.connect(bob)
+			.redeem(
+				ethers.utils.parseUnits("1000", USDT_DECIMALS),
+				bob.address,
+				bob.address
+			);
+
+		// Did Bob profit from the attack?
+		const bobBalance = await underlying.balanceOf(bob.address);
+		expect(
+			bobBalance,
+			`Bob just made an easy ${bobOriginalBalance.sub(bobBalance).toNumber()}`
+		).to.be.lt(bobOriginalBalance);
 	});
 
 	/*describe.only("Liquidity", () => {

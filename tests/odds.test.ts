@@ -11,50 +11,58 @@ let owner: SignerWithAddress;
 let oddsLib: OddsLib;
 let oddsPrecision: number;
 
-// New odds = Odds - ( Odds * Wager / Pool)
+// New odds = Odds - ( Odds * Wager / (Pool + Wager)))
 const linearTestData = [
 	{
 		wager: 100,
 		odds: 10,
 		pool: 2000,
-		expectedNewOdds: 5
+		expectedNewOdds: 5.23
 	},
 	{
 		wager: 100,
 		odds: 20,
 		pool: 2000,
-		expectedNewOdds: 0
+		expectedNewOdds: 1
 	},
 	{
 		wager: 100,
 		odds: 10,
 		pool: 500,
-		expectedNewOdds: 0
+		expectedNewOdds: 1
 	},
 	{
 		wager: 100,
 		odds: 3,
 		pool: 2000,
-		expectedNewOdds: 2.55
+		expectedNewOdds: 2.57
 	}
 ];
 
+// New payout = (liquidity + wager) - (liquidity / Sqrt(2 * odds * wager / liquidity + 1))
+// New odds = new payout / wager;
 const curvedTestData = [
 	{
 		wager: 100,
 		odds: 10,
 		pool: 2000,
-		expectedNewOdds: 5.86
+		expectedNewOdds: 6.86
 	},
 	{
 		wager: 200,
 		odds: 10,
 		pool: 2000,
-		expectedNewOdds: 4.23
+		expectedNewOdds: 5.23
+	},
+	{
+		wager: 10000,
+		odds: 20,
+		pool: 2000,
+		expectedNewOdds: 1.18
 	}
 ];
 
-describe("Odds", () => {
+describe.only("Odds", () => {
 	beforeEach(async () => {
 		[owner] = await ethers.getSigners();
 		const fixture = await deployments.fixture(["market"]);
@@ -75,11 +83,13 @@ describe("Odds", () => {
 					pool
 				);
 
-				expect(adjustedOdds).to.equal(
-					ethers.utils.parseUnits(test.expectedNewOdds.toString(), 6)
-				);
+				const roundedOdds = Math.floor(adjustedOdds.toNumber() / 1000) / 1000;
+				expect(roundedOdds).to.be.closeTo(test.expectedNewOdds, 0.01);
+
 				const adjustedOddsNumber = adjustedOdds.toNumber() / 1000000;
-				expect(adjustedOddsNumber * test.wager).to.be.lt(test.pool);
+				expect(adjustedOddsNumber * test.wager).to.be.lt(
+					test.pool + test.wager
+				);
 			});
 		}
 	});
@@ -97,7 +107,9 @@ describe("Odds", () => {
 				const roundedOdds = Math.floor(adjustedOdds.toNumber() / 1000) / 1000; // (Math.floor(adjustedOdds.div("1000").toNumber())/1000);
 				expect(roundedOdds).to.be.closeTo(test.expectedNewOdds, 0.01);
 				const adjustedOddsNumber = adjustedOdds.toNumber() / 1000000;
-				expect(adjustedOddsNumber * test.wager).to.be.lt(test.pool);
+				expect(adjustedOddsNumber * test.wager).to.be.lt(
+					test.pool + test.wager
+				);
 			});
 		}
 	});

@@ -156,18 +156,21 @@ contract Market is Ownable, ERC721 {
 		return _getOdds(wager, odds, propositionId);
 	}
 
+	// Given decimal ("European") odds expressed as the amount one wins for ever unit wagered.
+	// This number represents the to total payout rather than the profit, i.e it includes the return of ther stake.
+	// Hence, these odds will never go below 1, which represents even money.
 	function _getOdds(
 		uint256 wager,
 		uint256 odds,
 		bytes16 propositionId
 	) internal view returns (uint256) {
 
-		if (wager == 0 || odds == 0) return 0;
+		if (wager <= 1 || odds <= 1) return 1;
 
         uint256 pool = _vault.getMarketAllowance();
         
 		// If the pool is not sufficient to cover a new bet for this proposition,
-		if (pool == 0) return 0;
+		if (pool == 0) return 1;
 
 		// exclude the current total potential payout from the pool
 		if (_potentialPayout[propositionId] > pool) {
@@ -191,6 +194,7 @@ contract Market is Ownable, ERC721 {
 		);
 	}
 
+
 	function getPotentialPayout(
 		bytes16 propositionId,
 		uint256 wager,
@@ -211,7 +215,7 @@ contract Market is Ownable, ERC721 {
 			return 0;
 		}
 
-		return (trueOdds * wager) / OddsLib.PRECISION;
+		return ((trueOdds * wager) / OddsLib.PRECISION) + wager;
 	}
 
 	function back(
