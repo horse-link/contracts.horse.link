@@ -96,6 +96,10 @@ export default {
 		},
 		Dai: {
 			mainnet: "0x6B175474E89094C44Da98b954EedeAC495271d0F"
+		},
+		MarketSigner: {
+			default: 1,
+			goerli: "0xF33b9A4efA380Df3B435f755DD2C2AF7fE53C2d1" // key in bitwarden
 		}
 	},
 	namedSigners: {

@@ -5,6 +5,7 @@ import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { Token } from "../build/typechain";
 import { UnderlyingTokens } from "../deployData/settings";
+import hardhatConfig from "../hardhat.config";
 /*
  * Deploy a Market contract with an Oracle
  */
@@ -53,6 +54,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 				"setMarket",
 				marketDeployment.address,
 				ethers.constants.MaxUint256
+			);
+			await execute(
+				tokenDetails.marketName,
+				{ from: deployer, log: true },
+				"grantSigner",
+				namedAccounts.MarketSigner
 			);
 			if (!network.tags.testing) {
 				await execute(
