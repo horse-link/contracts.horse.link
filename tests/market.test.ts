@@ -134,11 +134,11 @@ describe("Market", () => {
 		const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
 		const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
 		const propositionId = formatBytes16String("1");
-		expect(await market.getOdds(wager, odds, propositionId)).to.equal(0);
-		// Should get 0 potential payout if vault has Zero odds
+		expect(await market.getOdds(wager, odds, propositionId)).to.equal(1);
+		// Should get potential payout = wager if vault has no assets
 		expect(
 			await market.getPotentialPayout(propositionId, wager, odds)
-		).to.equal(0);
+		).to.equal(wager);
 
 		await vault
 			.connect(alice)
@@ -162,7 +162,7 @@ describe("Market", () => {
 		expect(await vault.getMarketAllowance()).to.equal(1000000000);
 	});
 
-	it("Should get correct odds on a 5:1 punt", async () => {
+	it.only("Should get correct odds on a 5:1 punt", async () => {
 		const balance = await underlying.balanceOf(bob.address);
 		expect(balance, "Should have $1,000 USDT").to.equal(
 			ethers.utils.parseUnits("1000", USDT_DECIMALS)
@@ -195,8 +195,8 @@ describe("Market", () => {
 
 		expect(
 			trueOdds,
-			"Should have true odds of 1:4.75 on $50 in a $1,000 pool"
-		).to.equal(4750000);
+			"Should have true odds of 3.809524 on $50 in a $1,000 pool"
+		).to.be.closeTo(BigNumber.from(3809524), 1);
 
 		const potentialPayout = await market.getPotentialPayout(
 			propositionId,
@@ -204,9 +204,9 @@ describe("Market", () => {
 			targetOdds
 		);
 
-		// should equal 237500000
+		// 3.81
 		expect(potentialPayout).to.equal(
-			237500000,
+			190476190,
 			"Should have true odds of 1:4.75 on $100 in a $1,000 pool"
 		);
 	});

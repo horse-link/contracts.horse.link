@@ -174,7 +174,7 @@ contract Market is Ownable, ERC721 {
 
 		// exclude the current total potential payout from the pool
 		if (_potentialPayout[propositionId] > pool) {
-			return 0;
+			return 1;
 		}
 		pool -= _potentialPayout[propositionId]; 
 
@@ -208,14 +208,8 @@ contract Market is Ownable, ERC721 {
 		uint256 wager,
 		uint256 odds
 	) private view returns (uint256) {
-
-		// add underlying to the market
 		uint256 trueOdds = _getOdds(wager, odds, propositionId);
-		if (trueOdds == 0) {
-			return 0;
-		}
-
-		return ((trueOdds * wager) / OddsLib.PRECISION) + wager;
+		return Math.max(wager, (trueOdds * wager) / OddsLib.PRECISION);
 	}
 
 	function back(
