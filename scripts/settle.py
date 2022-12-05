@@ -31,9 +31,6 @@ def get_count(contract):
 
 
 def settle(market, index):
-    # bet = contract.functions.getBetByIndex(index).call()
-
-    # if bet[3] == False:
     account_from = {
         'private_key': os.getenv('PRIVATE_KEY'),
         'address': '0x155c21c846b68121ca59879B3CCB5194F5Ae115E',
