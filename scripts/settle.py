@@ -12,7 +12,7 @@ web3 = Web3(Web3.HTTPProvider(node))
 
 
 def get_markets():
-    response = requests.get("https://horse.link/api/config")
+    response = requests.get('https://horse.link/api/config')
     data = response.json()
     return data['markets']
 
@@ -80,6 +80,6 @@ def main():
                 break
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     print('Starting settle script')
     main()
