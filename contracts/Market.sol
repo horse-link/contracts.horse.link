@@ -12,6 +12,9 @@ import "./IMarket.sol";
 import "./IOracle.sol";
 import "./SignatureLib.sol";
 
+// import console.sol;
+import "hardhat/console.sol";
+
 // Put these in the ERC721 contract
 struct Bet {
 	bytes16 propositionId;
@@ -25,7 +28,7 @@ struct Bet {
 
 contract Market is Ownable, ERC721 {
 	uint256 private constant MAX = 32;
-	int256 private constant PRECISION = 1_000;
+	uint256 private constant PRECISION = 1_000;
 	uint8 private immutable _margin;
 	IVault private immutable _vault;
 	address private immutable _self;
@@ -150,34 +153,34 @@ contract Market is Ownable, ERC721 {
 	}
 
 	function getOdds(
-		int256 wager,
-		int256 odds,
+		uint256 wager,
+		uint256 odds,
 		bytes16 propositionId
-	) external view returns (int256) {
+	) external view returns (uint256) {
 		if (wager == 0 || odds == 0) return 0;
 
 		return _getOdds(wager, odds, propositionId);
 	}
 
     function _getOdds(
-        int256 wager,
-        int256 odds,
+        uint256 wager,
+        uint256 odds,
         bytes16 propositionId
-    ) private view returns (int256) {
+    ) private view returns (uint256) {
         address underlying = _vault.asset();
         require(underlying != address(0), "_getOdds: Invalid underlying address");
 
-        int256 p = int256(_vault.getMarketAllowance()); // TODO: check that typecasting to a signed int is safe
+        uint256 p = _vault.getMarketAllowance(); // TODO: check that typecasting to a signed int is safe
 
         if (p == 0) return 0;
 
 		// f(wager) = odds - odds*(wager/pool)
-		if (_potentialPayout[propositionId] > uint256(p)) {
+		if (_potentialPayout[propositionId] > p) {
 			return 0;
 		}
 
 		// do not include this guy in the return
-		p -= int256(_potentialPayout[propositionId]);
+		p -= _potentialPayout[propositionId];
 
 		return odds - ((odds * ((wager * PRECISION) / p)) / PRECISION);
 	}
@@ -198,13 +201,21 @@ contract Market is Ownable, ERC721 {
 		assert(odds > 0);
 		assert(wager > 0);
 
+		console.log("wager: %s", wager);
+		console.log("odds: %s", odds);
+
 		// add underlying to the market
-		int256 trueOdds = _getOdds(int256(wager), int256(odds), propositionId);
+		uint256 trueOdds = _getOdds(wager, odds, propositionId);
 		if (trueOdds == 0) {
 			return 0;
 		}
 
-		return (uint256(trueOdds) * wager) / 1_000_000;
+		console.log(uint256(trueOdds));
+
+		uint256 x = uint256(trueOdds) * wager;
+		console.log("x: %s", x);
+
+		return (trueOdds * wager) / 1_000_000;
 	}
 
 	function back(
