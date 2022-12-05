@@ -187,17 +187,6 @@ describe("Market", () => {
 		// Runner 1 for a Win
 		const propositionId = formatBytes16String("1");
 
-		// const trueOdds = await market.getOdds(
-		// 	ethers.utils.parseUnits("50", USDT_DECIMALS),
-		// 	targetOdds,
-		// 	propositionId
-		// );
-
-		// expect(
-		// 	trueOdds,
-		// 	"Should have true odds of 1:4.75 on $50 in a $1,000 pool"
-		// ).to.equal(4750000);
-
 		// there still needs to be slippage in the odds
 		const trueOdds = await market.getOdds(
 			ethers.utils.parseUnits("50", USDT_DECIMALS),
@@ -401,15 +390,6 @@ describe("Market", () => {
 			"Should have $800 USDT after a $200 bet"
 		);
 	});
-
-	/*describe.only("Liquidity", () => {
-		it("Should not allow a payout greater than the pool", async () => {
-		});
-	
-		it("Should not allow a total payout on a proposition to be greater than the pool", async () => {
-			// For multiple bets on the same proposition, the odds given should reduce for each
-		});
-	});*/
 
 	describe("Settle", () => {
 		it("Should transfer to vault if result not been set", async () => {
