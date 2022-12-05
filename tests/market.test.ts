@@ -557,7 +557,7 @@ describe("Market", () => {
 
 			const end = latestBlock.timestamp + 10000;
 
-			const testCount = 3;
+			const testCount = 4;
 
 			for (let i = 1; i <= testCount; i++) {
 				console.log("i", i);
