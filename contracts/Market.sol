@@ -46,9 +46,6 @@ contract Market is Ownable, ERC721 {
 	// Marketid => Risk Coefficient
 	mapping(bytes16 => uint256) private _riskCoefficients;
 
-	// PropositionId => MarketId
-	mapping(bytes16 => bytes16) private _marketIds;
-
 	// PropositionID => amount bet
 	mapping(bytes16 => uint256) private _potentialPayout;
 
@@ -124,10 +121,6 @@ contract Market is Ownable, ERC721 {
 
 	function _getExpiry(uint64 id) private view returns (uint256) {
 		return _bets[id].payoutDate + timeout;
-	}
-
-	function getMarketId(bytes16 propositionId) external view returns (bytes16) {
-		return _marketIds[propositionId];
 	}
 
 	function getRiskCoefficient(bytes16 marketId) external view returns (uint256) {
@@ -280,9 +273,6 @@ contract Market is Ownable, ERC721 {
 			"back: Oracle result already set for this market"
 		);
         address underlying = _vault.asset();
-		
-		// map propositionId to marketId
-		_marketIds[propositionId] = marketId;
 
 		// add underlying to the market
 		uint256 payout = _getPayout(propositionId, marketId, wager, odds);
