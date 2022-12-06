@@ -406,7 +406,7 @@ describe("Market", () => {
 		);
 	});
 
-	it.only("should not allow a betting attack", async () => {
+	it("should not allow a betting attack", async () => {
 		// Whale has some USDT but he wants more
 		const whaleOriginalBalance = await underlying.balanceOf(whale.address);
 
