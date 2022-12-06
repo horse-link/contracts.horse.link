@@ -68,6 +68,10 @@ def main():
             bet = contract.functions.getBetByIndex(i).call()
                             
             if bet[2] > now - 60 * 60 * 2:
+
+                # check if bet is settled via the api
+                response = requests.get(f'https://horse.link/api/markets/result/{bet[6]}')
+
                 if bet[3] == False:
                     print(f"Settling bet {i} for market {market['address']}")
                     
