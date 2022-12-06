@@ -145,7 +145,9 @@ contract Market is Ownable, ERC721 {
 			uint256,
 			uint256,
 			bool,
-			address
+			address,
+			bytes16,
+			bytes16
 		)
 	{
 		return _getBet(index);
@@ -159,11 +161,13 @@ contract Market is Ownable, ERC721 {
 			uint256,
 			uint256,
 			bool,
-			address
+			address,
+			bytes16,
+			bytes16
 		)
 	{
 		Bet memory bet = _bets[index];
-		return (bet.amount, bet.payout, bet.payoutDate, bet.settled, bet.owner);
+		return (bet.amount, bet.payout, bet.payoutDate, bet.settled, bet.owner, bet.marketId, bet.propositionId);
 	}
 
 	function getOdds(
