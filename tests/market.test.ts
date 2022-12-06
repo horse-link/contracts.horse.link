@@ -683,6 +683,49 @@ describe("Market", () => {
 			expect(isSigner).to.equal(false);
 		});
 	});
+
+	describe("Risk Coefficients", () => {
+		it("should account for market risk coefficient", async () => {
+			const wager = ethers.utils.parseUnits("50", USDT_DECIMALS);
+			const targetOdds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
+			const propositionId = formatBytes16String("1");
+			const marketId = formatBytes16String("1");
+
+			const calculatedOdds = await market.getOdds(
+				wager,
+				targetOdds,
+				propositionId,
+				marketId
+			);
+			expect(calculatedOdds).to.be.closeTo(BigNumber.from(3809524), 1);
+
+			await market.setRiskCoefficient(marketId, 2);
+			const newOdds = await market.getOdds(
+				wager,
+				targetOdds,
+				propositionId,
+				marketId
+			);
+
+			expect(newOdds).to.equal(calculatedOdds.toNumber() / 4);
+		});
+
+		it("should get and set risk coefficients", async () => {
+			const marketId = formatBytes16String("2");
+			const risk = await market.getRiskCoefficient(marketId);
+
+			expect(risk).to.equal(1);
+
+			await expect(market.setRiskCoefficient(marketId, 0)).to.be.revertedWith(
+				"risk must be gt or eq to 1"
+			);
+
+			await market.setRiskCoefficient(marketId, 2);
+			const newRisk = await market.getRiskCoefficient(marketId);
+
+			expect(newRisk).to.equal(2);
+		});
+	});
 });
 
 async function signMessageAsString(message: string, signer: SignerWithAddress) {

@@ -131,7 +131,12 @@ contract Market is Ownable, ERC721 {
 	}
 
 	function getRiskCoefficient(bytes16 marketId) external view returns (uint256) {
-		return _riskCoefficients[marketId];
+		uint256 risk = _riskCoefficients[marketId];
+		if (risk < 1) {
+			return 1;
+		}
+
+		return risk;
 	}
 
 	function setRiskCoefficient(bytes16 marketId, uint256 risk) external onlyOwner {
