@@ -171,9 +171,10 @@ contract Market is Ownable, ERC721 {
 	function getOdds(
 		uint256 wager,
 		uint256 odds,
-		bytes16 propositionId
+		bytes16 propositionId,
+		bytes16 marketId
 	) external view returns (uint256) {
-		return _getOdds(wager, odds, propositionId);
+		return _getOdds(wager, odds, propositionId, marketId);
 	}
 
 	// Given decimal ("European") odds expressed as the amount one wins for ever unit wagered.
@@ -182,11 +183,9 @@ contract Market is Ownable, ERC721 {
 	function _getOdds(
 		uint256 wager,
 		uint256 odds,
-		bytes16 propositionId
+		bytes16 propositionId,
+		bytes16 marketId
 	) internal view returns (uint256) {
-		bytes16 marketId = _marketIds[propositionId];
-		require(marketId != bytes16(0), "No marketId for given propositionId");
-
 		uint256 risk = _riskCoefficients[marketId];
 		if (risk < 1) {
 			risk = 1;
@@ -227,18 +226,20 @@ contract Market is Ownable, ERC721 {
 
 	function getPotentialPayout(
 		bytes16 propositionId,
+		bytes16 marketId,
 		uint256 wager,
 		uint256 odds
 	) external view returns (uint256) {
-		return _getPayout(propositionId, wager, odds);
+		return _getPayout(propositionId, marketId, wager, odds);
 	}
 
 	function _getPayout(
 		bytes16 propositionId,
+		bytes16 marketId,
 		uint256 wager,
 		uint256 odds
 	) private view returns (uint256) {
-		uint256 trueOdds = _getOdds(wager, odds, propositionId);
+		uint256 trueOdds = _getOdds(wager, odds, propositionId, marketId);
 		return Math.max(wager, (trueOdds * wager) / OddsLib.PRECISION);
 	}
 
@@ -279,7 +280,7 @@ contract Market is Ownable, ERC721 {
 		_marketIds[propositionId] = marketId;
 
 		// add underlying to the market
-		uint256 payout = _getPayout(propositionId, wager, odds);
+		uint256 payout = _getPayout(propositionId, marketId, wager, odds);
 
         // escrow
         IERC20(underlying).transferFrom(msg.sender, _self, wager);

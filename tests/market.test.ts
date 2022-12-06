@@ -149,10 +149,13 @@ describe("Market", () => {
 		const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
 		const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
 		const propositionId = formatBytes16String("1");
-		expect(await market.getOdds(wager, odds, propositionId)).to.equal(1);
+		const marketId = formatBytes16String("1");
+		expect(await market.getOdds(wager, odds, propositionId, marketId)).to.equal(
+			1
+		);
 		// Should get potential payout = wager if vault has no assets
 		expect(
-			await market.getPotentialPayout(propositionId, wager, odds)
+			await market.getPotentialPayout(propositionId, marketId, wager, odds)
 		).to.equal(wager);
 
 		await vault
@@ -201,12 +204,14 @@ describe("Market", () => {
 
 		// Runner 1 for a Win
 		const propositionId = formatBytes16String("1");
+		const marketId = formatBytes16String("1");
 
 		// there still needs to be slippage in the odds
 		const trueOdds = await market.getOdds(
 			ethers.utils.parseUnits("50", USDT_DECIMALS),
 			targetOdds,
-			propositionId
+			propositionId,
+			marketId
 		);
 
 		expect(
@@ -216,6 +221,7 @@ describe("Market", () => {
 
 		const potentialPayout = await market.getPotentialPayout(
 			propositionId,
+			marketId,
 			ethers.utils.parseUnits("50", USDT_DECIMALS),
 			targetOdds
 		);
