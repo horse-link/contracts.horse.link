@@ -29,35 +29,6 @@ library OddsLib {
         return Math.max(1 * PRECISION, odds - oddsAdjustment);
     }
 
-    /*function getLinearAdjustedPayout( 
-        uint256 wager,
-        uint256 decimalOdds,
-        uint256 liquidity
-    ) external pure returns (uint256) {
-        uint256 unadjustedPayout = (decimalOdds * wager / PRECISION);
-        uint256 payoutAdjustment = Math.mulDiv(unadjustedPayout, unadjustedPayout, liquidity + payout, Math.Rounding.Up);
-        if (payoutAdjustment > unadjustedPayout) {
-            return wager;
-        }
-        return unadjustedPayout - payoutAdjustment;
-    }*/
-
-    /*function getCurvedAdjustedPayout(
-        uint256 wager,
-        uint256 odds,
-        uint256 liquidity
-    ) external pure returns (uint256) {
-        uint256 SQRT_PRECISION = 1e3;
-        uint256 potentialPayout = (wager * odds / PRECISION);
-        return adjustedPayout = (liquidity + wager) -
-            (liquidity * SQRT_PRECISION) /
-            Math.sqrt(
-                2 * (potentialPayout * PRECISION) / liquidity + (1 * PRECISION),
-                Math.Rounding.Up
-            );
-        return adjustedPayout * PRECISION;
-    }*/
-
     /*
         * @dev Reduces odds on a curve that approaches 0 as the payout increases, such that the payout will always be less then free liquidity. Increase the coefficient to make the curve steeper. 2 is a good starting point.
         * @param wager The amount of the wager
