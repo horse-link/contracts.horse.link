@@ -126,13 +126,23 @@ describe("Market", () => {
 			.connect(bob)
 			.approve(vault.address, ethers.constants.MaxUint256);
 		await underlying
+			.connect(carol)
+			.approve(vault.address, ethers.constants.MaxUint256);
+		await underlying
+			.connect(whale)
+			.approve(vault.address, ethers.constants.MaxUint256);
+
+		await underlying
+			.connect(alice)
+			.approve(market.address, ethers.constants.MaxUint256);
+		await underlying
 			.connect(bob)
 			.approve(market.address, ethers.constants.MaxUint256);
 		await underlying
 			.connect(carol)
-			.approve(vault.address, ethers.constants.MaxUint256);
+			.approve(market.address, ethers.constants.MaxUint256);
 		await underlying
-			.connect(carol)
+			.connect(whale)
 			.approve(market.address, ethers.constants.MaxUint256);
 
 		// Should get 0 odds if vault has ZERO assets
@@ -396,21 +406,21 @@ describe("Market", () => {
 		);
 	});
 
-	it("should not allow a betting attack", async () => {
+	it.only("should not allow a betting attack", async () => {
 		// Whale has some USDT but he wants more
 		const whaleOriginalBalance = await underlying.balanceOf(whale.address);
 
-		// Bob is an honest investor and deposits $20000 USDT
+		// Alice is an honest investor and deposits $20000 USDT
 		await vault
-			.connect(bob)
-			.deposit(ethers.utils.parseUnits("20000", USDT_DECIMALS), bob.address);
+			.connect(alice)
+			.deposit(ethers.utils.parseUnits("20000", USDT_DECIMALS), alice.address);
 
 		// Now Whale attacks
 		const wager = ethers.utils.parseUnits("9000", USDT_DECIMALS);
 		const odds = ethers.utils.parseUnits("2", ODDS_DECIMALS);
 		const close = 0;
 
-		// Alice makes a bet but he doesn't care if she loses
+		// Whale makes a bet but he doesn't care if she loses
 		const latestBlockNumber = await ethers.provider.getBlockNumber();
 		const latestBlock = await ethers.provider.getBlock(latestBlockNumber);
 		const end = latestBlock.timestamp + 10000;
@@ -426,9 +436,9 @@ describe("Market", () => {
 			end,
 			owner
 		);
-		await underlying.connect(alice).approve(market.address, wager);
+		await underlying.connect(whale).approve(market.address, wager);
 		await market
-			.connect(alice)
+			.connect(whale)
 			.back(
 				nonce,
 				propositionId,
@@ -440,12 +450,12 @@ describe("Market", () => {
 				betSignature
 			);
 
-		// Alice now buys shares
+		// Whale now buys shares
 		await vault
-			.connect(alice)
-			.deposit(ethers.utils.parseUnits("100000", USDT_DECIMALS), alice.address);
+			.connect(whale)
+			.deposit(ethers.utils.parseUnits("20000", USDT_DECIMALS), whale.address);
 
-		// Alice's bet loses
+		// Whale's bet loses
 		await hre.network.provider.request({
 			method: "evm_setNextBlockTimestamp",
 			params: [end + 7200]
@@ -457,23 +467,23 @@ describe("Market", () => {
 		);
 		await market.connect(alice).settle(0);
 
-		// Alice sells all her shares, smiling
+		// Whale sells all their shares, smiling
 		await vault
-			.connect(alice)
+			.connect(whale)
 			.redeem(
 				ethers.utils.parseUnits("1000", USDT_DECIMALS),
-				alice.address,
-				alice.address
+				whale.address,
+				whale.address
 			);
 
-		// Did Alice profit from the attack?
-		const aliceBalance = await underlying.balanceOf(alice.address);
+		// Did Whale profit from the attack?
+		const whaleBalance = await underlying.balanceOf(whale.address);
 		expect(
-			aliceBalance,
-			`Alice just made an easy ${aliceOriginalBalance
-				.sub(aliceBalance)
+			whaleBalance,
+			`Whale just made an easy ${whaleOriginalBalance
+				.sub(whaleBalance)
 				.toNumber()}`
-		).to.be.lt(aliceOriginalBalance);
+		).to.be.lt(whaleOriginalBalance);
 	});
 
 	describe("Settle", () => {
