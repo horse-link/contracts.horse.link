@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity =0.8.10;
 
+import "./SignatureLib.sol";
+
 // Binary Oracle
 interface IOracle {
     function checkResult(
@@ -13,7 +15,7 @@ interface IOracle {
     function setResult(
         bytes16 marketId,
         bytes16 propositionId,
-        bytes32 sig
+        SignatureLib.Signature calldata signature
     ) external;
 
     event ResultSet(bytes16 marketId, bytes16 propositionId);
