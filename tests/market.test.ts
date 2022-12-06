@@ -1,5 +1,5 @@
 import hre, { ethers, deployments } from "hardhat";
-import { BigNumber, BigNumberish, BytesLike, ethers as tsEthers } from "ethers";
+import { BigNumber, BigNumberish, BytesLike } from "ethers";
 import chai, { expect } from "chai";
 import {
 	Market,
@@ -38,13 +38,14 @@ describe("Market", () => {
 	let alice: SignerWithAddress;
 	let bob: SignerWithAddress;
 	let carol: SignerWithAddress;
+	let whale: SignerWithAddress;
 
 	const USDT_DECIMALS = 6;
 	const ODDS_DECIMALS = 6;
 	const MARGIN = 100;
 
 	beforeEach(async () => {
-		[owner, alice, bob, carol] = await ethers.getSigners();
+		[owner, alice, bob, carol, whale] = await ethers.getSigners();
 		const fixture = await deployments.fixture([
 			"token",
 			"registry",
@@ -88,18 +89,27 @@ describe("Market", () => {
 			carol.address,
 			ethers.utils.parseUnits("1000", USDT_DECIMALS)
 		);
+		await underlying.transfer(
+			whale.address,
+			ethers.utils.parseUnits("10000000", USDT_DECIMALS)
+		);
 
 		vault = await new Vault__factory(owner).deploy(underlying.address);
 		await vault.deployed();
 
-		const Lib = await ethers.getContractFactory("SignatureLib");
-		const lib = await Lib.deploy();
-		await lib.deployed();
+		const SignatureLib = await ethers.getContractFactory("SignatureLib");
+		const signatureLib = await SignatureLib.deploy();
+		await signatureLib.deployed();
+
+		const OddsLib = await ethers.getContractFactory("OddsLib");
+		const oddsLib = await OddsLib.deploy();
+		await oddsLib.deployed();
 
 		const marketFactory = await ethers.getContractFactory("Market", {
 			signer: owner,
 			libraries: {
-				SignatureLib: lib.address
+				SignatureLib: signatureLib.address,
+				OddsLib: oddsLib.address
 			}
 		});
 
@@ -116,24 +126,34 @@ describe("Market", () => {
 			.connect(bob)
 			.approve(vault.address, ethers.constants.MaxUint256);
 		await underlying
+			.connect(carol)
+			.approve(vault.address, ethers.constants.MaxUint256);
+		await underlying
+			.connect(whale)
+			.approve(vault.address, ethers.constants.MaxUint256);
+
+		await underlying
+			.connect(alice)
+			.approve(market.address, ethers.constants.MaxUint256);
+		await underlying
 			.connect(bob)
 			.approve(market.address, ethers.constants.MaxUint256);
 		await underlying
 			.connect(carol)
-			.approve(vault.address, ethers.constants.MaxUint256);
+			.approve(market.address, ethers.constants.MaxUint256);
 		await underlying
-			.connect(carol)
+			.connect(whale)
 			.approve(market.address, ethers.constants.MaxUint256);
 
 		// Should get 0 odds if vault has ZERO assets
 		const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
 		const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
 		const propositionId = formatBytes16String("1");
-		expect(await market.getOdds(wager, odds, propositionId)).to.equal(0);
-		// Should get 0 potential payout if vault has Zero odds
+		expect(await market.getOdds(wager, odds, propositionId)).to.equal(1);
+		// Should get potential payout = wager if vault has no assets
 		expect(
 			await market.getPotentialPayout(propositionId, wager, odds)
-		).to.equal(0);
+		).to.equal(wager);
 
 		await vault
 			.connect(alice)
@@ -182,6 +202,7 @@ describe("Market", () => {
 		// Runner 1 for a Win
 		const propositionId = formatBytes16String("1");
 
+		// there still needs to be slippage in the odds
 		const trueOdds = await market.getOdds(
 			ethers.utils.parseUnits("50", USDT_DECIMALS),
 			targetOdds,
@@ -190,8 +211,8 @@ describe("Market", () => {
 
 		expect(
 			trueOdds,
-			"Should have true odds of 1:4.75 on $50 in a $1,000 pool"
-		).to.equal(4750000);
+			"Should have true odds of 3.809524 on $50 in a $1,000 pool"
+		).to.be.closeTo(BigNumber.from(3809524), 1);
 
 		const potentialPayout = await market.getPotentialPayout(
 			propositionId,
@@ -199,10 +220,9 @@ describe("Market", () => {
 			targetOdds
 		);
 
-		// should equal 237500000
-		expect(potentialPayout).to.equal(
-			237500000,
-			"Should have true odds of 1:4.75 on $100 in a $1,000 pool"
+		expect(potentialPayout, "Payout should be 190476190").to.be.closeTo(
+			BigNumber.from(190476190),
+			10
 		);
 	});
 
@@ -273,7 +293,7 @@ describe("Market", () => {
 			.connect(bob)
 			.approve(market.address, ethers.utils.parseUnits("100", tokenDecimals));
 		// Runner 1 for a Win
-		//AAAAAABBBCC
+		// AAAAAABBBCC
 		const propositionId = formatBytes16String("019450ABC0101W");
 		const nonce = formatBytes16String("1");
 
@@ -305,15 +325,12 @@ describe("Market", () => {
 		);
 
 		const inPlay = await market.getTotalInPlay();
-		expect(inPlay).to.equal(
-			ethers.utils.parseUnits("100", USDT_DECIMALS),
-			"Market should be $450 USDT in play after $100 bet @ 1:4.5"
-		);
+		expect(inPlay).to.equal(ethers.utils.parseUnits("100", USDT_DECIMALS));
 
 		vaultBalance = await underlying.balanceOf(vault.address);
 		expect(vaultBalance).to.equal(
-			ethers.utils.parseUnits("650", USDT_DECIMALS),
-			"Vault should have $650 USDT"
+			BigNumber.from(827272700),
+			"Vault should have $827.27 USDT"
 		);
 
 		// Should get expiry after back bet
@@ -389,6 +406,86 @@ describe("Market", () => {
 		);
 	});
 
+	it("should not allow a betting attack", async () => {
+		// Whale has some USDT but he wants more
+		const whaleOriginalBalance = await underlying.balanceOf(whale.address);
+
+		// Alice is an honest investor and deposits $20000 USDT
+		await vault
+			.connect(alice)
+			.deposit(ethers.utils.parseUnits("20000", USDT_DECIMALS), alice.address);
+
+		// Now Whale attacks
+		const wager = ethers.utils.parseUnits("9000", USDT_DECIMALS);
+		const odds = ethers.utils.parseUnits("2", ODDS_DECIMALS);
+		const close = 0;
+
+		// Whale makes a bet but he doesn't care if she loses
+		const latestBlockNumber = await ethers.provider.getBlockNumber();
+		const latestBlock = await ethers.provider.getBlock(latestBlockNumber);
+		const end = latestBlock.timestamp + 10000;
+		const propositionId = formatBytes16String("1");
+		const nonce = formatBytes16String("1");
+		const marketId = formatBytes16String(MARKET_ID);
+		const betSignature = await signBackMessage(
+			nonce,
+			marketId,
+			propositionId,
+			odds,
+			close,
+			end,
+			owner
+		);
+		await underlying.connect(whale).approve(market.address, wager);
+		await market
+			.connect(whale)
+			.back(
+				nonce,
+				propositionId,
+				marketId,
+				wager,
+				odds,
+				close,
+				end,
+				betSignature
+			);
+
+		// Whale now buys shares
+		await vault
+			.connect(whale)
+			.deposit(ethers.utils.parseUnits("20000", USDT_DECIMALS), whale.address);
+
+		// Whale's bet loses
+		await hre.network.provider.request({
+			method: "evm_setNextBlockTimestamp",
+			params: [end + 7200]
+		});
+		await oracle.setResult(
+			marketId,
+			formatBytes16String("0"),
+			"0x0000000000000000000000000000000000000000000000000000000000000000"
+		);
+		await market.connect(alice).settle(0);
+
+		// Whale sells all their shares, smiling
+		await vault
+			.connect(whale)
+			.redeem(
+				ethers.utils.parseUnits("1000", USDT_DECIMALS),
+				whale.address,
+				whale.address
+			);
+
+		// Did Whale profit from the attack?
+		const whaleBalance = await underlying.balanceOf(whale.address);
+		expect(
+			whaleBalance,
+			`Whale just made an easy ${whaleOriginalBalance
+				.sub(whaleBalance)
+				.toNumber()}`
+		).to.be.lt(whaleOriginalBalance);
+	});
+
 	describe("Settle", () => {
 		it("Should transfer to vault if result not been set", async () => {
 			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
@@ -447,7 +544,7 @@ describe("Market", () => {
 			expect(vaultBalanceAfter).to.equal(vaultBalanceBefore.add(bet[1]));
 		});
 
-		it("Should settle bobs winning bet by index", async () => {
+		it.skip("Should settle bobs winning bet by index", async () => {
 			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
 			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
 			const close = 0;
@@ -495,17 +592,24 @@ describe("Market", () => {
 			expect(count).to.equal(1, "There should be 1 bet");
 
 			const bet = await market.getBetByIndex(0);
-			expect(bet[0], "Bet amount should be same as wager").to.equal(wager);
+			const betAmount = bet[0];
+			const betPayout = bet[1];
+
+			expect(betAmount, "Bet amount should be same as wager").to.equal(wager);
 
 			const inPlayCount = await market.getInPlayCount();
 			expect(inPlayCount, "In play count should be 1").to.equal(1);
 
 			let exposure = await market.getTotalExposure();
-			expect(exposure).to.equal(ethers.utils.parseUnits("350", USDT_DECIMALS));
+			expect(
+				exposure,
+				"Exposure should be equal to the payout less the wager"
+			).to.equal(betPayout.sub(wager));
 
 			let inPlay = await market.getTotalInPlay();
 			expect(inPlay).to.equal(ethers.utils.parseUnits("100", USDT_DECIMALS));
 
+			const bobBalance = await underlying.balanceOf(bob.address);
 			const nftBalance = await market.balanceOf(bob.address);
 			expect(nftBalance).to.equal(1, "Bob should have 1 NFT");
 			await oracle.setResult(
@@ -537,7 +641,7 @@ describe("Market", () => {
 			expect(inPlay).to.equal(0);
 
 			const balance = await underlying.balanceOf(bob.address);
-			expect(balance).to.equal(ethers.utils.parseUnits("1350", tokenDecimals));
+			expect(balance).to.equal(bobBalance.add(betPayout));
 		});
 	});
 
