@@ -43,6 +43,12 @@ contract Market is Ownable, ERC721 {
 	// MarketID => PropositionID => amount bet
 	mapping(bytes16 => mapping(uint16 => uint256)) private _marketBetAmount;
 
+	// Marketid => Risk Coefficient
+	mapping(bytes16 => uint256) private _riskCoefficients;
+
+	// PropositionId => MarketId
+	mapping(bytes16 => bytes16) private _marketIds;
+
 	// PropositionID => amount bet
 	mapping(bytes16 => uint256) private _potentialPayout;
 
@@ -120,6 +126,19 @@ contract Market is Ownable, ERC721 {
 		return _bets[id].payoutDate + timeout;
 	}
 
+	function getMarketId(bytes16 propositionId) external view returns (bytes16) {
+		return _marketIds[propositionId];
+	}
+
+	function getRiskCoefficient(bytes16 marketId) external view returns (uint256) {
+		return _riskCoefficients[marketId];
+	}
+
+	function setRiskCoefficient(bytes16 marketId, uint256 risk) external onlyOwner {
+		require(risk >= 1, "risk must be gt or eq to 1");
+		_riskCoefficients[marketId] = risk;
+	}
+
 	function getBetByIndex(uint256 index)
 		external
 		view
@@ -165,6 +184,13 @@ contract Market is Ownable, ERC721 {
 		uint256 odds,
 		bytes16 propositionId
 	) internal view returns (uint256) {
+		bytes16 marketId = _marketIds[propositionId];
+		require(marketId != bytes16(0), "No marketId for given propositionId");
+
+		uint256 risk = _riskCoefficients[marketId];
+		if (risk < 1) {
+			risk = 1;
+		}
 
 		if (wager <= 1 || odds <= 1) return 1;
 
@@ -180,7 +206,10 @@ contract Market is Ownable, ERC721 {
 		pool -= _potentialPayout[propositionId]; 
 
 		// Calculate the new odds
-		return _getAdjustedOdds(wager, odds, pool);
+		uint256 adjustedOdds = _getAdjustedOdds(wager, odds, pool);
+
+		// Return odds / risk^2
+		return adjustedOdds / (risk ** 2);
 	}
 
 	function _getAdjustedOdds(
@@ -245,6 +274,9 @@ contract Market is Ownable, ERC721 {
 			"back: Oracle result already set for this market"
 		);
         address underlying = _vault.asset();
+		
+		// map propositionId to marketId
+		_marketIds[propositionId] = marketId;
 
 		// add underlying to the market
 		uint256 payout = _getPayout(propositionId, wager, odds);
