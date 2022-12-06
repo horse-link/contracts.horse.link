@@ -31,7 +31,10 @@ def load_market(address):
         return contract
 
 
-def load_oracle(address):
+def load_oracle():
+
+    address = get_oracle()
+
     with open('./artifacts/contracts/Oracle.sol/Oracle.json') as f:
         data = json.load(f)
         abi = data['abi']
@@ -90,13 +93,13 @@ def settle(market, index):
 
 def main():
     # fetch registry contract address from the api
-    markets = get_markets()
-    # oracle = get_oracle()
+    market_addresses = get_markets()
+    oracle = load_oracle()
     now = datetime.now().timestamp()
     print(f"Current Time: {now}")
 
     # settle each market
-    for market in markets:
+    for market in market_addresses:
         market = load_market(market['address'])
         # oracle = load_oracle()
         count = get_count(contract)
