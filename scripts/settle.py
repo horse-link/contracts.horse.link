@@ -63,22 +63,24 @@ def main():
         contract = load_market(market['address'])
         count = get_count(contract)
 
-        ## settle each bet in reverse order
+        # settle each bet in reverse order
         for i in range(count - 1, 0, -1):
             bet = contract.functions.getBetByIndex(i).call()
-                            
+
             if bet[2] > now - 60 * 60 * 2:
 
                 # check if bet is settled via the api
-                response = requests.get(f'https://horse.link/api/markets/result/{bet[6]}')
+                response = requests.get(
+                    f'https://horse.link/api/markets/result/{bet[6]}')
 
-                if bet[3] == False:
+                if response.status_code == 200 and bet[3] == False:
                     print(f"Settling bet {i} for market {market['address']}")
-                    
+
                     tx_receipt = settle(contract, i)
                     print(tx_receipt)
                 else:
-                    print(f"Bet {i} for market {market['address']} already settled")
+                    print(
+                        f"Bet {i} for market {market['address']} already settled")
             else:
                 print(f"Bet {i} for market {market['address']} is too old")
                 break
