@@ -27,7 +27,6 @@ TODO: How to deploy
 ### Deployment to Mainnet
 
 
-
 ### Contract addresses
 Deployed addresses are saved in `/contracts.json` for each network. This file should be committed so that addresses are managed by git.
 

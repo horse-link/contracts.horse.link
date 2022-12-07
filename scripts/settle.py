@@ -35,7 +35,7 @@ def load_oracle():
 
     address = get_oracle()
 
-    with open('./artifacts/contracts/Oracle.sol/Oracle.json') as f:
+    with open('./artifacts/contracts/MarketOracle.sol/MarketOracle.json') as f:
         data = json.load(f)
         abi = data['abi']
         contract = web3.eth.contract(address=address, abi=abi)
@@ -45,6 +45,11 @@ def load_oracle():
 def get_count(contract):
     count = contract.functions.getCount().call()
     return count
+
+
+def get_result(oracle, marketId):
+    result = oracle.functions.getResult(marketId).call()
+    return result
 
 
 def update_oracle(oracle, index):
@@ -99,15 +104,15 @@ def main():
     print(f"Current Time: {now}")
 
     # settle each market
-    for market in market_addresses:
-        market = load_market(market['address'])
-        # oracle = load_oracle()
-        count = get_count(contract)
+    for market_address in market_addresses:
+        market = load_market(market_address['address'])
+        count = get_count(market)
 
         # settle each bet in reverse order
         for i in range(count - 1, 0, -1):
             bet = market.functions.getBetByIndex(i).call()
 
+            # check if bet is less than 2 hours old
             if bet[2] > now - 60 * 60 * 2:
 
                 # check if bet is settled via the api
@@ -117,7 +122,7 @@ def main():
                 if response.status_code == 200 and bet[3] == False:
                     print(f"Settling bet {i} for market {market['address']}")
 
-                    tx_receipt = settle(contract, i)
+                    tx_receipt = settle(market, i)
                     print(tx_receipt)
                 else:
                     print(
