@@ -13,9 +13,19 @@ import { UnderlyingTokens, TestAccounts } from "../deployData/settings";
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	const { deployments, getNamedAccounts } = hre;
 	const { deploy, execute } = deployments;
-	const { deployer } = await getNamedAccounts();
+	const namedAccounts = await getNamedAccounts();
+	const { deployer } = namedAccounts;
 
 	for (const tokenDetails of UnderlyingTokens) {
+		// If we already have a named account for this token, skip it
+		if (namedAccounts[tokenDetails.deploymentName]) {
+			console.log(
+				"Skipping deployment of " +
+					tokenDetails.deploymentName +
+					" as it already exists as a named account"
+			);
+			continue;
+		}
 		const underlying = await deploy(tokenDetails.deploymentName, {
 			contract: "Token",
 			from: deployer,
