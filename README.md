@@ -29,7 +29,9 @@ The following is a worked example on how the relationship between users deposits
 | Alice | Deposit | 1000 DAI | 1000 | 1000 DAI | 1000 |
 | Bob | Deposit | 1000 DAI | 1000 | 2000 DAI | 2000 |
 
-The Vault is now holding 2000 DAI in assets and has 2000 shares.  If Alice withdraws 500 shares, she will receive 500 DAI.  Now, lets say a bet of 1800 DAI is placed on a market that is backed by the Vault.  The Vault will lend 1800 DAI to the market and have a total assets of 200 DAI.
+The Vault is now holding 2000 DAI in "totalAssets".  If Alice withdraws 500 shares, she will receive 500 DAI.  Now, lets say a bet of 1800 DAI is placed on a market that is backed by the Vault at 1:1.  The Vault will lend 1800 DAI to the market and have a total assets of 200 DAI and total exposure of 1800 DAI.
+
+3. Vault lends 1800 DAI to the market and has 200 DAI left in total assets.
 
 | User | Action | Amount | Shares | Total Assets | Total Shares |
 | ---- | ------ | ------ | ------ | ------------ | ------------ |
@@ -37,10 +39,27 @@ The Vault is now holding 2000 DAI in assets and has 2000 shares.  If Alice withd
 | Bob | Deposit | 1000 DAI | 1000 | 2000 DAI | 2000 |
 | Vault | Lend | 1800 DAI | 0 | 200 DAI | 2000 |
 
+While the bet is active, Alice can redeem her 1000 shares if she chooses so, but will but the exchange rate per share will be significantly lower than 1 DAI per share.  Her share is represented by the following equation:
 
-3. Alice withdraws 500 DAI from the Vault and receives 500 shares.
+```text
+share = (totalAssets * shares) / totalShares
+```
 
+Eg:
+``` text
+share = (200 * 1000) / 2000 = 100 DAI
+```
 
+Upon redeeming the shares will be burnt and Alice share balance will be 0.  The Vault will have 1100 DAI in total assets and 1000 shares.
+
+4. Alice redeems 1000 shares for 100 DAI.
+
+| User | Action | Amount | Shares | Total Assets | Total Shares |
+| ---- | ------ | ------ | ------ | ------------ | ------------ |
+| Alice | Deposit | 1000 DAI | 1000 | 1000 DAI | 1000 |
+| Bob | Deposit | 1000 DAI | 1000 | 2000 DAI | 2000 |
+| Vault | Lend | 1800 DAI | 0 | 200 DAI | 2000 |
+| Alice | Redeem | 100 DAI | 0 | 100 DAI | 1000 |
 
 ### Markets
 
