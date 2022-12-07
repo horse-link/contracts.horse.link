@@ -59,7 +59,7 @@ Upon redeeming the shares will be burnt and Alice share balance will be 0.  The 
 | Alice | Deposit | 1000 DAI | 1000 | 1000 DAI | 1000 |
 | Bob | Deposit | 1000 DAI | 1000 | 2000 DAI | 2000 |
 | Vault | Lend | 1800 DAI | 0 | 200 DAI | 2000 |
-| Alice | Redeem | 100 DAI | 0 | 100 DAI | 1000 |
+| Alice | Redeem | 100 DAI | 1000 | 100 DAI | 1000 |
 
 ### Markets
 
