@@ -14,6 +14,36 @@ Starts a local hardhat node with the `localhost` network.
 ## Contracts
 Contracts are located in the `/contracts` folder.
 
+### Token
+
+### Vaults
+The Vault contracts are ERC4626 contracts used to store the assets of the users. They are used to store the assets of the users and to allow them to deposit and withdraw assets that get lent to the Market contracts for a fee.  The users are minted a ERC20 share that represents their share of the underlying assets in the Vault.
+
+The following is a worked example on how the relationship between users deposits and their shares work.
+
+1. Alice deposits 1000 DAI into the Vault and receives 1000 shares.
+2. Bob deposits 1000 DAI into the Vault and receives 1000 shares.
+
+| User | Action | Amount | Shares | Total Assets | Total Shares |
+| ---- | ------ | ------ | ------ | ------------ | ------------ |
+| Alice | Deposit | 1000 DAI | 1000 | 1000 DAI | 1000 |
+| Bob | Deposit | 1000 DAI | 1000 | 2000 DAI | 2000 |
+
+The Vault is now holding 2000 DAI in assets and has 2000 shares.  If Alice withdraws 500 shares, she will receive 500 DAI.  Now, lets say a bet of 1800 DAI is placed on a market that is backed by the Vault.  The Vault will lend 1800 DAI to the market and have a total assets of 200 DAI.
+
+| User | Action | Amount | Shares | Total Assets | Total Shares |
+| ---- | ------ | ------ | ------ | ------------ | ------------ |
+| Alice | Deposit | 1000 DAI | 1000 | 1000 DAI | 1000 |
+| Bob | Deposit | 1000 DAI | 1000 | 2000 DAI | 2000 |
+| Vault | Lend | 1800 DAI | 0 | 200 DAI | 2000 |
+
+
+3. Alice withdraws 500 DAI from the Vault and receives 500 shares.
+
+
+
+### Markets
+
 ## Configuration
 See `/hardhat.config.ts` for hardhat configuration. Some values are fetched from environment variables, see `dev.env` for local development environment variables and copy it into `.env` before changing the values.
 
