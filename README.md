@@ -75,7 +75,7 @@ Upon redeeming the shares will be burnt and Alice share balance will be 0. The V
 | Vault | Lend    | 1800 DAI | 0      | 200 DAI      | 2000         |
 | Alice | Redeem  | 100 DAI  | (1000) | 100 DAI      | 1000         |
 
-The bet is now settled and the Vault has an exposure of 0 DAI and has made 1800 DAI on the losing bet. The total assets in the Vault are now ...
+The bet is now settled and the Vault has an exposure of 0 DAI and has made 1800 DAI on the losing bet. The total assets in the Vault are now 100 DAI.
 
 5. Vault settles the bet and has now 3700 DAI in total assets, while the total shares are still 1000 (HL-DAI).
 
@@ -104,6 +104,20 @@ A donation attack is when a user deposits a large amount of assets into the Vaul
 ### Market
 
 Market contracts define the logic in which they calculate the odds per event or market. Our protocol offers two types of market contracts, where the odds slippage calculation is either on a linear decay or a non-linear decay. The linear decay market `Market.sol` is a simple market that calculates the odds based on the total assets in the Vault and the total exposure of the Vault. The non-linear decay market `MarketCurved.sol` is more complex and is more expensive to calculate the odds, but offers a odds to its caller.
+
+```text
+o = O - O * (w / (V + (sm - sp)))
+```
+
+where
+
+```text
+O = Offered odds
+v = Vault total assets
+w = Wager amount
+sm = Sum of all wagers on that market
+sp = Sum of all wagers on that proposition
+```
 
 The market contract implements the ERC721 standard to issue betslips as NFTs. Bets are settled by invoking the `settle` function along with the respective NFT token ID once the `MarketOracle.sol` result has been set. Should the Oracle not be updated within 30 days, the `settle` function will pay out the proposition regardless. This prevents the market operator not to unfairly withhold users assets.
 
