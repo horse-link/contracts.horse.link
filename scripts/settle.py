@@ -113,7 +113,7 @@ def main():
             bet = market.functions.getBetByIndex(i).call()
 
             # check if bet is less than 2 hours old
-            if bet[2] > now - 60 * 60 * 2:
+            if bet[2] > now - 60 * 60 * 24:
 
                 # check if bet is settled via the api
                 response = requests.get(
