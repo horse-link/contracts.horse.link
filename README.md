@@ -52,30 +52,30 @@ share = (200 * 1000) / 2000 = 100 DAI
 
 Upon redeeming the shares will be burnt and Alice share balance will be 0.  The Vault will have 1100 DAI in total assets and 1000 shares.
 
-4. Alice redeems 1000 shares for 100 DAI.
+4. Alice redeems 1000 shares for 100 DAI.  Those shares are burnt
 
 | User | Action | Amount | Shares | Total Assets | Total Shares |
 | ---- | ------ | ------ | ------ | ------------ | ------------ |
 | Alice | Deposit | 1000 DAI | 1000 | 1000 DAI | 1000 |
 | Bob | Deposit | 1000 DAI | 1000 | 2000 DAI | 2000 |
 | Vault | Lend | 1800 DAI | 0 | 200 DAI | 2000 |
-| Alice | Redeem | 100 DAI | 1000 | 100 DAI | 1000 |
+| Alice | Redeem | 100 DAI | (1000) | 100 DAI | 1000 |
 
 The bet is now settled and the Vault has an exposure of 0 DAI and has made 1800 DAI on the loosing bet.  The total assets in the Vault are now ...
 
-5. Vault settles the bet and has now 3700 DAI in total assets, while the total shares are still 1000.
+5. Vault settles the bet and has now 3700 DAI in total assets, while the total shares are still 1000 (HL-DAI).
 
 | User | Action | Amount | Shares | Total Assets | Total Shares |
 | ---- | ------ | ------ | ------ | ------------ | ------------ |
 | Alice | Deposit | 1000 DAI | 1000 | 1000 DAI | 1000 |
 | Bob | Deposit | 1000 DAI | 1000 | 2000 DAI | 2000 |
 | Vault | Lend | 1800 DAI | 0 | 200 DAI | 2000 |
-| Alice | Redeem | 100 DAI | 1000 | 100 DAI | 1000 |
+| Alice | Redeem | 100 DAI | (1000) | 100 DAI | 1000 |
 | Market | Settle | 3600 DAI | 0 | 3700 DAI | 1000 |
 
 The Vault is now holding 3700 DAI in total assets and 1000 shares.  If Alice redeems her shares, she will receive 370 DAI.
 
-#### Analysing a donation attack.
+#### Analysing a donation attack
 
 A donation attack is when a user deposits a large amount of assets into the Vault without incrementing the balance from the deposit function, skewing the ratio of assets to shares.  https://forum.openzeppelin.com/t/erc4626-vault-implementation-for-totalassets-in-base-contract/29474.  In our use case, we discuss the attempt for an attacker could attempt to place a large bet draining the vault, then deposit a large amount of assets into the Vault to skew the ratio of assets to shares.
 
@@ -84,8 +84,8 @@ A donation attack is when a user deposits a large amount of assets into the Vaul
 | Alice | Deposit | 1000 DAI | 1000 | 1000 DAI | 1000 |
 | Bob | Deposit | 1000 DAI | 1000 | 2000 DAI | 2000 |
 | Vault | Lend | 1800 DAI | 0 | 200 DAI | 2000 |
-| Attacker | Deposit | 100000 DAI | 100000 | 100200 DAI | 102000 |
-| Market | Settle | 3600 DAI | 0 | 3700 DAI | 102000 |
+| Attacker | Deposit | 10000 DAI | 10000 | 10200 DAI | 10200 |
+| Market | Settle | 3600 DAI | 0 | 3700 DAI | 10200 |
 
 ### Markets
 
@@ -94,7 +94,10 @@ Markets define the logic in which they calculate the odds per event or market.  
 Markets can either be "Greedy" or "Not Greedy".
 
 #### Greedy Markets
-Greedy markets draw 100% of the lay colleateraly from the Vault.  This is favourable for Vault owners, as they get maximum dividends for collateral they lend, 
+Greedy markets draw 100% of the lay colleateraly from the Vault.  This is favourable for Vault owners, as they get maximum dividends for collateral they lend.
+
+### Non Greedy Markets
+Markets 
 
 ## Configuration
 See `/hardhat.config.ts` for hardhat configuration. Some values are fetched from environment variables, see `dev.env` for local development environment variables and copy it into `.env` before changing the values.
