@@ -126,9 +126,9 @@ def main():
                     print(tx_receipt)
                 else:
                     print(
-                        f"Bet {i} for market {market['address']} already settled")
+                        f"Bet {i} for market {market_address['address']} already settled")
             else:
-                print(f"Bet {i} for market {market['address']} is too old")
+                print(f"Bet {i} for market {market_address['address']} is too old")
                 break
 
 
