@@ -12,12 +12,19 @@ Runs the deployment script with the network set in `process.env.NETWORK`.
 Starts a local hardhat node with the `localhost` network.
 
 ## Contracts
-Contracts are located in the `/contracts` folder.
+There are 5 main types of contracts along with supporting solidity libraries, which are located in the `/contracts` folder.
+
+1. Token `Token.sol`
+2. Vault `Vault.sol`
+3. Market `Market.sol` and `MarketCurved.sol`
+4. Oracle `MarketOracle.sol`
+5. Registry `Registry.sol`
 
 ### Token
+Horse Link issue 100m a standard ERC20 token HL / Horse Link for its members to be used in the future as a DAO goverance token, distribution of protocol fees and other member perks.
 
 ### Vaults
-The Vault contracts are ERC4626 contracts used to store the assets of the users. They are used to store the assets of the users and to allow them to deposit and withdraw assets that get lent to the Market contracts for a fee.  The users are minted a ERC20 share that represents their share of the underlying assets in the Vault.
+The Vault contracts are ERC4626 contracts used to manaage the underlying ERC20 assets of the LP Providers. They are used to store the assets of the users and to allow them to deposit and withdraw assets that get lent to the Market contracts for a fee.  The users are minted a ERC20 share that represents their share of the underlying assets in the Vault.
 
 The following is a worked example on how the relationship between users deposits and their shares work.
 
@@ -87,20 +94,38 @@ A donation attack is when a user deposits a large amount of assets into the Vaul
 | Attacker | Deposit | 10000 DAI | 10000 | 10200 DAI | 10200 |
 | Market | Settle | 3600 DAI | 0 | 3700 DAI | 10200 |
 
-### Markets
+### Market
 
-Markets define the logic in which they calculate the odds per event or market.  Our solution offers two market contracts, will odds slippage either on a linear decay or a non-linear decay.  The linear decay market is a simple market that calculates the odds based on the total assets in the Vault and the total exposure of the Vault.  The non-linear decay market is more complex and is more expensive to calculate the odds, but it is more accurate in calculating the odds.
+Market contracts define the logic in which they calculate the odds per event or market.  Our solution offers two types of market contracts, where the odds slippage either is either on a linear decay or a non-linear decay.  The linear decay market `Market.sol` is a simple market that calculates the odds based on the total assets in the Vault and the total exposure of the Vault.  The non-linear decay market `MarketCurved.sol` is more complex and is more expensive to calculate the odds, but offers a odds to its caller.
 
-Markets can either be "Greedy" or "Not Greedy".
+Markets can either be "Greedy" or "Not Greedy", but for v1.0 we assume Greedy Markets.
 
 #### Greedy Markets
-Greedy markets draw 100% of the lay colleateraly from the Vault.  This is favourable for Vault owners, as they get maximum dividends for collateral they lend.
+Greedy markets draw 100% of the lay collateral from the Vault.  This is favourable for Vault owners, as they get maximum dividends for collateral they lend.
+
+```text
+Given true odds are 2:1,
+And the Vault has 10,000 assets,
+And the Market balance is 100 assets,
+When a bet of 100 assets is placed,
+Then the Vault transfers 200 assets to the Market
+```
 
 ### Non Greedy Markets
-Markets 
+Markets that are non greedy use the collateral under managmenet first, instead of transfering assets from the connected Vault.
+
+```text
+Given true odds are 2:1
+And the Market has 10,000 assets
+When a bet of 100 assets is placed,
+Then t
+```
+
+### Registry
+The registry contract is a mapping of Vaults and Markets used by the protocol.  This allows a single source of truth for calling applications and smart contracts.  It also has the ablity to only allow token holds to modify the contracts it registers.
 
 ## Configuration
-See `/hardhat.config.ts` for hardhat configuration. Some values are fetched from environment variables, see `dev.env` for local development environment variables and copy it into `.env` before changing the values.
+See `/hardhat.config.ts` for hardhat configuration. Some values are fetched from environment variables, see `.env.development` for local development environment variables and copy it into `.env` before changing the values.
 
 ## Deployment
 TODO: How to deploy
@@ -110,7 +135,6 @@ TODO: How to deploy
 ### Deployment to Local
 
 ### Deployment to Mainnet
-
 
 
 ### Contract addresses
