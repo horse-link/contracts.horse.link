@@ -91,6 +91,11 @@ A donation attack is when a user deposits a large amount of assets into the Vaul
 
 Markets define the logic in which they calculate the odds per event or market.  Our solution offers two market contracts, will odds slippage either on a linear decay or a non-linear decay.  The linear decay market is a simple market that calculates the odds based on the total assets in the Vault and the total exposure of the Vault.  The non-linear decay market is more complex and is more expensive to calculate the odds, but it is more accurate in calculating the odds.
 
+Markets can either be "Greedy" or "Not Greedy".
+
+#### Greedy Markets
+Greedy markets draw 100% of the lay colleateraly from the Vault.  This is favourable for Vault owners, as they get maximum dividends for collateral they lend, 
+
 ## Configuration
 See `/hardhat.config.ts` for hardhat configuration. Some values are fetched from environment variables, see `dev.env` for local development environment variables and copy it into `.env` before changing the values.
 
