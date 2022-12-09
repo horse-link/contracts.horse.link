@@ -146,8 +146,8 @@ contract Market is IMarket, Ownable, ERC721 {
 			uint256,
 			bool,
 			address,
-			bytes16,
-			bytes16
+			bytes16, // marketId
+			bytes16 // propositionId
 		)
 	{
 		return _getBet(index);

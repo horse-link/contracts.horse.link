@@ -52,13 +52,13 @@ def get_result(oracle, marketId):
     return result
 
 
-def update_oracle(oracle, index):
+def set_result(oracle, marketId, propositionId, signature):
     account_from = {
         'private_key': os.getenv('PRIVATE_KEY'),
         'address': '0x155c21c846b68121ca59879B3CCB5194F5Ae115E',
     }
 
-    tx = oracle.functions.setResult(index).buildTransaction(
+    tx = oracle.functions.setResult(marketId, propositionId, signature).buildTransaction(
         {
             'from': account_from['address'],
             'nonce': web3.eth.get_transaction_count(account_from['address']),
@@ -116,8 +116,16 @@ def main():
             if bet[2] > now - 60 * 60 * 24:
 
                 # check if bet is settled via the api
+                market_id = bet[5] # Market ID: b'019333WFM07\x00\x00\x00\x00\x00'
+                market_id = market_id[0:11]  #.decode('utf-8').strip('\x00')
+                print(f"Market ID: {market_id}")
+
                 response = requests.get(
-                    f'https://horse.link/api/markets/result/{bet[6]}')
+                    f'https://horse.link/api/bets/sign/{market_id}')
+
+
+                print(response.json())
+
 
                 if response.status_code == 200 and bet[3] == False:
                     print(f"Settling bet {i} for market {market['address']}")
