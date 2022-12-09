@@ -89,6 +89,8 @@ The bet is now settled and the Vault has an exposure of 0 DAI and has made 1800 
 
 The Vault is now holding 3700 DAI in total assets and 1000 shares. If Alice redeems her shares, she will receive 370 DAI.
 
+The perfomance of the Vault is the ratio of the shares to the assets.  In the above example, the performance is 3700 DAI / 1000 shares * 100 = 370% (3.7 DAI per share).
+
 #### Analysing a donation attack
 
 A donation attack is when a user deposits a large amount of assets into the Vault without incrementing the balance from the deposit function, skewing the ratio of assets to shares. https://forum.openzeppelin.com/t/erc4626-vault-implementation-for-totalassets-in-base-contract/29474. In our use case, we discuss the attempt for an attacker could attempt to place a large bet draining the vault, then deposit a large amount of assets into the Vault to skew the ratio of assets to shares.
@@ -100,6 +102,8 @@ A donation attack is when a user deposits a large amount of assets into the Vaul
 | Vault    | Lend    | 1800 DAI  | 0      | 200 DAI      | 2000         |
 | Attacker | Deposit | 10000 DAI | 10000  | 10200 DAI    | 10200        |
 | Market   | Settle  | 3600 DAI  | 0      | 3700 DAI     | 10200        |
+
+In the above example, the Vault has 3700 DAI in total assets and 10200 shares. The performance of the Vault is 3700 / 10200 = 0.36.
 
 ### Market
 
