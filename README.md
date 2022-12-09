@@ -66,7 +66,7 @@ share = (200 * 1000) / 2000 = 100 DAI
 
 Upon redeeming the shares will be burnt and Alice share balance will be 0. The Vault will have 1100 DAI in total assets and 1000 shares.
 
-4. Alice redeems 1000 shares for 100 DAI. Those shares are burnt
+4. Alice redeems 1000 shares for 100 DAI. Those shares are burnt.
 
 | User  | Action  | Amount   | Shares | Total Assets | Total Shares |
 | ----- | ------- | -------- | ------ | ------------ | ------------ |
@@ -75,7 +75,16 @@ Upon redeeming the shares will be burnt and Alice share balance will be 0. The V
 | Vault | Lend    | 1800 DAI | 0      | 200 DAI      | 2000         |
 | Alice | Redeem  | 100 DAI  | (1000) | 100 DAI      | 1000         |
 
-The bet is now settled and the Vault has an exposure of 0 DAI and has made 1800 DAI on the losing bet. The total assets in the Vault are now 100 DAI.
+The bet is now settled and the Vault has an exposure of 0 DAI and has made 1800 DAI on the losing bet. The total assets in the Vault are now 100 DAI. This would also hold true if the bet was a winning bet, and the market pays out the winning proposition.  The performance would be low as the bettor has one assets from the market.
+
+| User   | Action  | Amount     | Shares | Total Assets | Total Shares |
+| ------ | ------- | ---------- | ------ | ------------ | ------------ |
+| Alice  | Deposit | 1000 DAI   | 1000   | 1000 DAI     | 1000         |
+| Bob    | Deposit | 1000 DAI   | 1000   | 2000 DAI     | 2000         |
+| Vault  | Lend    | 1800 DAI   | 0      | 200 DAI      | 2000         |
+| Carol  | Back    | 1800 DAI   | 0      | 0 DAI        | 0            |
+| Market | Settle  | (3600) DAI | 0      | 200 DAI      | 2000         |
+| Carol  | Settle  | 3600 DAI   | 0      | 3600 DAI     | 0            |
 
 5. Vault settles the bet and has now 3700 DAI in total assets, while the total shares are still 1000 (HL-DAI).
 
@@ -89,7 +98,7 @@ The bet is now settled and the Vault has an exposure of 0 DAI and has made 1800 
 
 The Vault is now holding 3700 DAI in total assets and 1000 shares. If Alice redeems her shares, she will receive 370 DAI.
 
-The perfomance of the Vault is the ratio of the shares to the assets.  In the above example, the performance is 3700 DAI / 1000 shares * 100 = 370% (3.7 DAI per share).
+The perfomance of the Vault is the ratio of the shares to the assets. In the above example, the performance is 3700 DAI / 1000 shares \* 100 = 370% (3.7 DAI per share).
 
 #### Analysing a donation attack
 
@@ -156,7 +165,7 @@ The registry contract is a mapping of Vaults and Markets used by the protocol. T
 
 ### Oracle
 
-The `MarketOracle.sol` contract allows authorised account to set results based on the Market ID and the Proposition ID. The results are either set from a python script `settle.py` in the event of a losing Proposition or by the front end should the user win and claim their profits.  The market owner is responsible for providing a signed result after the event.
+The `MarketOracle.sol` contract allows authorised account to set results based on the Market ID and the Proposition ID. The results are either set from a python script `settle.py` in the event of a losing Proposition or by the front end should the user win and claim their profits. The market owner is responsible for providing a signed result after the event.
 
 ## Configuration
 
