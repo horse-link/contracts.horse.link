@@ -225,7 +225,6 @@ contract Market is IMarket, Ownable, ERC721 {
 		);
 	}
 
-
 	function getPotentialPayout(
 		bytes16 propositionId,
 		bytes16 marketId,

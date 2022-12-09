@@ -11,9 +11,6 @@ contract Vault is ERC4626Metadata, Ownable {
 
     using Math for uint256;
 
-    // Mapping address => uint256
-    mapping(address => uint256) public marketAllowance;
-    
     // These will change to allow multiple markets
     address private _market;
     uint8 private immutable _decimals;
@@ -81,10 +78,10 @@ contract Vault is ERC4626Metadata, Ownable {
 
     // Total Assets = amount held by the vault, plus amount lent to the market and therefore locked
     function totalAssets() public view override returns (uint256) {
-        return IERC20(asset()).balanceOf(_self) + totalAssetsLocked();
+        return IERC20(asset()).balanceOf(_self);
     }
 
-    function totalAssetsLocked() public view returns (uint256) {
+    function totalAssetsLocked() external view returns (uint256) {
         return IMarket(_market).getTotalExposure();
     }
 
@@ -94,7 +91,7 @@ contract Vault is ERC4626Metadata, Ownable {
 
         // A fraction of the total assets is locked is locked for the owner, proportional to their holdings.
         uint256 shareBalance = balanceOf(owner);
-        uint256 sharesLockedForOwner = shareBalance * totalAssetsLocked() / totalAssets();
+        uint256 sharesLockedForOwner = shareBalance / totalAssets();
         return shareBalance - sharesLockedForOwner;
     }
 
