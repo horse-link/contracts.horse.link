@@ -32,7 +32,7 @@ Horse Link issues 100m standard ERC20 tokens HL / Horse Link for its members to 
 
 The Vault contracts are ERC4626 contracts used to manage the underlying ERC20 assets of the LP Providers. They are used to store the assets of the users and to allow them to deposit and withdraw assets that get lent to Market contracts for a fee which is agreed upon in the `setMarket` function. The users are minted a ERC20 share that represents their share of the underlying assets in the Vault.
 
-The following is a worked example on how the relationship between users' deposits and their shares work.
+The following is a worked example of the relationship between users' deposits and shares.
 
 1. Alice deposits 1000 DAI into the Vault and receives 1000 shares.
 2. Bob deposits 1000 DAI into the Vault and receives 1000 shares.
