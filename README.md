@@ -42,7 +42,7 @@ The following is a worked example of the relationship between users' deposits an
 | Alice | Deposit | 1000 DAI | 1000   | 1000 DAI     | 1000         |
 | Bob   | Deposit | 1000 DAI | 1000   | 2000 DAI     | 2000         |
 
-The Vault is now holding 2000 DAI in "totalAssets". If Alice withdraws 500 shares, she will receive 500 DAI. Now, lets say a bet of 1800 DAI is placed on a market that is backed by the Vault at 1:1. The Vault will lend 1800 DAI to the market and have a total assets of 200 DAI and total exposure of 1800 DAI.
+The Vault is now holding 2000 DAI in "totalAssets". If Alice withdraws 500 shares, she will receive 500 DAI. Now, let's say a bet of 1800 DAI is placed on a market that is backed by the Vault at 1:1. The Vault will lend 1800 DAI to the market. 200 DAI remain in the vault and it will have a total exposure of 1800 DAI.
 
 3. Vault lends 1800 DAI to the market and has 200 DAI left in total assets.
 
