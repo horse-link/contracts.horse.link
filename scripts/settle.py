@@ -116,25 +116,26 @@ def main():
             if bet[2] > now - 60 * 60 * 24:
 
                 # check if bet is settled via the api
-                market_id = bet[5] # Market ID: b'019333WFM07\x00\x00\x00\x00\x00'
-                market_id = market_id[0:11]  #.decode('utf-8').strip('\x00')
-                print(f"Market ID: {market_id}")
+                market_id = bet[5]
+                market_id = market_id[0:11]
 
-                response = requests.get(
-                    f'https://horse.link/api/bets/sign/{market_id}')
+                mid = market_id.decode('ASCII')
+                print(f"Market ID: {mid}")
 
+                url = f'https://horse.link/api/bets/sign/{mid}'
 
+                response = requests.get(url)
                 print(response.json())
 
 
-                if response.status_code == 200 and bet[3] == False:
-                    print(f"Settling bet {i} for market {market['address']}")
+                # if response.status_code == 200 and bet[3] == False:
+                #     print(f"Settling bet {i} for market {market['address']}")
 
-                    tx_receipt = settle(market, i)
-                    print(tx_receipt)
-                else:
-                    print(
-                        f"Bet {i} for market {market_address['address']} already settled")
+                #     tx_receipt = settle(market, i)
+                #     print(tx_receipt)
+                # else:
+                #     print(
+                #         f"Bet {i} for market {market_address['address']} already settled")
             else:
                 print(f"Bet {i} for market {market_address['address']} is too old")
                 break
