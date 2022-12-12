@@ -100,7 +100,7 @@ If the bet was a winning bet, the market pays out the winning proposition. The p
 
 The Vault is now holding 3700 DAI in total assets and 1000 shares. If Alice redeems her shares, she will receive 370 DAI.
 
-The perfomance of the Vault is the ratio of the shares to the assets. In the above example, the performance is 3700 DAI / 1000 shares \* 100 = 370% (3.7 DAI per share).
+The perfomance of the Vault is the ratio of the shares to the assets. In the above example, the performance is 3700 DAI / 1000 shares * 100 = 370% (3.7 DAI per share).
 
 #### Analysing a donation attack
 
@@ -110,6 +110,7 @@ A donation attack is when a user deposits a large amount of assets into the Vaul
 | -------- | ------- | --------- | ------ | ------------ | ------------ |
 | Alice    | Deposit | 1000 DAI  | 1000   | 1000 DAI     | 1000         |
 | Bob      | Deposit | 1000 DAI  | 1000   | 2000 DAI     | 2000         |
+| Attacker | Back    | 1800 DAI  | 0      | 2000 DAI     | 2000         |
 | Vault    | Lend    | 1800 DAI  | 0      | 200 DAI      | 2000         |
 | Attacker | Deposit | 10000 DAI | 10000  | 10200 DAI    | 10200        |
 | Market   | Settle  | 3600 DAI  | 0      | 3700 DAI     | 10200        |
