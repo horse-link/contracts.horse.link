@@ -83,8 +83,8 @@ If the bet was a winning bet, the market pays out the winning proposition. The p
 | ------ | ------- | ---------- | ------ | ------------ | ------------ |
 | Alice  | Deposit | 1000 DAI   | 1000   | 1000 DAI     | 1000         |
 | Bob    | Deposit | 1000 DAI   | 1000   | 2000 DAI     | 2000         |
-| Vault  | Lend    | 1800 DAI   | 0      | 200 DAI      | 2000         |
 | Carol  | Back    | 1800 DAI   | 0      | 0 DAI        | 0            |
+| Vault  | Lend    | 1800 DAI   | 0      | 200 DAI      | 2000         |
 | Market | Settle  | (3600) DAI | 0      | 200 DAI      | 2000         |
 | Carol  | Settle  | 3600 DAI   | 0      | 3600 DAI     | 0            |
 
