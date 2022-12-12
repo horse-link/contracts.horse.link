@@ -378,7 +378,7 @@ describe("Vault", () => {
 
 			await vault.connect(alice).deposit(ONE_HUNDRED, alice.address);
 			const maxRedeem = await vault.maxRedeem(alice.address);
-			expect(maxRedeem).to.equal(ONE_HUNDRED);
+			expect(maxRedeem).to.be.closeTo(ONE_HUNDRED, 1); // Accept rounding
 		});
 
 		it("Should get previewRedeem amount with 0 amount", async () => {

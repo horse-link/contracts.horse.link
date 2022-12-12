@@ -6,7 +6,6 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
-import {IBet} from "./IBet.sol";
 import "./IVault.sol";
 import "./IMarket.sol";
 import "./IOracle.sol";
@@ -224,7 +223,6 @@ contract Market is IMarket, Ownable, ERC721 {
 			pool
 		);
 	}
-
 
 	function getPotentialPayout(
 		bytes16 propositionId,
