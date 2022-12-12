@@ -59,6 +59,7 @@ share = (totalAssets * shares) / totalShares
 ```
 
 Eg:
+
 ```text
 share = (200 * 1000) / 2000 = 100 DAI
 ```
@@ -117,6 +118,7 @@ A donation attack is when a user deposits a large amount of assets into the Vaul
 In the above example, the Vault has 3700 DAI in total assets and 10200 shares. The performance of the Vault is 3700 / 10200 = 0.36. The attacker can not manipulate the share price but the opposite is true. The Vault has now more assets to offset any losses from the market.
 
 Eg:
+
 ```text
 share = (totalAssets * shares) / totalShares
 13525.41 = (13800 * 10000) / 10200
@@ -129,8 +131,8 @@ share = (totalAssets * shares) / totalShares
 | Attacker | Back    | 1800 DAI  | 0       | 2000 DAI     | 2000         |
 | Vault    | Lend    | 1800 DAI  | 0       | 200 DAI      | 2000         |
 | Attacker | Deposit | 10000 DAI | 10000   | 10200 DAI    | 10200        |
-| Market   | Settle  | 3600 DAI  | 0       | 13800 DAI     | 10200        |
-| Attacker | Redeem  | DAI       | (10000) | x DAI     | 200          |
+| Market   | Settle  | 3600 DAI  | 0       | 13800 DAI    | 10200        |
+| Attacker | Redeem  | DAI       | (10000) | x DAI        | 200          |
 
 ### Market
 
