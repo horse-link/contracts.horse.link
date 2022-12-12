@@ -4,12 +4,9 @@ pragma solidity =0.8.10;
 import "./SignatureLib.sol";
 
 interface IMarket {
-	function getFee() external view returns (uint8);
-
+	function getMargin() external view returns (uint8);
 	function getTotalInPlay() external view returns (uint256);
-
 	function getInPlayCount() external view returns (uint256);
-
 	function getTotalExposure() external view returns (uint256);
 
 	function getBetByIndex(uint256 index)
@@ -20,19 +17,23 @@ interface IMarket {
 			uint256,
 			uint256,
 			bool,
-			address
+			address,
+			bytes16,
+			bytes16
 		);
 
 	function getOdds(
-		int256 wager,
-		int256 odds,
-		bytes16 propositionId
-	) external view returns (int256);
+		uint256 wager,
+		uint256 odds,
+		bytes16 propositionId,
+		bytes16 marketId
+	) external view returns (uint256);
 
 	function getOracleAddress() external view returns (address);
 
 	function getPotentialPayout(
 		bytes16 propositionId,
+		bytes16 marketId,
 		uint256 wager,
 		uint256 odds
 	) external view returns (uint256);

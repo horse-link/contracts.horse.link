@@ -13,7 +13,8 @@ import { UnderlyingTokens, TestAccounts } from "../deployData/settings";
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	const { deployments, getNamedAccounts } = hre;
 	const { deploy, execute } = deployments;
-	const { deployer } = await getNamedAccounts();
+	const namedAccounts = await getNamedAccounts();
+	const { deployer } = namedAccounts;
 
 	for (const tokenDetails of UnderlyingTokens) {
 		const underlying = await deploy(tokenDetails.deploymentName, {
