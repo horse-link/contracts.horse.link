@@ -59,7 +59,6 @@ share = (totalAssets * shares) / totalShares
 ```
 
 Eg:
-
 ```text
 share = (200 * 1000) / 2000 = 100 DAI
 ```
@@ -75,7 +74,7 @@ Upon redeeming the shares will be burnt and Alice share balance will be 0. The V
 | Vault | Lend    | 1800 DAI | 0      | 200 DAI      | 2000         |
 | Alice | Redeem  | 100 DAI  | (1000) | 100 DAI      | 1000         |
 
-The bet is now settled and the Vault has an exposure of 0 DAI and has made 1800 DAI on the losing bet. The total assets in the Vault are now 3700 DAI. 
+The bet is now settled and the Vault has an exposure of 0 DAI and has made 1800 DAI on the losing bet. The total assets in the Vault are now 3700 DAI.
 
 If the bet was a winning bet, the market pays out the winning proposition. The performance of the Vault would be low, as the bettor has won assets from the Market, which will now not be returned to the Vault.
 
@@ -100,7 +99,7 @@ If the bet was a winning bet, the market pays out the winning proposition. The p
 
 The Vault is now holding 3700 DAI in total assets and 1000 shares. If Alice redeems her shares, she will receive 370 DAI.
 
-The perfomance of the Vault is the ratio of the shares to the assets. In the above example, the performance is 3700 DAI / 1000 shares * 100 = 370% (3.7 DAI per share).
+The perfomance of the Vault is the ratio of the shares to the assets. In the above example, the performance is 3700 DAI / 1000 shares \* 100 = 370% (3.7 DAI per share).
 
 #### Analysing a donation attack
 
@@ -115,7 +114,23 @@ A donation attack is when a user deposits a large amount of assets into the Vaul
 | Attacker | Deposit | 10000 DAI | 10000  | 10200 DAI    | 10200        |
 | Market   | Settle  | 3600 DAI  | 0      | 3700 DAI     | 10200        |
 
-In the above example, the Vault has 3700 DAI in total assets and 10200 shares. The performance of the Vault is 3700 / 10200 = 0.36.
+In the above example, the Vault has 3700 DAI in total assets and 10200 shares. The performance of the Vault is 3700 / 10200 = 0.36. The attacker can not manipulate the share price but the opposite is true. The Vault has now more assets to offset any losses from the market.
+
+Eg:
+```text
+share = (totalAssets * shares) / totalShares
+13525.41 = (13800 * 10000) / 10200
+```
+
+| User     | Action  | Amount    | Shares  | Total Assets | Total Shares |
+| -------- | ------- | --------- | ------- | ------------ | ------------ |
+| Alice    | Deposit | 1000 DAI  | 1000    | 1000 DAI     | 1000         |
+| Bob      | Deposit | 1000 DAI  | 1000    | 2000 DAI     | 2000         |
+| Attacker | Back    | 1800 DAI  | 0       | 2000 DAI     | 2000         |
+| Vault    | Lend    | 1800 DAI  | 0       | 200 DAI      | 2000         |
+| Attacker | Deposit | 10000 DAI | 10000   | 10200 DAI    | 10200        |
+| Market   | Settle  | 3600 DAI  | 0       | 13800 DAI     | 10200        |
+| Attacker | Redeem  | DAI       | (10000) | x DAI     | 200          |
 
 ### Market
 
