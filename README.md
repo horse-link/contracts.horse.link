@@ -102,7 +102,7 @@ The perfomance of the Vault is the ratio of the shares to the assets. In the abo
 
 #### Analysing a donation attack
 
-A donation attack is when a user deposits a large amount of assets into the Vault without incrementing the balance from the deposit function, skewing the ratio of assets to shares. https://forum.openzeppelin.com/t/erc4626-vault-implementation-for-totalassets-in-base-contract/29474. In our use case, we discuss the attempt for an attacker could attempt to place a large bet draining the vault, then deposit a large amount of assets into the Vault to skew the ratio of assets to shares.
+A donation attack is when a user deposits a large amount of assets into the Vault without incrementing the balance from the deposit function, skewing the ratio of assets to shares. https://forum.openzeppelin.com/t/erc4626-vault-implementation-for-totalassets-in-base-contract/29474. In our use case, we discuss the the possibility that an attacker could attempt to place a large bet, draining the vault, then deposit a large amount of assets into the Vault to skew the ratio of assets to shares.
 
 | User     | Action  | Amount    | Shares | Total Assets | Total Shares |
 | -------- | ------- | --------- | ------ | ------------ | ------------ |
