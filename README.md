@@ -75,7 +75,9 @@ Upon redeeming the shares will be burnt and Alice share balance will be 0. The V
 | Vault | Lend    | 1800 DAI | 0      | 200 DAI      | 2000         |
 | Alice | Redeem  | 100 DAI  | (1000) | 100 DAI      | 1000         |
 
-The bet is now settled and the Vault has an exposure of 0 DAI and has made 1800 DAI on the losing bet. The total assets in the Vault are now 100 DAI. This would also hold true if the bet was a winning bet, and the market pays out the winning proposition.  The performance would be low as the bettor has one assets from the market.
+The bet is now settled and the Vault has an exposure of 0 DAI and has made 1800 DAI on the losing bet. The total assets in the Vault are now 3700 DAI. 
+
+If the bet was a winning bet, the market pays out the winning proposition. The performance of the Vault would be low, as the bettor has won assets from the Market, which will now not be returned to the Vault.
 
 | User   | Action  | Amount     | Shares | Total Assets | Total Shares |
 | ------ | ------- | ---------- | ------ | ------------ | ------------ |
