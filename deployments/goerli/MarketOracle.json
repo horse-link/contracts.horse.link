@@ -1,0 +1,153 @@
+{
+  "address": "0x6E3871bde903C8022A93b5f434f1096878744eC8",
+  "abi": [
+    {
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "bytes16",
+          "name": "marketId",
+          "type": "bytes16"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes16",
+          "name": "propositionId",
+          "type": "bytes16"
+        }
+      ],
+      "name": "ResultSet",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes16",
+          "name": "marketId",
+          "type": "bytes16"
+        },
+        {
+          "internalType": "bytes16",
+          "name": "propositionId",
+          "type": "bytes16"
+        }
+      ],
+      "name": "checkResult",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes16",
+          "name": "marketId",
+          "type": "bytes16"
+        }
+      ],
+      "name": "getResult",
+      "outputs": [
+        {
+          "internalType": "bytes16",
+          "name": "",
+          "type": "bytes16"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes16",
+          "name": "marketId",
+          "type": "bytes16"
+        },
+        {
+          "internalType": "bytes16",
+          "name": "propositionId",
+          "type": "bytes16"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "sig",
+          "type": "bytes32"
+        }
+      ],
+      "name": "setResult",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0xee05ae8fa35a6ac055b7a648ad67c1eb4f272ac6a89c5297192073495256c369",
+  "receipt": {
+    "to": null,
+    "from": "0x1Ab4C6d9e25Fc65C917aFBEfB4E963C400Fb9814",
+    "contractAddress": "0x6E3871bde903C8022A93b5f434f1096878744eC8",
+    "transactionIndex": 32,
+    "gasUsed": "491714",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0x306266ea80b97f964ad069f10174de77f5ebe2457f0a467d2a75e7802067d1ea",
+    "transactionHash": "0xee05ae8fa35a6ac055b7a648ad67c1eb4f272ac6a89c5297192073495256c369",
+    "logs": [],
+    "blockNumber": 8083493,
+    "cumulativeGasUsed": "4717967",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [],
+  "numDeployments": 1,
+  "solcInputHash": "c1e203e5f0313dd9b7d23c9f3bb11085",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.10+commit.fc410830\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes16\",\"name\":\"marketId\",\"type\":\"bytes16\"},{\"indexed\":false,\"internalType\":\"bytes16\",\"name\":\"propositionId\",\"type\":\"bytes16\"}],\"name\":\"ResultSet\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"bytes16\",\"name\":\"marketId\",\"type\":\"bytes16\"},{\"internalType\":\"bytes16\",\"name\":\"propositionId\",\"type\":\"bytes16\"}],\"name\":\"checkResult\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes16\",\"name\":\"marketId\",\"type\":\"bytes16\"}],\"name\":\"getResult\",\"outputs\":[{\"internalType\":\"bytes16\",\"name\":\"\",\"type\":\"bytes16\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes16\",\"name\":\"marketId\",\"type\":\"bytes16\"},{\"internalType\":\"bytes16\",\"name\":\"propositionId\",\"type\":\"bytes16\"},{\"internalType\":\"bytes32\",\"name\":\"sig\",\"type\":\"bytes32\"}],\"name\":\"setResult\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/MarketOracle.sol\":\"MarketOracle\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"contracts/IOracle.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity =0.8.10;\\n\\n// Binary Oracle\\ninterface IOracle {\\n    function checkResult(\\n        bytes16 marketId,\\n        bytes16 propositionId\\n    ) external view returns (bool);\\n\\n    function getResult(bytes16 marketId) external view returns (bytes16);\\n\\n    function setResult(\\n        bytes16 marketId,\\n        bytes16 propositionId,\\n        bytes32 sig\\n    ) external;\\n\\n    event ResultSet(bytes16 marketId, bytes16 propositionId);\\n}\",\"keccak256\":\"0xd100dd7b7d08e14040a6d26ace196ed09ee094b51b6978826f34865d88ab3c90\",\"license\":\"MIT\"},\"contracts/MarketOracle.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity =0.8.10;\\n\\nimport \\\"./IOracle.sol\\\";\\nimport \\\"./SignatureLib.sol\\\";\\n\\ncontract MarketOracle is IOracle {\\n    mapping(bytes16 => bytes16) private _results;\\n    address private immutable _owner;\\n\\n    constructor() {\\n        _owner = msg.sender;\\n    }\\n\\n    function checkResult(\\n        bytes16 marketId,\\n        bytes16 propositionId\\n    ) external view returns (bool) {\\n        require(\\n            propositionId != bytes16(0),\\n            \\\"getBinaryResult: Invalid propositionId\\\"\\n        );\\n        return _results[marketId] == propositionId;\\n    }\\n\\n    function getResult(bytes16 marketId) external view returns (bytes16) {\\n        require(\\n            marketId != bytes16(0),\\n            \\\"getBinaryResult: Invalid propositionId\\\"\\n        );\\n        return _results[marketId];\\n    }\\n\\n    function setResult(\\n        bytes16 marketId,\\n        bytes16 propositionId,\\n        bytes32 sig\\n    ) external {\\n        require(\\n            propositionId != bytes16(0),\\n            \\\"setBinaryResult: Invalid propositionId\\\"\\n        );\\n        require(\\n            _results[marketId] == bytes16(0),\\n            \\\"setBinaryResult: Result already set\\\"\\n        );\\n        _results[marketId] = propositionId;\\n\\n        emit ResultSet(marketId, propositionId);\\n    }\\n\\n    modifier onlyMarketOwner(\\n        bytes32 messageHash,\\n        SignatureLib.Signature memory sig\\n    ) {\\n        require(\\n            SignatureLib.recoverSigner(messageHash, sig) == _owner,\\n            \\\"onlyMarketOwner: Invalid signature\\\"\\n        );\\n        _;\\n    }\\n}\\n\",\"keccak256\":\"0x8b31b62b34c1aad5eac126b7bfd037862ef50db280d4c0ac021afb330509caea\",\"license\":\"MIT\"},\"contracts/SignatureLib.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity =0.8.10;\\n\\nlibrary SignatureLib {\\n    struct Signature {\\n        uint8 v;\\n        bytes32 r;\\n        bytes32 s;\\n    }\\n\\n    function recoverSigner(\\n        bytes32 message,\\n        Signature memory signature\\n    ) public pure returns (address) {\\n        bytes32 prefixedHash = keccak256(\\n            abi.encodePacked(\\\"\\\\x19Ethereum Signed Message:\\\\n32\\\", message)\\n        );\\n        return ecrecover(prefixedHash, signature.v, signature.r, signature.s);\\n    }\\n}\\n\",\"keccak256\":\"0x030d6d33efc780f65e027c212235482f115a3f91f04195ebf5543c6b984ea3cd\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x60a060405234801561001057600080fd5b503373ffffffffffffffffffffffffffffffffffffffff1660808173ffffffffffffffffffffffffffffffffffffffff16815250506080516107f661005d600039600050506107f66000f3fe608060405234801561001057600080fd5b50600436106100415760003560e01c806306c77ce71461004657806308a4aa6f146100765780634b51e70a14610092575b600080fd5b610060600480360381019061005b919061047a565b6100c2565b60405161006d91906104d5565b60405180910390f35b610090600480360381019061008b9190610526565b6101a6565b005b6100ac60048036038101906100a79190610579565b610362565b6040516100b991906105b5565b60405180910390f35b60008060801b6fffffffffffffffffffffffffffffffff1916826fffffffffffffffffffffffffffffffff19161415610130576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040161012790610653565b60405180910390fd5b816fffffffffffffffffffffffffffffffff1916600080856fffffffffffffffffffffffffffffffff19166fffffffffffffffffffffffffffffffff1916815260200190815260200160002060009054906101000a900460801b6fffffffffffffffffffffffffffffffff191614905092915050565b600060801b6fffffffffffffffffffffffffffffffff1916826fffffffffffffffffffffffffffffffff19161415610213576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040161020a906106e5565b60405180910390fd5b600060801b6fffffffffffffffffffffffffffffffff1916600080856fffffffffffffffffffffffffffffffff19166fffffffffffffffffffffffffffffffff1916815260200190815260200160002060009054906101000a900460801b6fffffffffffffffffffffffffffffffff1916146102c4576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004016102bb90610777565b60405180910390fd5b81600080856fffffffffffffffffffffffffffffffff19166fffffffffffffffffffffffffffffffff1916815260200190815260200160002060006101000a8154816fffffffffffffffffffffffffffffffff021916908360801c02179055507f1a26e02557415617cb31ed9c9ac1bbe2c8f5e32b8f13ddc706d9ad0afb3c2b448383604051610355929190610797565b60405180910390a1505050565b60008060801b6fffffffffffffffffffffffffffffffff1916826fffffffffffffffffffffffffffffffff191614156103d0576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004016103c790610653565b60405180910390fd5b600080836fffffffffffffffffffffffffffffffff19166fffffffffffffffffffffffffffffffff1916815260200190815260200160002060009054906101000a900460801b9050919050565b600080fd5b60007fffffffffffffffffffffffffffffffff0000000000000000000000000000000082169050919050565b61045781610422565b811461046257600080fd5b50565b6000813590506104748161044e565b92915050565b600080604083850312156104915761049061041d565b5b600061049f85828601610465565b92505060206104b085828601610465565b9150509250929050565b60008115159050919050565b6104cf816104ba565b82525050565b60006020820190506104ea60008301846104c6565b92915050565b6000819050919050565b610503816104f0565b811461050e57600080fd5b50565b600081359050610520816104fa565b92915050565b60008060006060848603121561053f5761053e61041d565b5b600061054d86828701610465565b935050602061055e86828701610465565b925050604061056f86828701610511565b9150509250925092565b60006020828403121561058f5761058e61041d565b5b600061059d84828501610465565b91505092915050565b6105af81610422565b82525050565b60006020820190506105ca60008301846105a6565b92915050565b600082825260208201905092915050565b7f67657442696e617279526573756c743a20496e76616c69642070726f706f736960008201527f74696f6e49640000000000000000000000000000000000000000000000000000602082015250565b600061063d6026836105d0565b9150610648826105e1565b604082019050919050565b6000602082019050818103600083015261066c81610630565b9050919050565b7f73657442696e617279526573756c743a20496e76616c69642070726f706f736960008201527f74696f6e49640000000000000000000000000000000000000000000000000000602082015250565b60006106cf6026836105d0565b91506106da82610673565b604082019050919050565b600060208201905081810360008301526106fe816106c2565b9050919050565b7f73657442696e617279526573756c743a20526573756c7420616c72656164792060008201527f7365740000000000000000000000000000000000000000000000000000000000602082015250565b60006107616023836105d0565b915061076c82610705565b604082019050919050565b6000602082019050818103600083015261079081610754565b9050919050565b60006040820190506107ac60008301856105a6565b6107b960208301846105a6565b939250505056fea2646970667358221220d0be6aae82261d026fe43acc365c05ca7a94d5d5580331525ec6b37d19abd43e64736f6c634300080a0033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100415760003560e01c806306c77ce71461004657806308a4aa6f146100765780634b51e70a14610092575b600080fd5b610060600480360381019061005b919061047a565b6100c2565b60405161006d91906104d5565b60405180910390f35b610090600480360381019061008b9190610526565b6101a6565b005b6100ac60048036038101906100a79190610579565b610362565b6040516100b991906105b5565b60405180910390f35b60008060801b6fffffffffffffffffffffffffffffffff1916826fffffffffffffffffffffffffffffffff19161415610130576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040161012790610653565b60405180910390fd5b816fffffffffffffffffffffffffffffffff1916600080856fffffffffffffffffffffffffffffffff19166fffffffffffffffffffffffffffffffff1916815260200190815260200160002060009054906101000a900460801b6fffffffffffffffffffffffffffffffff191614905092915050565b600060801b6fffffffffffffffffffffffffffffffff1916826fffffffffffffffffffffffffffffffff19161415610213576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040161020a906106e5565b60405180910390fd5b600060801b6fffffffffffffffffffffffffffffffff1916600080856fffffffffffffffffffffffffffffffff19166fffffffffffffffffffffffffffffffff1916815260200190815260200160002060009054906101000a900460801b6fffffffffffffffffffffffffffffffff1916146102c4576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004016102bb90610777565b60405180910390fd5b81600080856fffffffffffffffffffffffffffffffff19166fffffffffffffffffffffffffffffffff1916815260200190815260200160002060006101000a8154816fffffffffffffffffffffffffffffffff021916908360801c02179055507f1a26e02557415617cb31ed9c9ac1bbe2c8f5e32b8f13ddc706d9ad0afb3c2b448383604051610355929190610797565b60405180910390a1505050565b60008060801b6fffffffffffffffffffffffffffffffff1916826fffffffffffffffffffffffffffffffff191614156103d0576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004016103c790610653565b60405180910390fd5b600080836fffffffffffffffffffffffffffffffff19166fffffffffffffffffffffffffffffffff1916815260200190815260200160002060009054906101000a900460801b9050919050565b600080fd5b60007fffffffffffffffffffffffffffffffff0000000000000000000000000000000082169050919050565b61045781610422565b811461046257600080fd5b50565b6000813590506104748161044e565b92915050565b600080604083850312156104915761049061041d565b5b600061049f85828601610465565b92505060206104b085828601610465565b9150509250929050565b60008115159050919050565b6104cf816104ba565b82525050565b60006020820190506104ea60008301846104c6565b92915050565b6000819050919050565b610503816104f0565b811461050e57600080fd5b50565b600081359050610520816104fa565b92915050565b60008060006060848603121561053f5761053e61041d565b5b600061054d86828701610465565b935050602061055e86828701610465565b925050604061056f86828701610511565b9150509250925092565b60006020828403121561058f5761058e61041d565b5b600061059d84828501610465565b91505092915050565b6105af81610422565b82525050565b60006020820190506105ca60008301846105a6565b92915050565b600082825260208201905092915050565b7f67657442696e617279526573756c743a20496e76616c69642070726f706f736960008201527f74696f6e49640000000000000000000000000000000000000000000000000000602082015250565b600061063d6026836105d0565b9150610648826105e1565b604082019050919050565b6000602082019050818103600083015261066c81610630565b9050919050565b7f73657442696e617279526573756c743a20496e76616c69642070726f706f736960008201527f74696f6e49640000000000000000000000000000000000000000000000000000602082015250565b60006106cf6026836105d0565b91506106da82610673565b604082019050919050565b600060208201905081810360008301526106fe816106c2565b9050919050565b7f73657442696e617279526573756c743a20526573756c7420616c72656164792060008201527f7365740000000000000000000000000000000000000000000000000000000000602082015250565b60006107616023836105d0565b915061076c82610705565b604082019050919050565b6000602082019050818103600083015261079081610754565b9050919050565b60006040820190506107ac60008301856105a6565b6107b960208301846105a6565b939250505056fea2646970667358221220d0be6aae82261d026fe43acc365c05ca7a94d5d5580331525ec6b37d19abd43e64736f6c634300080a0033",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 15371,
+        "contract": "contracts/MarketOracle.sol:MarketOracle",
+        "label": "_results",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_mapping(t_bytes16,t_bytes16)"
+      }
+    ],
+    "types": {
+      "t_bytes16": {
+        "encoding": "inplace",
+        "label": "bytes16",
+        "numberOfBytes": "16"
+      },
+      "t_mapping(t_bytes16,t_bytes16)": {
+        "encoding": "mapping",
+        "key": "t_bytes16",
+        "label": "mapping(bytes16 => bytes16)",
+        "numberOfBytes": "32",
+        "value": "t_bytes16"
+      }
+    }
+  }
+}
