@@ -64,7 +64,7 @@ Eg:
 share = (200 * 1000) / 2000 = 100 DAI
 ```
 
-Upon redeeming the shares will be burnt and Alice share balance will be 0. The Vault will have 1100 DAI in total assets and 1000 shares.
+Upon redeeming the shares will be burnt and Alice share balance will be 0. The Vault will have 100 DAI in total assets and 1000 shares.
 
 4. Alice redeems 1000 shares for 100 DAI. Those shares are burnt.
 
