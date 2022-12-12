@@ -110,6 +110,7 @@ A donation attack is when a user deposits a large amount of assets into the Vaul
 | -------- | ------- | --------- | ------ | ------------ | ------------ |
 | Alice    | Deposit | 1000 DAI  | 1000   | 1000 DAI     | 1000         |
 | Bob      | Deposit | 1000 DAI  | 1000   | 2000 DAI     | 2000         |
+| Attacker | Back    | 1800 DAI  | 0      | 2000 DAI     | 2000         |
 | Vault    | Lend    | 1800 DAI  | 0      | 200 DAI      | 2000         |
 | Attacker | Deposit | 10000 DAI | 10000  | 10200 DAI    | 10200        |
 | Market   | Settle  | 3600 DAI  | 0      | 3700 DAI     | 10200        |
