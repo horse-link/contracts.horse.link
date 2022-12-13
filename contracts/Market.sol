@@ -6,7 +6,6 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
-import {IBet} from "./IBet.sol";
 import "./IVault.sol";
 import "./IMarket.sol";
 import "./IOracle.sol";
@@ -24,7 +23,7 @@ struct Bet {
 	address owner;
 }
 
-contract Market is Ownable, ERC721 {
+contract Market is IMarket, Ownable, ERC721 {
 	uint8 private immutable _margin;
 
 	IVault private immutable _vault;
@@ -146,8 +145,8 @@ contract Market is Ownable, ERC721 {
 			uint256,
 			bool,
 			address,
-			bytes16,
-			bytes16
+			bytes16, // marketId
+			bytes16 // propositionId
 		)
 	{
 		return _getBet(index);
@@ -175,7 +174,7 @@ contract Market is Ownable, ERC721 {
 		uint256 odds,
 		bytes16 propositionId,
 		bytes16 marketId
-	) external view returns (uint256) {
+	) external view override returns (uint256) {
 		return _getOdds(wager, odds, propositionId, marketId);
 	}
 
@@ -224,7 +223,6 @@ contract Market is Ownable, ERC721 {
 			pool
 		);
 	}
-
 
 	function getPotentialPayout(
 		bytes16 propositionId,

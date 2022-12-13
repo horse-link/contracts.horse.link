@@ -34,8 +34,10 @@ contract MarketOracle is IOracle {
     function setResult(
         bytes16 marketId,
         bytes16 propositionId,
-        bytes32 sig
+        SignatureLib.Signature calldata signature
     ) external {
+        bytes32 messageHash = keccak256(abi.encode(marketId, propositionId));
+        require(isValidSignature(messageHash, signature), "setBinaryResult: Invalid signature");
         require(
             propositionId != bytes16(0),
             "setBinaryResult: Invalid propositionId"
@@ -49,14 +51,9 @@ contract MarketOracle is IOracle {
         emit ResultSet(marketId, propositionId);
     }
 
-    modifier onlyMarketOwner(
-        bytes32 messageHash,
-        SignatureLib.Signature memory sig
-    ) {
-        require(
-            SignatureLib.recoverSigner(messageHash, sig) == _owner,
-            "onlyMarketOwner: Invalid signature"
-        );
-        _;
-    }
+    function isValidSignature(bytes32 messageHash, SignatureLib.Signature calldata signature) private view returns (bool) {
+		address signer = SignatureLib.recoverSigner(messageHash, signature);
+		assert(signer != address(0));
+		return signer == _owner;
+	}
 }
