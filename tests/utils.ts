@@ -32,3 +32,20 @@ export function formatBytes16String(text: string): string {
 	// Zero-pad (implicitly null-terminates)
 	return hexlify(concat([bytes, ethers.constants.HashZero]).slice(0, 16));
 }
+
+export function makeMarketId(date: Date, location: string, raceNumber: string) {
+	//Turn Date object into number of days since 1/1/1970, padded to 6 digits
+	const MILLIS_IN_DAY = 1000 * 60 * 60 * 24;
+	const daysSinceEpoch = Math.floor(date.getTime() / MILLIS_IN_DAY)
+		.toString()
+		.padStart(6, "0");
+	return `${daysSinceEpoch}${location}${raceNumber
+		.toString()
+		.padStart(2, "0")}`;
+}
+
+// RaceId 15 chars
+// MMMMMMMMMMMPPP
+export function makePropositionId(marketId: string, prediction: number) {
+	return `${marketId}W${prediction.toString().padStart(2, "0")}`;
+}
