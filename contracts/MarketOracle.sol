@@ -12,26 +12,9 @@ contract MarketOracle is IOracle {
 		_owner = msg.sender;
 	}
 
-<<<<<<< HEAD
-    function getOwner() external view returns (address) {
-        return _owner;
-    }
-
-    function checkResult(
-        bytes16 marketId,
-        bytes16 propositionId
-    ) external view returns (bool) {
-        require(
-            propositionId != bytes16(0),
-            "getBinaryResult: Invalid propositionId"
-        );
-        return _results[marketId] == propositionId;
-    }
-=======
 	function getOwner() external view returns (address) {
 		return _owner;
 	}
->>>>>>> main
 
 	function checkResult(
 		bytes16 marketId,
@@ -44,31 +27,6 @@ contract MarketOracle is IOracle {
 		return _results[marketId] == propositionId;
 	}
 
-<<<<<<< HEAD
-    function getSetResultMessage(
-        bytes16 marketId,
-        bytes16 propositionId
-    ) public pure returns (bytes32) {
-        return keccak256(abi.encodePacked(marketId, propositionId));
-    }
-
-    function setResult(
-        bytes16 marketId,
-        bytes16 propositionId,
-        SignatureLib.Signature calldata signature
-    ) external {
-        bytes32 messageHash = getSetResultMessage(marketId, propositionId);
-        require(isValidSignature(messageHash, signature), "setBinaryResult: Invalid signature");
-        require(
-            propositionId != bytes16(0),
-            "setBinaryResult: Invalid propositionId"
-        );
-        require(
-            _results[marketId] == bytes16(0),
-            "setBinaryResult: Result already set"
-        );
-        _results[marketId] = propositionId;
-=======
 	function getResult(bytes16 marketId) external view returns (bytes16) {
 		require(
 			marketId != bytes16(0),
@@ -76,7 +34,6 @@ contract MarketOracle is IOracle {
 		);
 		return _results[marketId];
 	}
->>>>>>> main
 
 	function setResult(
 		bytes16 marketId,
