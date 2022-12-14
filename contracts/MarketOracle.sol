@@ -3,7 +3,6 @@ pragma solidity =0.8.10;
 
 import "./IOracle.sol";
 import "./SignatureLib.sol";
-import "hardhat/console.sol";
 
 contract MarketOracle is IOracle {
     mapping(bytes16 => bytes16) private _results;
@@ -49,7 +48,6 @@ contract MarketOracle is IOracle {
         SignatureLib.Signature calldata signature
     ) external {
         bytes32 messageHash = getSetResultMessage(marketId, propositionId);
-        //console.log("messageHash %s", messageHash); //: %s", messageHash);
         require(isValidSignature(messageHash, signature), "setBinaryResult: Invalid signature");
         require(
             propositionId != bytes16(0),
