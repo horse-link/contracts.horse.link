@@ -1,0 +1,153 @@
+{
+  "address": "0x3e40EaBd1cf0fD4B27e9d4cA613Df9Cd278B5E4f",
+  "abi": [
+    {
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "bytes32",
+          "name": "marketId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes32",
+          "name": "propositionId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "ResultSet",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "marketId",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "propositionId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "checkResult",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "marketId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getResult",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "marketId",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "propositionId",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "sig",
+          "type": "bytes32"
+        }
+      ],
+      "name": "setResult",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x417cb5a050b0f2e134d672c0f51e382c4d1aaa5bab81cb2a23e29ea96453a11a",
+  "receipt": {
+    "to": null,
+    "from": "0x1Ab4C6d9e25Fc65C917aFBEfB4E963C400Fb9814",
+    "contractAddress": "0x3e40EaBd1cf0fD4B27e9d4cA613Df9Cd278B5E4f",
+    "transactionIndex": 0,
+    "gasUsed": "382606",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0x2f66fc85e09cdff13ca81ddd1a94937fa90c0684419aff00785374c0cba0060c",
+    "transactionHash": "0x417cb5a050b0f2e134d672c0f51e382c4d1aaa5bab81cb2a23e29ea96453a11a",
+    "logs": [],
+    "blockNumber": 121,
+    "cumulativeGasUsed": "382606",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [],
+  "numDeployments": 1,
+  "solcInputHash": "450ee6b18ddda29b8d2a1e54c806e257",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.10+commit.fc410830\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"marketId\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"propositionId\",\"type\":\"bytes32\"}],\"name\":\"ResultSet\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"marketId\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"propositionId\",\"type\":\"bytes32\"}],\"name\":\"checkResult\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"marketId\",\"type\":\"bytes32\"}],\"name\":\"getResult\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"marketId\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"propositionId\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"sig\",\"type\":\"bytes32\"}],\"name\":\"setResult\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/MarketOracle.sol\":\"MarketOracle\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"contracts/IOracle.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity =0.8.10;\\n\\n// Binary Oracle\\ninterface IOracle {\\n    function checkResult(\\n        bytes32 marketId,\\n        bytes32 propositionId\\n    ) external view returns (bool);\\n\\n    function getResult(bytes32 marketId) external view returns (bytes32);\\n\\n    function setResult(\\n        bytes32 marketId,\\n        bytes32 propositionId,\\n        bytes32 sig\\n    ) external;\\n\\n    event ResultSet(bytes32 marketId, bytes32 propositionId);\\n}\\n\",\"keccak256\":\"0xa4ece937e3a354fb3e9f07dfcda71052fb78799c0f72710ac9945218efb246c3\",\"license\":\"MIT\"},\"contracts/MarketOracle.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity =0.8.10;\\n\\nimport \\\"./IOracle.sol\\\";\\nimport \\\"./SignatureLib.sol\\\";\\n\\ncontract MarketOracle is IOracle {\\n    mapping(bytes32 => bytes32) private _results;\\n    address private immutable _owner;\\n\\n    constructor() {\\n        _owner = msg.sender;\\n    }\\n\\n    function checkResult(\\n        bytes32 marketId,\\n        bytes32 propositionId\\n    ) external view returns (bool) {\\n        require(\\n            propositionId !=\\n                0x0000000000000000000000000000000000000000000000000000000000000000,\\n            \\\"getBinaryResult: Invalid propositionId\\\"\\n        );\\n        return _results[marketId] == propositionId;\\n    }\\n\\n    function getResult(bytes32 marketId) external view returns (bytes32) {\\n        require(\\n            marketId !=\\n                0x0000000000000000000000000000000000000000000000000000000000000000,\\n            \\\"getBinaryResult: Invalid propositionId\\\"\\n        );\\n        return _results[marketId];\\n    }\\n\\n    function setResult(\\n        bytes32 marketId,\\n        bytes32 propositionId,\\n        bytes32 sig\\n    ) external {\\n        require(\\n            propositionId !=\\n                0x0000000000000000000000000000000000000000000000000000000000000000,\\n            \\\"setBinaryResult: Invalid propositionId\\\"\\n        );\\n        require(\\n            _results[marketId] ==\\n                0x0000000000000000000000000000000000000000000000000000000000000000,\\n            \\\"setBinaryResult: Result already set\\\"\\n        );\\n        _results[marketId] = propositionId;\\n\\n        emit ResultSet(marketId, propositionId);\\n    }\\n\\n    modifier onlyMarketOwner(\\n        bytes32 messageHash,\\n        SignatureLib.Signature memory sig\\n    ) {\\n        require(\\n            SignatureLib.recoverSigner(messageHash, sig) == _owner,\\n            \\\"onlyMarketOwner: Invalid signature\\\"\\n        );\\n        _;\\n    }\\n}\\n\",\"keccak256\":\"0x002941770cb5d53a909c848a37e91e19d98bb524ca812032ee97430c1047448f\",\"license\":\"MIT\"},\"contracts/SignatureLib.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity =0.8.10;\\n\\nlibrary SignatureLib {\\n    struct Signature {\\n        uint8 v;\\n        bytes32 r;\\n        bytes32 s;\\n    }\\n\\n    function recoverSigner(\\n        bytes32 message,\\n        Signature memory signature\\n    ) public pure returns (address) {\\n        bytes32 prefixedHash = keccak256(\\n            abi.encodePacked(\\\"\\\\x19Ethereum Signed Message:\\\\n32\\\", message)\\n        );\\n        return ecrecover(prefixedHash, signature.v, signature.r, signature.s);\\n    }\\n}\\n\",\"keccak256\":\"0x030d6d33efc780f65e027c212235482f115a3f91f04195ebf5543c6b984ea3cd\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x60a060405234801561001057600080fd5b503373ffffffffffffffffffffffffffffffffffffffff1660808173ffffffffffffffffffffffffffffffffffffffff16815250506080516105fc61005d600039600050506105fc6000f3fe608060405234801561001057600080fd5b50600436106100415760003560e01c806362de493a146100465780638a9df35c14610062578063add4c78414610092575b600080fd5b610060600480360381019061005b91906102b6565b6100c2565b005b61007c60048036038101906100779190610309565b6101b4565b6040516100899190610364565b60405180910390f35b6100ac60048036038101906100a7919061037f565b610219565b6040516100b991906103bb565b60405180910390f35b6000801b821415610108576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004016100ff90610459565b60405180910390fd5b6000801b600080858152602001908152602001600020541461015f576040517f08c379a0000000000000000000000000000000000000000000000000000000008152600401610156906104eb565b60405180910390fd5b81600080858152602001908152602001600020819055507fe36ed5e08892fad4291c4d8d3adf63440f93eb2fedf67b4fab8d9c183f0979e783836040516101a792919061050b565b60405180910390a1505050565b60008060001b8214156101fc576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004016101f3906105a6565b60405180910390fd5b816000808581526020019081526020016000205414905092915050565b60008060001b821415610261576040517f08c379a0000000000000000000000000000000000000000000000000000000008152600401610258906105a6565b60405180910390fd5b600080838152602001908152602001600020549050919050565b600080fd5b6000819050919050565b61029381610280565b811461029e57600080fd5b50565b6000813590506102b08161028a565b92915050565b6000806000606084860312156102cf576102ce61027b565b5b60006102dd868287016102a1565b93505060206102ee868287016102a1565b92505060406102ff868287016102a1565b9150509250925092565b600080604083850312156103205761031f61027b565b5b600061032e858286016102a1565b925050602061033f858286016102a1565b9150509250929050565b60008115159050919050565b61035e81610349565b82525050565b60006020820190506103796000830184610355565b92915050565b6000602082840312156103955761039461027b565b5b60006103a3848285016102a1565b91505092915050565b6103b581610280565b82525050565b60006020820190506103d060008301846103ac565b92915050565b600082825260208201905092915050565b7f73657442696e617279526573756c743a20496e76616c69642070726f706f736960008201527f74696f6e49640000000000000000000000000000000000000000000000000000602082015250565b60006104436026836103d6565b915061044e826103e7565b604082019050919050565b6000602082019050818103600083015261047281610436565b9050919050565b7f73657442696e617279526573756c743a20526573756c7420616c72656164792060008201527f7365740000000000000000000000000000000000000000000000000000000000602082015250565b60006104d56023836103d6565b91506104e082610479565b604082019050919050565b60006020820190508181036000830152610504816104c8565b9050919050565b600060408201905061052060008301856103ac565b61052d60208301846103ac565b9392505050565b7f67657442696e617279526573756c743a20496e76616c69642070726f706f736960008201527f74696f6e49640000000000000000000000000000000000000000000000000000602082015250565b60006105906026836103d6565b915061059b82610534565b604082019050919050565b600060208201905081810360008301526105bf81610583565b905091905056fea2646970667358221220d3e5a56bd2e1414938bbe99807d28eb9b92815c241f26e23d25afbf89ab29aa464736f6c634300080a0033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100415760003560e01c806362de493a146100465780638a9df35c14610062578063add4c78414610092575b600080fd5b610060600480360381019061005b91906102b6565b6100c2565b005b61007c60048036038101906100779190610309565b6101b4565b6040516100899190610364565b60405180910390f35b6100ac60048036038101906100a7919061037f565b610219565b6040516100b991906103bb565b60405180910390f35b6000801b821415610108576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004016100ff90610459565b60405180910390fd5b6000801b600080858152602001908152602001600020541461015f576040517f08c379a0000000000000000000000000000000000000000000000000000000008152600401610156906104eb565b60405180910390fd5b81600080858152602001908152602001600020819055507fe36ed5e08892fad4291c4d8d3adf63440f93eb2fedf67b4fab8d9c183f0979e783836040516101a792919061050b565b60405180910390a1505050565b60008060001b8214156101fc576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004016101f3906105a6565b60405180910390fd5b816000808581526020019081526020016000205414905092915050565b60008060001b821415610261576040517f08c379a0000000000000000000000000000000000000000000000000000000008152600401610258906105a6565b60405180910390fd5b600080838152602001908152602001600020549050919050565b600080fd5b6000819050919050565b61029381610280565b811461029e57600080fd5b50565b6000813590506102b08161028a565b92915050565b6000806000606084860312156102cf576102ce61027b565b5b60006102dd868287016102a1565b93505060206102ee868287016102a1565b92505060406102ff868287016102a1565b9150509250925092565b600080604083850312156103205761031f61027b565b5b600061032e858286016102a1565b925050602061033f858286016102a1565b9150509250929050565b60008115159050919050565b61035e81610349565b82525050565b60006020820190506103796000830184610355565b92915050565b6000602082840312156103955761039461027b565b5b60006103a3848285016102a1565b91505092915050565b6103b581610280565b82525050565b60006020820190506103d060008301846103ac565b92915050565b600082825260208201905092915050565b7f73657442696e617279526573756c743a20496e76616c69642070726f706f736960008201527f74696f6e49640000000000000000000000000000000000000000000000000000602082015250565b60006104436026836103d6565b915061044e826103e7565b604082019050919050565b6000602082019050818103600083015261047281610436565b9050919050565b7f73657442696e617279526573756c743a20526573756c7420616c72656164792060008201527f7365740000000000000000000000000000000000000000000000000000000000602082015250565b60006104d56023836103d6565b91506104e082610479565b604082019050919050565b60006020820190508181036000830152610504816104c8565b9050919050565b600060408201905061052060008301856103ac565b61052d60208301846103ac565b9392505050565b7f67657442696e617279526573756c743a20496e76616c69642070726f706f736960008201527f74696f6e49640000000000000000000000000000000000000000000000000000602082015250565b60006105906026836103d6565b915061059b82610534565b604082019050919050565b600060208201905081810360008301526105bf81610583565b905091905056fea2646970667358221220d3e5a56bd2e1414938bbe99807d28eb9b92815c241f26e23d25afbf89ab29aa464736f6c634300080a0033",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 6039,
+        "contract": "contracts/MarketOracle.sol:MarketOracle",
+        "label": "_results",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_mapping(t_bytes32,t_bytes32)"
+      }
+    ],
+    "types": {
+      "t_bytes32": {
+        "encoding": "inplace",
+        "label": "bytes32",
+        "numberOfBytes": "32"
+      },
+      "t_mapping(t_bytes32,t_bytes32)": {
+        "encoding": "mapping",
+        "key": "t_bytes32",
+        "label": "mapping(bytes32 => bytes32)",
+        "numberOfBytes": "32",
+        "value": "t_bytes32"
+      }
+    }
+  }
+}
