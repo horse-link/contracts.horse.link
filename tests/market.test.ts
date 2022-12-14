@@ -629,14 +629,6 @@ describe("Market", () => {
 			const bobBalance = await underlying.balanceOf(bob.address);
 			const nftBalance = await market.balanceOf(bob.address);
 			expect(nftBalance).to.equal(1, "Bob should have 1 NFT");
-			const setResultMessage = makeSetResultMessage(marketId, propositionId);
-			const setResultMessageHashFromContract = await oracle.getSetResultMessage(
-				formatBytes16String(marketId),
-				formatBytes16String(propositionId)
-			);
-			expect(setResultMessage, "Hash is not correct").to.equal(
-				setResultMessageHashFromContract
-			);
 
 			const signature = await signSetResultMessage(
 				marketId,
