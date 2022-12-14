@@ -3,6 +3,7 @@ pragma solidity =0.8.10;
 
 import "./IOracle.sol";
 import "./SignatureLib.sol";
+import "hardhat/console.sol";
 
 contract MarketOracle is IOracle {
     mapping(bytes16 => bytes16) private _results;
@@ -10,6 +11,10 @@ contract MarketOracle is IOracle {
 
     constructor() {
         _owner = msg.sender;
+    }
+
+    function getOwner() external view returns (address) {
+        return _owner;
     }
 
     function checkResult(
@@ -31,12 +36,20 @@ contract MarketOracle is IOracle {
         return _results[marketId];
     }
 
+    function getSetResultMessage(
+        bytes16 marketId,
+        bytes16 propositionId
+    ) public pure returns (bytes32) {
+        return keccak256(abi.encodePacked(marketId, propositionId));
+    }
+
     function setResult(
         bytes16 marketId,
         bytes16 propositionId,
         SignatureLib.Signature calldata signature
     ) external {
-        bytes32 messageHash = keccak256(abi.encode(marketId, propositionId));
+        bytes32 messageHash = getSetResultMessage(marketId, propositionId);
+        //console.log("messageHash %s", messageHash); //: %s", messageHash);
         require(isValidSignature(messageHash, signature), "setBinaryResult: Invalid signature");
         require(
             propositionId != bytes16(0),
@@ -54,6 +67,6 @@ contract MarketOracle is IOracle {
     function isValidSignature(bytes32 messageHash, SignatureLib.Signature calldata signature) private view returns (bool) {
 		address signer = SignatureLib.recoverSigner(messageHash, signature);
 		assert(signer != address(0));
-		return signer == _owner;
+		return address(signer) == address(_owner);
 	}
 }
