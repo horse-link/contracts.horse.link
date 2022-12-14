@@ -5,13 +5,14 @@ import "./IOracle.sol";
 import "./SignatureLib.sol";
 
 contract MarketOracle is IOracle {
-    mapping(bytes16 => bytes16) private _results;
-    address private immutable _owner;
+	mapping(bytes16 => bytes16) private _results;
+	address private immutable _owner;
 
-    constructor() {
-        _owner = msg.sender;
-    }
+	constructor() {
+		_owner = msg.sender;
+	}
 
+<<<<<<< HEAD
     function getOwner() external view returns (address) {
         return _owner;
     }
@@ -26,15 +27,24 @@ contract MarketOracle is IOracle {
         );
         return _results[marketId] == propositionId;
     }
+=======
+	function getOwner() external view returns (address) {
+		return _owner;
+	}
+>>>>>>> main
 
-    function getResult(bytes16 marketId) external view returns (bytes16) {
-        require(
-            marketId != bytes16(0),
-            "getBinaryResult: Invalid propositionId"
-        );
-        return _results[marketId];
-    }
+	function checkResult(
+		bytes16 marketId,
+		bytes16 propositionId
+	) external view returns (bool) {
+		require(
+			propositionId != bytes16(0),
+			"getBinaryResult: Invalid propositionId"
+		);
+		return _results[marketId] == propositionId;
+	}
 
+<<<<<<< HEAD
     function getSetResultMessage(
         bytes16 marketId,
         bytes16 propositionId
@@ -58,11 +68,43 @@ contract MarketOracle is IOracle {
             "setBinaryResult: Result already set"
         );
         _results[marketId] = propositionId;
+=======
+	function getResult(bytes16 marketId) external view returns (bytes16) {
+		require(
+			marketId != bytes16(0),
+			"getBinaryResult: Invalid propositionId"
+		);
+		return _results[marketId];
+	}
+>>>>>>> main
 
-        emit ResultSet(marketId, propositionId);
-    }
+	function setResult(
+		bytes16 marketId,
+		bytes16 propositionId,
+		SignatureLib.Signature calldata signature
+	) external {
+		bytes32 messageHash = keccak256(abi.encode(marketId, propositionId));
+		require(
+			isValidSignature(messageHash, signature),
+			"setBinaryResult: Invalid signature"
+		);
+		require(
+			propositionId != bytes16(0),
+			"setBinaryResult: Invalid propositionId"
+		);
+		require(
+			_results[marketId] == bytes16(0),
+			"setBinaryResult: Result already set"
+		);
+		_results[marketId] = propositionId;
 
-    function isValidSignature(bytes32 messageHash, SignatureLib.Signature calldata signature) private view returns (bool) {
+		emit ResultSet(marketId, propositionId);
+	}
+
+	function isValidSignature(
+		bytes32 messageHash,
+		SignatureLib.Signature calldata signature
+	) private view returns (bool) {
 		address signer = SignatureLib.recoverSigner(messageHash, signature);
 		assert(signer != address(0));
 		return address(signer) == address(_owner);
