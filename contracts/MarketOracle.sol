@@ -40,7 +40,7 @@ contract MarketOracle is IOracle {
 		bytes16 propositionId,
 		SignatureLib.Signature calldata signature
 	) external {
-		bytes32 messageHash = keccak256(abi.encode(marketId, propositionId));
+		bytes32 messageHash = keccak256(abi.encodePacked(marketId, propositionId));
 		require(
 			isValidSignature(messageHash, signature),
 			"setBinaryResult: Invalid signature"
