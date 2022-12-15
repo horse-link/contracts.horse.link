@@ -25,7 +25,6 @@ struct Bet {
 
 contract Market is IMarket, Ownable, ERC721 {
 	uint8 private immutable _margin;
-
 	IVault private immutable _vault;
 	address private immutable _self;
 	IOracle private immutable _oracle;
@@ -41,9 +40,6 @@ contract Market is IMarket, Ownable, ERC721 {
 
 	// MarketID => PropositionID => amount bet
 	mapping(bytes16 => mapping(uint16 => uint256)) private _marketBetAmount;
-
-	// Marketid => Risk Coefficient
-	mapping(bytes16 => uint256) private _riskCoefficients;
 
 	// PropositionID => amount bet
 	mapping(bytes16 => uint256) private _potentialPayout;
@@ -122,20 +118,6 @@ contract Market is IMarket, Ownable, ERC721 {
 		return _bets[id].payoutDate + timeout;
 	}
 
-	function getRiskCoefficient(bytes16 marketId) external view returns (uint256) {
-		uint256 risk = _riskCoefficients[marketId];
-		if (risk < 1) {
-			return 1;
-		}
-
-		return risk;
-	}
-
-	function setRiskCoefficient(bytes16 marketId, uint256 risk) external onlyOwner {
-		require(risk >= 1, "risk must be gt or eq to 1");
-		_riskCoefficients[marketId] = risk;
-	}
-
 	function getBetByIndex(uint256 index)
 		external
 		view
@@ -175,7 +157,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		bytes16 propositionId,
 		bytes16 marketId
 	) external view override returns (uint256) {
-		return _getOdds(wager, odds, propositionId, marketId);
+		return _getOdds(wager, odds, propositionId, marketId, 1);
 	}
 
 	// Given decimal ("European") odds expressed as the amount one wins for ever unit wagered.
@@ -185,13 +167,9 @@ contract Market is IMarket, Ownable, ERC721 {
 		uint256 wager,
 		uint256 odds,
 		bytes16 propositionId,
-		bytes16 marketId
+		bytes16 marketId,
+		uint256 risk
 	) internal view returns (uint256) {
-		uint256 risk = _riskCoefficients[marketId];
-		if (risk < 1) {
-			risk = 1;
-		}
-
 		if (wager <= 1 || odds <= 1) return 1;
 
         uint256 pool = _vault.getMarketAllowance();
@@ -230,16 +208,17 @@ contract Market is IMarket, Ownable, ERC721 {
 		uint256 wager,
 		uint256 odds
 	) external view returns (uint256) {
-		return _getPayout(propositionId, marketId, wager, odds);
+		return _getPayout(propositionId, marketId, wager, odds, 1);
 	}
 
 	function _getPayout(
 		bytes16 propositionId,
 		bytes16 marketId,
 		uint256 wager,
-		uint256 odds
+		uint256 odds,
+		uint256 risk
 	) private view returns (uint256) {
-		uint256 trueOdds = _getOdds(wager, odds, propositionId, marketId);
+		uint256 trueOdds = _getOdds(wager, odds, propositionId, marketId, risk);
 		return Math.max(wager, (trueOdds * wager) / OddsLib.PRECISION);
 	}
 
