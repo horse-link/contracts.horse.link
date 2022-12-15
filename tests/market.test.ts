@@ -779,8 +779,9 @@ async function signBackMessage(
 			"bytes16",
 			"uint256",
 			"uint256",
-			"uint256",
-			"uint256"
+			"uint256", // close
+			"uint256", // end
+			"uint256" // risk
 		],
 		[
 			formatBytes16String(nonce),

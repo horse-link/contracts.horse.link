@@ -187,7 +187,12 @@ contract Market is IMarket, Ownable, ERC721 {
 		// Calculate the new odds
 		uint256 adjustedOdds = _getAdjustedOdds(wager, odds, pool);
 
-		// Return odds / risk^2
+		// Return odds / risk^2 (check to see gas costs vs ternary)
+
+		// If risk is one, do ternary
+		if (risk == 1) {
+			return adjustedOdds;
+		}
 		return adjustedOdds / (risk ** 2);
 	}
 
