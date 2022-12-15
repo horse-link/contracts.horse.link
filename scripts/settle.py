@@ -122,8 +122,14 @@ def main():
 
                 # Note: this url will change to the results endpoint
                 response = requests.get(f'https://horse.link/api/bets/sign/{mid}')
-                print(response.json())
+                # print(response.json())
+                print(response.status_code)
+                print(response.json()['marketResultAdded'])
 
+                if response.status_code == 200 and response.json()['marketResultAdded'] == False:
+                    print(f"Adding result for bet {i} to the oracle")
+
+                settled = bet[3]
                 if response.status_code == 200 and bet[3] == False:
 
                     # set result on oracle
