@@ -170,7 +170,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		bytes16 marketId,
 		uint256 risk
 	) internal view returns (uint256) {
-		if (wager <= 1 || odds <= 1) return 1;
+		if (wager <= 1 || odds <= 1 || risk == 0) return 1;
 
         uint256 pool = _vault.getMarketAllowance();
         
@@ -181,6 +181,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		if (_potentialPayout[propositionId] > pool) {
 			return 1;
 		}
+
 		pool -= _potentialPayout[propositionId]; 
 
 		// Calculate the new odds
@@ -232,6 +233,30 @@ contract Market is IMarket, Ownable, ERC721 {
 		uint256 end,
 		SignatureLib.Signature calldata signature
 	) external returns (uint256) {
+		return _back(
+			nonce,
+			propositionId,
+			marketId,
+			wager,
+			odds,
+			close,
+			end,
+			1,
+			signature
+		);
+	}
+
+	function _back(
+		bytes16 nonce,
+		bytes16 propositionId,
+		bytes16 marketId,
+		uint256 wager,
+		uint256 odds,
+		uint256 close,
+		uint256 end,
+		uint256 risk,
+		SignatureLib.Signature calldata signature
+	) internal returns (uint256) {
 		require(
 			end > block.timestamp && block.timestamp > close,
 			"back: Invalid date"
@@ -243,7 +268,8 @@ contract Market is IMarket, Ownable, ERC721 {
 			marketId,
 			odds,
 			close,
-			end
+			end,
+			risk
 		));
 
 		require(isValidSignature(messageHash, signature) == true, "back: Invalid signature");
@@ -256,7 +282,7 @@ contract Market is IMarket, Ownable, ERC721 {
         address underlying = _vault.asset();
 
 		// add underlying to the market
-		uint256 payout = _getPayout(propositionId, marketId, wager, odds);
+		uint256 payout = _getPayout(propositionId, marketId, wager, odds, risk);
 
         // escrow
         IERC20(underlying).transferFrom(msg.sender, _self, wager);

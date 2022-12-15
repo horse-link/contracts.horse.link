@@ -14,6 +14,12 @@ import "./OddsLib.sol";
 import "./Market.sol";
 
 contract MarketWithRisk is Market {
+    constructor(
+        IVault vault,
+        uint8 fee,
+        address oracle
+    ) Market(vault, fee, oracle) {
+    }
 
 	function getOddsWithRisk(
 		uint256 wager,
@@ -21,7 +27,7 @@ contract MarketWithRisk is Market {
 		bytes16 propositionId,
 		bytes16 marketId,
 		uint256 risk
-	) external view override returns (uint256) {
+	) external view returns (uint256) {
 		return _getOdds(wager, odds, propositionId, marketId, risk);
 	}
 }

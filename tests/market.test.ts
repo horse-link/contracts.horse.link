@@ -305,6 +305,7 @@ describe("Market", () => {
 		const marketId = makeMarketId(new Date(), "ABC", "1");
 		const propositionId = makePropositionId(marketId, 1);
 		const nonce = "1";
+		const risk = 1;
 
 		const signature = await signBackMessage(
 			nonce,
@@ -313,6 +314,7 @@ describe("Market", () => {
 			odds,
 			close,
 			end,
+			risk,
 			owner
 		);
 
@@ -703,7 +705,7 @@ describe("Market", () => {
 		});
 	});
 
-	describe("Risk Coefficients", () => {
+	describe("Risky Markets", () => {
 		it("should account for market risk coefficient", async () => {
 			const wager = ethers.utils.parseUnits("50", USDT_DECIMALS);
 			const targetOdds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
@@ -716,9 +718,9 @@ describe("Market", () => {
 				formatBytes16String(propositionId),
 				formatBytes16String(marketId)
 			);
+
 			expect(calculatedOdds).to.be.closeTo(BigNumber.from(3809524), 1);
 
-			await market.setRiskCoefficient(formatBytes16String(marketId), 2);
 			const newOdds = await market.getOdds(
 				wager,
 				targetOdds,
@@ -727,26 +729,6 @@ describe("Market", () => {
 			);
 
 			expect(newOdds).to.equal(calculatedOdds.toNumber() / 4);
-		});
-
-		it("should get and set risk coefficients", async () => {
-			const marketId = makeMarketId(new Date(), "ABC", "1");
-			const risk = await market.getRiskCoefficient(
-				formatBytes16String(marketId)
-			);
-
-			expect(risk).to.equal(1);
-
-			await expect(
-				market.setRiskCoefficient(formatBytes16String(marketId), 0)
-			).to.be.revertedWith("risk must be gt or eq to 1");
-
-			await market.setRiskCoefficient(formatBytes16String(marketId), 2);
-			const newRisk = await market.getRiskCoefficient(
-				formatBytes16String(marketId)
-			);
-
-			expect(newRisk).to.equal(2);
 		});
 	});
 });
@@ -791,7 +773,15 @@ async function signBackMessage(
 	signer: SignerWithAddress
 ): Promise<Signature> {
 	const message = ethers.utils.solidityKeccak256(
-		["bytes16", "bytes16", "bytes16", "uint256", "uint256", "uint256"],
+		[
+			"bytes16",
+			"bytes16",
+			"bytes16",
+			"uint256",
+			"uint256",
+			"uint256",
+			"uint256"
+		],
 		[
 			formatBytes16String(nonce),
 			formatBytes16String(propositionId),
