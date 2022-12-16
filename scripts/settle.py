@@ -17,13 +17,13 @@ def get_markets():
     return data['markets']
 
 
-def get_oracle():
+def get_oracle() -> str:
     response = requests.get('https://horse.link/api/config')
     data = response.json()
     return data['addresses']['marketOracle']
 
 
-def load_market(address):
+def load_market(address: str):
     with open('./artifacts/contracts/Market.sol/Market.json') as f:
         data = json.load(f)
         abi = data['abi']
@@ -39,7 +39,7 @@ def load_oracle(address):
         return contract
 
 
-def get_count(contract):
+def get_count(contract) -> int:
     count = contract.functions.getCount().call()
     return count
 
@@ -66,7 +66,7 @@ def update_oracle(oracle, index):
     return tx_receipt
 
 
-def settle(market, index):
+def settle(market, index: int, signature):
     account_from = {
         'private_key': os.getenv('PRIVATE_KEY'),
         'address': '0x155c21c846b68121ca59879B3CCB5194F5Ae115E',
