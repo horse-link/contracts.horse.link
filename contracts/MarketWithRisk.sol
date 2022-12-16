@@ -28,6 +28,29 @@ contract MarketWithRisk is Market {
 		bytes16 marketId,
 		uint256 risk
 	) external view returns (uint256) {
-		return _getOdds(wager, odds, propositionId, marketId, risk);
+		return _getOdds(wager, odds, propositionId, marketId) / risk ** 2;
+	}
+
+	function backWithRisk(
+		bytes16 nonce,
+		bytes16 propositionId,
+		bytes16 marketId,
+		uint256 wager,
+		uint256 odds,
+		uint256 close,
+		uint256 end,
+		uint256 risk
+		SignatureLib.Signature calldata signature
+	) external returns (uint256) {
+		return _back(
+			nonce,
+			propositionId,
+			marketId,
+			wager,
+			odds,
+			close,
+			end,
+			signature
+		);
 	}
 }

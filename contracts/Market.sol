@@ -157,7 +157,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		bytes16 propositionId,
 		bytes16 marketId
 	) external view override returns (uint256) {
-		return _getOdds(wager, odds, propositionId, marketId, 1);
+		return _getOdds(wager, odds, propositionId, marketId);
 	}
 
 	// Given decimal ("European") odds expressed as the amount one wins for ever unit wagered.
@@ -168,9 +168,8 @@ contract Market is IMarket, Ownable, ERC721 {
 		uint256 odds,
 		bytes16 propositionId,
 		bytes16 marketId,
-		uint256 risk
 	) internal view returns (uint256) {
-		if (wager <= 1 || odds <= 1 || risk == 0) return 1;
+		if (wager <= 1 || odds <= 1) return 1;
 
         uint256 pool = _vault.getMarketAllowance();
         
@@ -187,13 +186,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		// Calculate the new odds
 		uint256 adjustedOdds = _getAdjustedOdds(wager, odds, pool);
 
-		// If risk is one, do ternary
-		if (risk == 1) {
-			return adjustedOdds;
-		}
-
-		// Return odds / risk^2
-		return adjustedOdds / (risk ** 2);
+		return adjustedOdds;
 	}
 
 	function _getAdjustedOdds(
@@ -221,10 +214,9 @@ contract Market is IMarket, Ownable, ERC721 {
 		bytes16 propositionId,
 		bytes16 marketId,
 		uint256 wager,
-		uint256 odds,
-		uint256 risk
+		uint256 odds
 	) private view returns (uint256) {
-		uint256 trueOdds = _getOdds(wager, odds, propositionId, marketId, risk);
+		uint256 trueOdds = _getOdds(wager, odds, propositionId, marketId);
 		return Math.max(wager, (trueOdds * wager) / OddsLib.PRECISION);
 	}
 
@@ -238,6 +230,22 @@ contract Market is IMarket, Ownable, ERC721 {
 		uint256 end,
 		SignatureLib.Signature calldata signature
 	) external returns (uint256) {
+
+		bytes32 messageHash = keccak256(abi.encodePacked(
+			nonce,
+			propositionId,
+			marketId,
+			odds,
+			close,
+			end
+		));
+
+		require(isValidSignature(messageHash, signature) == true, "back: Invalid signature");
+
+		// add underlying to the market
+		uint256 payout = _getPayout(propositionId, marketId, wager, odds);
+		assert(payout > 0);
+
 		return _back(
 			nonce,
 			propositionId,
@@ -246,7 +254,6 @@ contract Market is IMarket, Ownable, ERC721 {
 			odds,
 			close,
 			end,
-			1,
 			signature
 		);
 	}
@@ -259,7 +266,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		uint256 odds,
 		uint256 close,
 		uint256 end,
-		uint256 risk,
+		uint256 payout
 		SignatureLib.Signature calldata signature
 	) internal returns (uint256) {
 		require(
@@ -267,30 +274,16 @@ contract Market is IMarket, Ownable, ERC721 {
 			"back: Invalid date"
 		);
 
-		bytes32 messageHash = keccak256(abi.encodePacked(
-			nonce,
-			propositionId,
-			marketId,
-			odds,
-			close,
-			end,
-			risk
-		));
-
-		require(isValidSignature(messageHash, signature) == true, "back: Invalid signature");
-
 		// Do not allow a bet placed if we know the result
 		require(
 			IOracle(_oracle).checkResult(marketId, propositionId) == false,
 			"back: Oracle result already set for this market"
 		);
+
         address underlying = _vault.asset();
 
-		// add underlying to the market
-		uint256 payout = _getPayout(propositionId, marketId, wager, odds, risk);
-
         // escrow
-        IERC20(underlying).transferFrom(msg.sender, _self, wager);
+        IERC20(underlying).transferFrom(_msgSender(), _self, wager);
         IERC20(underlying).transferFrom(address(_vault), _self, (payout - wager));
 
 		// add to in play total for this marketId
@@ -300,18 +293,18 @@ contract Market is IMarket, Ownable, ERC721 {
 		_potentialPayout[propositionId] += payout;
 
 		_bets.push(
-			Bet(propositionId, marketId, wager, payout, end, false, msg.sender)
+			Bet(propositionId, marketId, wager, payout, end, false, _msgSender())
 		);
 
 		// use _getCount() to avoid stack too deep
 		_marketBets[marketId].push(_getCount());
-		_mint(msg.sender, _getCount() - 1);
+		_mint(_msgSender(), _getCount() - 1);
 
 		_totalInPlay += wager;
 		_totalExposure += (payout - wager);
 		_inplayCount++;
 
-		emit Placed(_getCount() - 1, propositionId, marketId, wager, payout, msg.sender);
+		emit Placed(_getCount() - 1, propositionId, marketId, wager, payout, _msgSender());
 
 		return _getCount();
 	}
