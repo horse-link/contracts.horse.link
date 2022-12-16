@@ -25,7 +25,6 @@ struct Bet {
 
 contract Market is IMarket, Ownable, ERC721 {
 	uint8 private immutable _margin;
-
 	IVault private immutable _vault;
 	address private immutable _self;
 	IOracle private immutable _oracle;
@@ -41,9 +40,6 @@ contract Market is IMarket, Ownable, ERC721 {
 
 	// MarketID => PropositionID => amount bet
 	mapping(bytes16 => mapping(uint16 => uint256)) private _marketBetAmount;
-
-	// Marketid => Risk Coefficient
-	mapping(bytes16 => uint256) private _riskCoefficients;
 
 	// PropositionID => amount bet
 	mapping(bytes16 => uint256) private _potentialPayout;
@@ -122,20 +118,6 @@ contract Market is IMarket, Ownable, ERC721 {
 		return _bets[id].payoutDate + timeout;
 	}
 
-	function getRiskCoefficient(bytes16 marketId) external view returns (uint256) {
-		uint256 risk = _riskCoefficients[marketId];
-		if (risk < 1) {
-			return 1;
-		}
-
-		return risk;
-	}
-
-	function setRiskCoefficient(bytes16 marketId, uint256 risk) external onlyOwner {
-		require(risk >= 1, "risk must be gt or eq to 1");
-		_riskCoefficients[marketId] = risk;
-	}
-
 	function getBetByIndex(uint256 index)
 		external
 		view
@@ -185,31 +167,26 @@ contract Market is IMarket, Ownable, ERC721 {
 		uint256 wager,
 		uint256 odds,
 		bytes16 propositionId,
-		bytes16 marketId
+		bytes16 marketId,
 	) internal view returns (uint256) {
-		uint256 risk = _riskCoefficients[marketId];
-		if (risk < 1) {
-			risk = 1;
-		}
-
 		if (wager <= 1 || odds <= 1) return 1;
 
         uint256 pool = _vault.getMarketAllowance();
         
-		// If the pool is not sufficient to cover a new bet for this proposition,
+		// If the pool is not sufficient to cover a new bet for this proposition
 		if (pool == 0) return 1;
 
 		// exclude the current total potential payout from the pool
 		if (_potentialPayout[propositionId] > pool) {
 			return 1;
 		}
+
 		pool -= _potentialPayout[propositionId]; 
 
 		// Calculate the new odds
 		uint256 adjustedOdds = _getAdjustedOdds(wager, odds, pool);
 
-		// Return odds / risk^2
-		return adjustedOdds / (risk ** 2);
+		return adjustedOdds;
 	}
 
 	function _getAdjustedOdds(
@@ -230,7 +207,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		uint256 wager,
 		uint256 odds
 	) external view returns (uint256) {
-		return _getPayout(propositionId, marketId, wager, odds);
+		return _getPayout(propositionId, marketId, wager, odds, 1);
 	}
 
 	function _getPayout(
@@ -253,10 +230,6 @@ contract Market is IMarket, Ownable, ERC721 {
 		uint256 end,
 		SignatureLib.Signature calldata signature
 	) external returns (uint256) {
-		require(
-			end > block.timestamp && block.timestamp > close,
-			"back: Invalid date"
-		);
 
 		bytes32 messageHash = keccak256(abi.encodePacked(
 			nonce,
@@ -269,18 +242,48 @@ contract Market is IMarket, Ownable, ERC721 {
 
 		require(isValidSignature(messageHash, signature) == true, "back: Invalid signature");
 
+		// add underlying to the market
+		uint256 payout = _getPayout(propositionId, marketId, wager, odds);
+		assert(payout > 0);
+
+		return _back(
+			nonce,
+			propositionId,
+			marketId,
+			wager,
+			odds,
+			close,
+			end,
+			signature
+		);
+	}
+
+	function _back(
+		bytes16 nonce,
+		bytes16 propositionId,
+		bytes16 marketId,
+		uint256 wager,
+		uint256 odds,
+		uint256 close,
+		uint256 end,
+		uint256 payout
+		SignatureLib.Signature calldata signature
+	) internal returns (uint256) {
+		require(
+			end > block.timestamp && block.timestamp > close,
+			"back: Invalid date"
+		);
+
 		// Do not allow a bet placed if we know the result
 		require(
 			IOracle(_oracle).checkResult(marketId, propositionId) == false,
 			"back: Oracle result already set for this market"
 		);
+
         address underlying = _vault.asset();
 
-		// add underlying to the market
-		uint256 payout = _getPayout(propositionId, marketId, wager, odds);
-
         // escrow
-        IERC20(underlying).transferFrom(msg.sender, _self, wager);
+        IERC20(underlying).transferFrom(_msgSender(), _self, wager);
         IERC20(underlying).transferFrom(address(_vault), _self, (payout - wager));
 
 		// add to in play total for this marketId
@@ -290,18 +293,18 @@ contract Market is IMarket, Ownable, ERC721 {
 		_potentialPayout[propositionId] += payout;
 
 		_bets.push(
-			Bet(propositionId, marketId, wager, payout, end, false, msg.sender)
+			Bet(propositionId, marketId, wager, payout, end, false, _msgSender())
 		);
 
 		// use _getCount() to avoid stack too deep
 		_marketBets[marketId].push(_getCount());
-		_mint(msg.sender, _getCount() - 1);
+		_mint(_msgSender(), _getCount() - 1);
 
 		_totalInPlay += wager;
 		_totalExposure += (payout - wager);
 		_inplayCount++;
 
-		emit Placed(_getCount() - 1, propositionId, marketId, wager, payout, msg.sender);
+		emit Placed(_getCount() - 1, propositionId, marketId, wager, payout, _msgSender());
 
 		return _getCount();
 	}

@@ -4,7 +4,6 @@ import chai, { expect } from "chai";
 import {
 	Market,
 	MarketOracle,
-	Market__factory,
 	Token,
 	Vault,
 	Vault__factory
@@ -244,6 +243,7 @@ describe("Market", () => {
 
 		// Runner 1 for a Win
 		const nonce = "1";
+		const risk = 1;
 		const propositionId = makePropositionId("ABC", 1);
 		const marketId = makeMarketId(new Date(), "ABC", "1");
 		const betSignature = await signBackMessage(
@@ -253,6 +253,7 @@ describe("Market", () => {
 			odds,
 			close,
 			end,
+			risk,
 			alice // alice should not sign
 		);
 
@@ -305,6 +306,7 @@ describe("Market", () => {
 		const marketId = makeMarketId(new Date(), "ABC", "1");
 		const propositionId = makePropositionId(marketId, 1);
 		const nonce = "1";
+		const risk = 1;
 
 		const signature = await signBackMessage(
 			nonce,
@@ -313,6 +315,7 @@ describe("Market", () => {
 			odds,
 			close,
 			end,
+			risk,
 			owner
 		);
 
@@ -388,6 +391,7 @@ describe("Market", () => {
 		const marketId = makeMarketId(new Date(), "ABC", "1");
 		const propositionId = makePropositionId(marketId, 2);
 		const nonce = "1";
+		const risk = 1;
 
 		const signature = await signBackMessage(
 			nonce,
@@ -396,6 +400,7 @@ describe("Market", () => {
 			odds,
 			close,
 			end,
+			risk,
 			owner
 		);
 
@@ -441,6 +446,8 @@ describe("Market", () => {
 		const marketId = makeMarketId(new Date(), "ABC", "1");
 
 		const nonce = "1";
+		const risk = 1;
+
 		const betSignature = await signBackMessage(
 			nonce,
 			marketId,
@@ -448,8 +455,10 @@ describe("Market", () => {
 			odds,
 			close,
 			end,
+			risk,
 			owner
 		);
+
 		await underlying.connect(whale).approve(market.address, wager);
 		await market
 			.connect(whale)
@@ -520,6 +529,7 @@ describe("Market", () => {
 			const marketId = makeMarketId(new Date(), "ABC", "1");
 			const propositionId = makePropositionId(marketId, 1);
 			const nonce = "1";
+			const risk = 1;
 
 			const betSignature = await signBackMessage(
 				nonce,
@@ -528,8 +538,10 @@ describe("Market", () => {
 				odds,
 				close,
 				end,
+				risk,
 				owner
 			);
+
 			expect(
 				await market
 					.connect(bob)
@@ -575,8 +587,10 @@ describe("Market", () => {
 
 			// Runner 1 for a Win
 			const nonce = "1";
+			const risk = 1;
 			const propositionId = makePropositionId("ABC", 1);
 			const marketId = makeMarketId(new Date(), "ABC", "1");
+
 			const betSignature = await signBackMessage(
 				nonce,
 				marketId,
@@ -584,6 +598,7 @@ describe("Market", () => {
 				odds,
 				close,
 				end,
+				risk,
 				owner
 			);
 
@@ -703,8 +718,8 @@ describe("Market", () => {
 		});
 	});
 
-	describe("Risk Coefficients", () => {
-		it("should account for market risk coefficient", async () => {
+	describe("Risky Markets", () => {
+		it.skip("should account for market risk coefficient", async () => {
 			const wager = ethers.utils.parseUnits("50", USDT_DECIMALS);
 			const targetOdds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
 			const propositionId = makePropositionId("ABC", 1);
@@ -716,37 +731,8 @@ describe("Market", () => {
 				formatBytes16String(propositionId),
 				formatBytes16String(marketId)
 			);
+
 			expect(calculatedOdds).to.be.closeTo(BigNumber.from(3809524), 1);
-
-			await market.setRiskCoefficient(formatBytes16String(marketId), 2);
-			const newOdds = await market.getOdds(
-				wager,
-				targetOdds,
-				formatBytes16String(propositionId),
-				formatBytes16String(marketId)
-			);
-
-			expect(newOdds).to.equal(calculatedOdds.toNumber() / 4);
-		});
-
-		it("should get and set risk coefficients", async () => {
-			const marketId = makeMarketId(new Date(), "ABC", "1");
-			const risk = await market.getRiskCoefficient(
-				formatBytes16String(marketId)
-			);
-
-			expect(risk).to.equal(1);
-
-			await expect(
-				market.setRiskCoefficient(formatBytes16String(marketId), 0)
-			).to.be.revertedWith("risk must be gt or eq to 1");
-
-			await market.setRiskCoefficient(formatBytes16String(marketId), 2);
-			const newRisk = await market.getRiskCoefficient(
-				formatBytes16String(marketId)
-			);
-
-			expect(newRisk).to.equal(2);
 		});
 	});
 });
@@ -788,17 +774,27 @@ async function signBackMessage(
 	odds: BigNumber,
 	close: number,
 	end: number,
+	risk: number,
 	signer: SignerWithAddress
 ): Promise<Signature> {
 	const message = ethers.utils.solidityKeccak256(
-		["bytes16", "bytes16", "bytes16", "uint256", "uint256", "uint256"],
+		[
+			"bytes16", // nonce
+			"bytes16", // propositionId
+			"bytes16", // marketId
+			"uint256", // odds
+			"uint256", // close
+			"uint256", // end
+			"uint256" // risk
+		],
 		[
 			formatBytes16String(nonce),
 			formatBytes16String(propositionId),
 			formatBytes16String(marketId),
 			odds,
 			close,
-			end
+			end,
+			risk
 		]
 	);
 	return await signMessage(message, signer);
