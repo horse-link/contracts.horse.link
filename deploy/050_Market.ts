@@ -5,7 +5,6 @@ import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { Token } from "../build/typechain";
 import { UnderlyingTokens } from "../deployData/settings";
-import hardhatConfig from "../hardhat.config";
 /*
  * Deploy a Market contract with an Oracle
  */

@@ -31,8 +31,11 @@ def load_market(address: str):
         return contract
 
 
-def load_oracle(address):
-    with open('./artifacts/contracts/Oracle.sol/Oracle.json') as f:
+def load_oracle():
+
+    address = get_oracle()
+
+    with open('./artifacts/contracts/MarketOracle.sol/MarketOracle.json') as f:
         data = json.load(f)
         abi = data['abi']
         contract = web3.eth.contract(address=address, abi=abi)
@@ -44,13 +47,18 @@ def get_count(contract) -> int:
     return count
 
 
-def update_oracle(oracle, index):
+def get_result(oracle, marketId):
+    result = oracle.functions.getResult(marketId).call()
+    return result
+
+
+def set_result(oracle, marketId, propositionId, signature):
     account_from = {
         'private_key': os.getenv('PRIVATE_KEY'),
         'address': '0x155c21c846b68121ca59879B3CCB5194F5Ae115E',
     }
 
-    tx = oracle.functions.setResult(index).buildTransaction(
+    tx = oracle.functions.setResult(marketId, propositionId, signature).buildTransaction(
         {
             'from': account_from['address'],
             'nonce': web3.eth.get_transaction_count(account_from['address']),
@@ -66,7 +74,7 @@ def update_oracle(oracle, index):
     return tx_receipt
 
 
-def settle(market, index: int, signature):
+def settle(market, index, signature):
     account_from = {
         'private_key': os.getenv('PRIVATE_KEY'),
         'address': '0x155c21c846b68121ca59879B3CCB5194F5Ae115E',
@@ -90,37 +98,54 @@ def settle(market, index: int, signature):
 
 def main():
     # fetch registry contract address from the api
-    markets = get_markets()
-    # oracle = get_oracle()
+    market_addresses = get_markets()
+    oracle = load_oracle()
     now = datetime.now().timestamp()
     print(f"Current Time: {now}")
 
     # settle each market
-    for market in markets:
-        market = load_market(market['address'])
-        # oracle = load_oracle()
-        count = get_count(contract)
+    for market_address in market_addresses:
+        market = load_market(market_address['address'])
+        count = get_count(market)
 
         # settle each bet in reverse order
         for i in range(count - 1, 0, -1):
             bet = market.functions.getBetByIndex(i).call()
 
-            if bet[2] > now - 60 * 60 * 2:
+            # check if bet is less than 2 hours old
+            if bet[2] > now - 60 * 60 * 24:
 
                 # check if bet is settled via the api
-                response = requests.get(
-                    f'https://horse.link/api/markets/result/{bet[6]}')
+                market_id = bet[5][0:11]
+                mid = market_id.decode('ASCII')
+                print(f"Market ID: {mid}")
+
+                # Note: this url will change to the results endpoint
+                response = requests.get(f'https://horse.link/api/bets/sign/{mid}')
+                print(response.json())
 
                 if response.status_code == 200 and bet[3] == False:
-                    print(f"Settling bet {i} for market {market['address']}")
 
-                    tx_receipt = settle(contract, i)
+                    # set result on oracle
+                    signature = response.json()['marketOracleResultSig']
+                    proposition_id = response.json()['winningPropositionId']
+                    tx_receipt = set_result(
+                        oracle, market_id, proposition_id, signature)
+
                     print(tx_receipt)
+
+                    # print(f"Settling bet {i} for market {market_address['address']}")
+
+                    # # get result from oracle
+                    # signature = get_result(oracle, market_id)
+
+                    # tx_receipt = settle(market, i, signature)
+                    # print(tx_receipt)
                 else:
                     print(
-                        f"Bet {i} for market {market['address']} already settled")
+                        f"Bet {i} for market {market_address['address']} already settled")
             else:
-                print(f"Bet {i} for market {market['address']} is too old")
+                print(f"Bet {i} for market {market_address['address']} is too old")
                 break
 
 

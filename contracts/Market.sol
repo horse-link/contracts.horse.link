@@ -6,7 +6,6 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
-import {IBet} from "./IBet.sol";
 import "./IVault.sol";
 import "./IMarket.sol";
 import "./IOracle.sol";
@@ -24,9 +23,8 @@ struct Bet {
 	address owner;
 }
 
-contract Market is Ownable, ERC721 {
+contract Market is IMarket, Ownable, ERC721 {
 	uint8 private immutable _margin;
-
 	IVault private immutable _vault;
 	address private immutable _self;
 	IOracle private immutable _oracle;
@@ -42,9 +40,6 @@ contract Market is Ownable, ERC721 {
 
 	// MarketID => PropositionID => amount bet
 	mapping(bytes16 => mapping(uint16 => uint256)) private _marketBetAmount;
-
-	// Marketid => Risk Coefficient
-	mapping(bytes16 => uint256) private _riskCoefficients;
 
 	// PropositionID => amount bet
 	mapping(bytes16 => uint256) private _potentialPayout;
@@ -123,20 +118,6 @@ contract Market is Ownable, ERC721 {
 		return _bets[id].payoutDate + timeout;
 	}
 
-	function getRiskCoefficient(bytes16 marketId) external view returns (uint256) {
-		uint256 risk = _riskCoefficients[marketId];
-		if (risk < 1) {
-			return 1;
-		}
-
-		return risk;
-	}
-
-	function setRiskCoefficient(bytes16 marketId, uint256 risk) external onlyOwner {
-		require(risk >= 1, "risk must be gt or eq to 1");
-		_riskCoefficients[marketId] = risk;
-	}
-
 	function getBetByIndex(uint256 index)
 		external
 		view
@@ -146,8 +127,8 @@ contract Market is Ownable, ERC721 {
 			uint256,
 			bool,
 			address,
-			bytes16,
-			bytes16
+			bytes16, // marketId
+			bytes16 // propositionId
 		)
 	{
 		return _getBet(index);
@@ -175,8 +156,8 @@ contract Market is Ownable, ERC721 {
 		uint256 odds,
 		bytes16 propositionId,
 		bytes16 marketId
-	) external view returns (uint256) {
-		return _getOdds(wager, odds, propositionId, marketId);
+	) external view override returns (uint256) {
+		return _getOdds(wager, odds, propositionId, marketId, 1);
 	}
 
 	// Given decimal ("European") odds expressed as the amount one wins for ever unit wagered.
@@ -186,14 +167,10 @@ contract Market is Ownable, ERC721 {
 		uint256 wager,
 		uint256 odds,
 		bytes16 propositionId,
-		bytes16 marketId
+		bytes16 marketId,
+		uint256 risk
 	) internal view returns (uint256) {
-		uint256 risk = _riskCoefficients[marketId];
-		if (risk < 1) {
-			risk = 1;
-		}
-
-		if (wager <= 1 || odds <= 1) return 1;
+		if (wager <= 1 || odds <= 1 || risk == 0) return 1;
 
         uint256 pool = _vault.getMarketAllowance();
         
@@ -204,12 +181,18 @@ contract Market is Ownable, ERC721 {
 		if (_potentialPayout[propositionId] > pool) {
 			return 1;
 		}
+
 		pool -= _potentialPayout[propositionId]; 
 
 		// Calculate the new odds
 		uint256 adjustedOdds = _getAdjustedOdds(wager, odds, pool);
 
-		// Return odds / risk^2
+		// Return odds / risk^2 (check to see gas costs vs ternary)
+
+		// If risk is one, do ternary
+		if (risk == 1) {
+			return adjustedOdds;
+		}
 		return adjustedOdds / (risk ** 2);
 	}
 
@@ -225,23 +208,23 @@ contract Market is Ownable, ERC721 {
 		);
 	}
 
-
 	function getPotentialPayout(
 		bytes16 propositionId,
 		bytes16 marketId,
 		uint256 wager,
 		uint256 odds
 	) external view returns (uint256) {
-		return _getPayout(propositionId, marketId, wager, odds);
+		return _getPayout(propositionId, marketId, wager, odds, 1);
 	}
 
 	function _getPayout(
 		bytes16 propositionId,
 		bytes16 marketId,
 		uint256 wager,
-		uint256 odds
+		uint256 odds,
+		uint256 risk
 	) private view returns (uint256) {
-		uint256 trueOdds = _getOdds(wager, odds, propositionId, marketId);
+		uint256 trueOdds = _getOdds(wager, odds, propositionId, marketId, risk);
 		return Math.max(wager, (trueOdds * wager) / OddsLib.PRECISION);
 	}
 
@@ -255,6 +238,30 @@ contract Market is Ownable, ERC721 {
 		uint256 end,
 		SignatureLib.Signature calldata signature
 	) external returns (uint256) {
+		return _back(
+			nonce,
+			propositionId,
+			marketId,
+			wager,
+			odds,
+			close,
+			end,
+			1,
+			signature
+		);
+	}
+
+	function _back(
+		bytes16 nonce,
+		bytes16 propositionId,
+		bytes16 marketId,
+		uint256 wager,
+		uint256 odds,
+		uint256 close,
+		uint256 end,
+		uint256 risk,
+		SignatureLib.Signature calldata signature
+	) internal returns (uint256) {
 		require(
 			end > block.timestamp && block.timestamp > close,
 			"back: Invalid date"
@@ -266,7 +273,8 @@ contract Market is Ownable, ERC721 {
 			marketId,
 			odds,
 			close,
-			end
+			end,
+			risk
 		));
 
 		require(isValidSignature(messageHash, signature) == true, "back: Invalid signature");
@@ -279,7 +287,7 @@ contract Market is Ownable, ERC721 {
         address underlying = _vault.asset();
 
 		// add underlying to the market
-		uint256 payout = _getPayout(propositionId, marketId, wager, odds);
+		uint256 payout = _getPayout(propositionId, marketId, wager, odds, risk);
 
         // escrow
         IERC20(underlying).transferFrom(msg.sender, _self, wager);

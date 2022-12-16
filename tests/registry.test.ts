@@ -58,7 +58,7 @@ describe("Registry", () => {
 		).to.be.revertedWith("onlyOwner: Caller is not the contract owner");
 	});
 
-	it.skip("Should not allow under threshold holders to add vaults and market", async () => {
+	/*it.skip("Should not allow under threshold holders to add vaults and market", async () => {
 		const vault = await await new Vault__factory(owner).deploy(
 			underlying.address
 		);
@@ -81,7 +81,7 @@ describe("Registry", () => {
 		).to.be.revertedWith(
 			"onlyTokenHolders: Caller does not hold enough tokens"
 		);
-	});
+	});*/
 
 	it("Should be able to add markets and vaults", async () => {
 		const market_count = await registry.marketCount();

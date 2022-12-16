@@ -1,19 +1,17 @@
-// SPDX-Licence: MIT
+// SPDX-License-Identifier: MIT
 pragma solidity =0.8.10;
+
 import "./Market.sol";
 import "./OddsLib.sol";
+
 contract MarketCurved is Market {
 
     constructor(
         IVault vault,
         uint8 fee,
-        address oracle,
-        uint256 coefficient
+        address oracle
     ) Market(vault, fee, oracle) {
-        _coefficient = coefficient;
     }
-
-    uint256 private _coefficient;
 
     function _getAdjustedOdds(
 		uint256 wager,
