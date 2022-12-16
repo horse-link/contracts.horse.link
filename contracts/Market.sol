@@ -174,7 +174,7 @@ contract Market is IMarket, Ownable, ERC721 {
 
         uint256 pool = _vault.getMarketAllowance();
         
-		// If the pool is not sufficient to cover a new bet for this proposition,
+		// If the pool is not sufficient to cover a new bet for this proposition
 		if (pool == 0) return 1;
 
 		// exclude the current total potential payout from the pool
@@ -187,12 +187,12 @@ contract Market is IMarket, Ownable, ERC721 {
 		// Calculate the new odds
 		uint256 adjustedOdds = _getAdjustedOdds(wager, odds, pool);
 
-		// Return odds / risk^2 (check to see gas costs vs ternary)
-
 		// If risk is one, do ternary
 		if (risk == 1) {
 			return adjustedOdds;
 		}
+
+		// Return odds / risk^2
 		return adjustedOdds / (risk ** 2);
 	}
 
