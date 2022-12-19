@@ -115,7 +115,7 @@ def settle_market(market_address, oracle):
         bet = market.functions.getBetByIndex(i).call()
 
         # check if bet is less than 2 hours old
-        if bet[2] > now - 60 * 60 * 24:
+        if bet[2] > now - 60 * 60 * 48:
 
             # check if bet has a result
             market_id = bet[5][0:11]
@@ -145,7 +145,7 @@ def settle_market(market_address, oracle):
                     tx_receipt = set_result(
                         oracle, market_id, proposition_id, signature)
 
-                    print(tx_receipt.transactionHash)
+                    print(tx_receipt.transactionHash.encode('hex'))
 
 
                 if oracle_result != empty_array:
