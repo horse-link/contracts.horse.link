@@ -103,7 +103,7 @@ def settle(market, index, signature):
     return tx_receipt
 
 
-def settle_market(market_address, oracle):
+def update_market_oracle(market_address, oracle):
     now = datetime.now().timestamp()
     print(f"Current Time: {now}")
 
@@ -147,17 +147,43 @@ def settle_market(market_address, oracle):
 
                     print(tx_receipt.transactionHash.encode('hex'))
 
+        else:
+            print(
+                f"Bet {i} for market {market_address} is too old")
+            break
 
-                if oracle_result != empty_array:
-                    print(f"Settling bet {i} for market {market_address}")
 
-                    tx_receipt = settle(market, i, response.json()['signature'])
-                    print(tx_receipt.transactionHash)
+def settle_market(market_address, oracle):
+    print(f"Settling market {market_address}")
+    now = datetime.now().timestamp()
+    print(f"Current Time: {now}")
 
+    market = load_market(market_address)
+    count = get_count(market)
+
+    # settle each bet in reverse order
+    for i in range(count - 1, 0, -1):
+        bet = market.functions.getBetByIndex(i).call()
+
+        # check if bet is less than 2 hours old
+        if bet[2] > now - 60 * 60 * 48:
+
+            # check if bet has a result
+            market_id = bet[5][0:11]
+            mid = market_id.decode('ASCII')
+            print(f"Market ID: {mid}")
+
+            oracle_result = get_result(oracle, market_id)
+                
+            if oracle_result != empty_array:
+                print(f"Settling bet {i} for market {market_address}")
+
+                tx_receipt = settle(market, i, response.json()['signature'])
+                print(tx_receipt.transactionHash)
 
         else:
             print(
-                f"Bet {i} for market {market_address['address']} is too old")
+                f"Bet {i} for market {market_address} is too old")
             break
 
 
@@ -168,7 +194,7 @@ def main():
 
     # settle each market
     for market_address in market_addresses:
-        print(f"Settling market {market_address['address']}")
+        update_market_oracle(market_address['address'], oracle)
         settle_market(market_address['address'], oracle)
 
 
