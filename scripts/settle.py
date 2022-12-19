@@ -81,7 +81,7 @@ def set_result(oracle, marketId, propositionId, signature):
     return tx_receipt
 
 
-def settle(market, index, signature):
+def settle(market, index):
     account_from = {
         'private_key': os.getenv('PRIVATE_KEY'),
         'address': '0x155c21c846b68121ca59879B3CCB5194F5Ae115E',
@@ -178,8 +178,8 @@ def settle_market(market_address, oracle):
             if oracle_result != empty_array:
                 print(f"Settling bet {i} for market {market_address}")
 
-                tx_receipt = settle(market, i, response.json()['signature'])
-                print(tx_receipt.transactionHash)
+                tx_receipt = settle(market, i)
+                print(tx_receipt.transactionHash.encode('hex'))
 
         else:
             print(
