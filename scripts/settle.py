@@ -115,7 +115,7 @@ def update_market_oracle(market_address, oracle):
         bet = market.functions.getBetByIndex(i).call()
 
         # check if bet is less than 2 hours old
-        if bet[2] > now - 60 * 60 * 48:
+        if bet[2] > now - 60 * 60 * 24:
 
             # check if bet has a result
             market_id = bet[5][0:11]
@@ -166,7 +166,7 @@ def settle_market(market_address, oracle):
         bet = market.functions.getBetByIndex(i).call()
 
         # check if bet is less than 2 hours old
-        if bet[2] > now - 60 * 60 * 48 and bet[3] == False:
+        if bet[2] > now - 60 * 60 * 24 and bet[3] == False:
 
             # check if bet has a result
             market_id = bet[5][0:11]
