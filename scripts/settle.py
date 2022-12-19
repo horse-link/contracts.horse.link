@@ -5,11 +5,13 @@ import json
 import os
 import requests
 
+
 load_dotenv()
 
 node = os.getenv('GOERLI_URL')
 web3 = Web3(Web3.HTTPProvider(node))
 
+empty_array = b'\x00' * 16
 
 def get_markets():
     response = requests.get('https://horse.link/api/config')
@@ -49,6 +51,11 @@ def get_count(contract) -> int:
 
 def get_result(oracle, marketId):
     result = oracle.functions.getResult(marketId).call()
+    return result
+
+
+def check_result(oracle, marketId, propositionId) -> bool:
+    result = oracle.functions.checkResult(marketId, propositionId).call()
     return result
 
 
@@ -96,57 +103,73 @@ def settle(market, index, signature):
     return tx_receipt
 
 
+def settle_market(market_address, oracle):
+    now = datetime.now().timestamp()
+    print(f"Current Time: {now}")
+
+    market = load_market(market_address)
+    count = get_count(market)
+
+    # settle each bet in reverse order
+    for i in range(count - 1, 0, -1):
+        bet = market.functions.getBetByIndex(i).call()
+
+        # check if bet is less than 2 hours old
+        if bet[2] > now - 60 * 60 * 24:
+
+            # check if bet has a result
+            market_id = bet[5][0:11]
+            mid = market_id.decode('ASCII')
+            print(f"Market ID: {mid}")
+
+            # Note: this url will change to the results endpoint
+            response = requests.get(
+                f'https://horse.link/api/bets/sign/{mid}')
+
+            result = response.json()
+
+            # check if the bet has a result from the api
+            if response.status_code == 200 and result.get('winningPropositionId') is not None:
+
+                oracle_result = get_result(oracle, market_id)
+                
+                # check if the result is already set on the oracle
+                if oracle_result == empty_array:
+                    # set result on oracle
+                    print(
+                        f"Setting result for market {market_address} to the oracle")
+
+                    signature = response.json()['marketOracleResultSig']
+                    proposition_id = response.json()['winningPropositionId']
+
+                    tx_receipt = set_result(
+                        oracle, market_id, proposition_id, signature)
+
+                    print(tx_receipt.transactionHash)
+
+
+                if oracle_result != empty_array:
+                    print(f"Settling bet {i} for market {market_address}")
+
+                    tx_receipt = settle(market, i, response.json()['signature'])
+                    print(tx_receipt.transactionHash)
+
+
+        else:
+            print(
+                f"Bet {i} for market {market_address['address']} is too old")
+            break
+
+
 def main():
     # fetch registry contract address from the api
     market_addresses = get_markets()
     oracle = load_oracle()
-    now = datetime.now().timestamp()
-    print(f"Current Time: {now}")
 
     # settle each market
     for market_address in market_addresses:
-        market = load_market(market_address['address'])
-        count = get_count(market)
-
-        # settle each bet in reverse order
-        for i in range(count - 1, 0, -1):
-            bet = market.functions.getBetByIndex(i).call()
-
-            # check if bet is less than 2 hours old
-            if bet[2] > now - 60 * 60 * 24:
-
-                # check if bet is settled via the api
-                market_id = bet[5][0:11]
-                mid = market_id.decode('ASCII')
-                print(f"Market ID: {mid}")
-
-                # Note: this url will change to the results endpoint
-                response = requests.get(f'https://horse.link/api/bets/sign/{mid}')
-                print(response.json())
-
-                if response.status_code == 200 and bet[3] == False:
-
-                    # set result on oracle
-                    signature = response.json()['marketOracleResultSig']
-                    proposition_id = response.json()['winningPropositionId']
-                    tx_receipt = set_result(
-                        oracle, market_id, proposition_id, signature)
-
-                    print(tx_receipt)
-
-                    # print(f"Settling bet {i} for market {market_address['address']}")
-
-                    # # get result from oracle
-                    # signature = get_result(oracle, market_id)
-
-                    # tx_receipt = settle(market, i, signature)
-                    # print(tx_receipt)
-                else:
-                    print(
-                        f"Bet {i} for market {market_address['address']} already settled")
-            else:
-                print(f"Bet {i} for market {market_address['address']} is too old")
-                break
+        print(f"Settling market {market_address['address']}")
+        settle_market(market_address['address'], oracle)
 
 
 if __name__ == '__main__':
