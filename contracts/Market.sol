@@ -124,7 +124,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		returns (
 			uint256,
 			uint256,
-			uint256,
+			uint256, // payoutDate
 			bool,
 			address,
 			bytes16, // marketId

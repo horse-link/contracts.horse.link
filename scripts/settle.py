@@ -115,7 +115,7 @@ def update_market_oracle(market_address, oracle):
         bet = market.functions.getBetByIndex(i).call()
 
         # check if bet is less than 2 hours old
-        if bet[2] > now - 60 * 60 * 24:
+        if bet[2] > now and bet[3] == False:
 
             # check if bet has a result
             market_id = bet[5][0:11]
@@ -145,11 +145,11 @@ def update_market_oracle(market_address, oracle):
                     tx_receipt = set_result(
                         oracle, market_id, proposition_id, signature)
 
-                    print(tx_receipt.transactionHash.encode('hex'))
+                    print(tx_receipt)
 
         else:
             print(
-                f"Bet {i} for market {market_address} is too old")
+                f"Bet {i} for market {market_address} is too young or already settled")
             break
 
 
@@ -165,8 +165,8 @@ def settle_market(market_address, oracle):
     for i in range(count - 1, 0, -1):
         bet = market.functions.getBetByIndex(i).call()
 
-        # check if bet is less than 2 hours old
-        if bet[2] > now - 60 * 60 * 24 and bet[3] == False:
+        # check if is ready to settle
+        if bet[2] > now and bet[3] == False:
 
             # check if bet has a result
             market_id = bet[5][0:11]
@@ -179,11 +179,11 @@ def settle_market(market_address, oracle):
                 print(f"Settling bet {i} for market {market_address}")
 
                 tx_receipt = settle(market, i)
-                print(tx_receipt.transactionHash.encode('hex'))
+                print(tx_receipt)
 
         else:
             print(
-                f"Bet {i} for market {market_address} is too old or already settled")
+                f"Bet {i} for market {market_address} is too young or already settled")
             break
 
 
