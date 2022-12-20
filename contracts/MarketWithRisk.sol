@@ -28,6 +28,16 @@ contract MarketWithRisk is Market {
 		bytes16 marketId,
 		uint256 risk
 	) external view returns (uint256) {
+		return _getOddsWithRisk(wager, odds, propositionId, marketId);
+	}
+
+	function _getOddsWithRisk(
+		uint256 wager,
+		uint256 odds,
+		bytes16 propositionId,
+		bytes16 marketId,
+		uint256 risk
+	) private view returns (uint256) {
 		return _getOdds(wager, odds, propositionId, marketId) / risk ** 2;
 	}
 
@@ -39,9 +49,10 @@ contract MarketWithRisk is Market {
 		uint256 odds,
 		uint256 close,
 		uint256 end,
-		uint256 risk
+		uint256 risk,
 		SignatureLib.Signature calldata signature
 	) external returns (uint256) {
+		uint256 payout = wager * _getOddsWithRisk(wager, odds, propositionId, marketId, risk);
 		return _back(
 			nonce,
 			propositionId,
@@ -50,6 +61,7 @@ contract MarketWithRisk is Market {
 			odds,
 			close,
 			end,
+			payout,
 			signature
 		);
 	}

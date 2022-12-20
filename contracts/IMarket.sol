@@ -9,7 +9,7 @@ interface IMarket {
 	function getInPlayCount() external view returns (uint256);
 	function getTotalExposure() external view returns (uint256);
 
-	function getBetByIndex(uint256 index)
+	function getBetByIndex(uint64 index)
 		external
 		view
 		returns (

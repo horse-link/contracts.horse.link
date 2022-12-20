@@ -118,7 +118,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		return _bets[id].payoutDate + timeout;
 	}
 
-	function getBetByIndex(uint256 index)
+	function getBetByIndex(uint64 index)
 		external
 		view
 		returns (
@@ -134,7 +134,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		return _getBet(index);
 	}
 
-	function _getBet(uint256 index)
+	function _getBet(uint64 index)
 		private
 		view
 		returns (
@@ -167,7 +167,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		uint256 wager,
 		uint256 odds,
 		bytes16 propositionId,
-		bytes16 marketId,
+		bytes16 marketId
 	) internal view returns (uint256) {
 		if (wager <= 1 || odds <= 1) return 1;
 
@@ -254,6 +254,7 @@ contract Market is IMarket, Ownable, ERC721 {
 			odds,
 			close,
 			end,
+			payout,
 			signature
 		);
 	}
@@ -266,7 +267,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		uint256 odds,
 		uint256 close,
 		uint256 end,
-		uint256 payout
+		uint256 payout,
 		SignatureLib.Signature calldata signature
 	) internal returns (uint256) {
 		require(
@@ -313,7 +314,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		Bet memory bet = _bets[index];
 		require(bet.settled == false, "settle: Bet has already settled");
 
-		if _getExpiry(index) > block.timestamp {
+		if (_getExpiry(index) > block.timestamp) {
 			_settle(index, true);
 			return;
 		}
