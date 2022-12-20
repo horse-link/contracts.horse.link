@@ -737,18 +737,24 @@ describe("Market", () => {
 	});
 });
 
-async function signMessageAsString(message: string, signer: SignerWithAddress) {
+const signMessageAsString = async (
+	message: string,
+	signer: SignerWithAddress
+) => {
 	const sig = await signer.signMessage(ethers.utils.arrayify(message));
 	return sig;
-}
+};
 
-async function signMessage(message: string, signer: SignerWithAddress) {
+const signMessage = async (message: string, signer: SignerWithAddress) => {
 	const sig = await signer.signMessage(ethers.utils.arrayify(message));
 	const { v, r, s } = ethers.utils.splitSignature(sig);
 	return { v, r, s };
-}
+};
 
-function makeSetResultMessage(marketId: string, propositionId: string): string {
+const makeSetResultMessage = (
+	marketId: string,
+	propositionId: string
+): string => {
 	const b16MarketId = formatBytes16String(marketId);
 	const b16PropositionId = formatBytes16String(propositionId);
 	const message = ethers.utils.solidityKeccak256(
@@ -756,16 +762,16 @@ function makeSetResultMessage(marketId: string, propositionId: string): string {
 		[b16MarketId, b16PropositionId]
 	);
 	return message;
-}
+};
 
-async function signSetResultMessage(
+const signSetResultMessage = async (
 	marketId: string,
 	propositionId: string,
 	signer: SignerWithAddress
-): Promise<Signature> {
+): Promise<Signature> => {
 	const settleMessage = makeSetResultMessage(marketId, propositionId);
 	return await signMessage(settleMessage, signer);
-}
+};
 
 async function signBackMessage(
 	nonce: string,
