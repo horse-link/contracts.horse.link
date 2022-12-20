@@ -312,6 +312,12 @@ contract Market is IMarket, Ownable, ERC721 {
 	function settle(uint256 index) external {
 		Bet memory bet = _bets[index];
 		require(bet.settled == false, "settle: Bet has already settled");
+
+		if _getExpiry(index) > block.timestamp {
+			_settle(index, true);
+			return;
+		}
+
 		bool result = IOracle(_oracle).checkResult(
 			bet.marketId,
 			bet.propositionId
