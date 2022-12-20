@@ -51,5 +51,5 @@ interface IMarket {
 		SignatureLib.Signature calldata sig
 	) external returns (uint256);
 
-	function settle(uint256 index) external;
+	function settle(uint64 index) external;
 }

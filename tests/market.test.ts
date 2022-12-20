@@ -243,7 +243,6 @@ describe("Market", () => {
 
 		// Runner 1 for a Win
 		const nonce = "1";
-		const risk = 1;
 		const propositionId = makePropositionId("ABC", 1);
 		const marketId = makeMarketId(new Date(), "ABC", "1");
 		const betSignature = await signBackMessage(
@@ -253,7 +252,6 @@ describe("Market", () => {
 			odds,
 			close,
 			end,
-			risk,
 			alice // alice should not sign
 		);
 
@@ -306,7 +304,6 @@ describe("Market", () => {
 		const marketId = makeMarketId(new Date(), "ABC", "1");
 		const propositionId = makePropositionId(marketId, 1);
 		const nonce = "1";
-		const risk = 1;
 
 		const signature = await signBackMessage(
 			nonce,
@@ -315,7 +312,6 @@ describe("Market", () => {
 			odds,
 			close,
 			end,
-			risk,
 			owner
 		);
 
@@ -391,7 +387,6 @@ describe("Market", () => {
 		const marketId = makeMarketId(new Date(), "ABC", "1");
 		const propositionId = makePropositionId(marketId, 2);
 		const nonce = "1";
-		const risk = 1;
 
 		const signature = await signBackMessage(
 			nonce,
@@ -400,7 +395,6 @@ describe("Market", () => {
 			odds,
 			close,
 			end,
-			risk,
 			owner
 		);
 
@@ -446,7 +440,6 @@ describe("Market", () => {
 		const marketId = makeMarketId(new Date(), "ABC", "1");
 
 		const nonce = "1";
-		const risk = 1;
 
 		const betSignature = await signBackMessage(
 			nonce,
@@ -455,7 +448,6 @@ describe("Market", () => {
 			odds,
 			close,
 			end,
-			risk,
 			owner
 		);
 
@@ -529,7 +521,6 @@ describe("Market", () => {
 			const marketId = makeMarketId(new Date(), "ABC", "1");
 			const propositionId = makePropositionId(marketId, 1);
 			const nonce = "1";
-			const risk = 1;
 
 			const betSignature = await signBackMessage(
 				nonce,
@@ -538,7 +529,6 @@ describe("Market", () => {
 				odds,
 				close,
 				end,
-				risk,
 				owner
 			);
 
@@ -587,7 +577,6 @@ describe("Market", () => {
 
 			// Runner 1 for a Win
 			const nonce = "1";
-			const risk = 1;
 			const propositionId = makePropositionId("ABC", 1);
 			const marketId = makeMarketId(new Date(), "ABC", "1");
 
@@ -598,7 +587,6 @@ describe("Market", () => {
 				odds,
 				close,
 				end,
-				risk,
 				owner
 			);
 
@@ -745,7 +733,10 @@ const signMessageAsString = async (
 	return sig;
 };
 
-const signMessage = async (message: string, signer: SignerWithAddress) => {
+const signMessage = async (
+	message: string,
+	signer: SignerWithAddress
+): Promise<Signature> => {
 	const sig = await signer.signMessage(ethers.utils.arrayify(message));
 	const { v, r, s } = ethers.utils.splitSignature(sig);
 	return { v, r, s };
@@ -773,7 +764,37 @@ const signSetResultMessage = async (
 	return await signMessage(settleMessage, signer);
 };
 
-async function signBackMessage(
+const signBackMessage = async (
+	nonce: string,
+	marketId: string,
+	propositionId: string,
+	odds: BigNumber,
+	close: number,
+	end: number,
+	signer: SignerWithAddress
+): Promise<Signature> => {
+	const message = ethers.utils.solidityKeccak256(
+		[
+			"bytes16", // nonce
+			"bytes16", // propositionId
+			"bytes16", // marketId
+			"uint256", // odds
+			"uint256", // close
+			"uint256" // end
+		],
+		[
+			formatBytes16String(nonce),
+			formatBytes16String(propositionId),
+			formatBytes16String(marketId),
+			odds,
+			close,
+			end
+		]
+	);
+	return await signMessage(message, signer);
+};
+
+const signBackMessageWithRisk = async (
 	nonce: string,
 	marketId: string,
 	propositionId: string,
@@ -782,7 +803,7 @@ async function signBackMessage(
 	end: number,
 	risk: number,
 	signer: SignerWithAddress
-): Promise<Signature> {
+): Promise<Signature> => {
 	const message = ethers.utils.solidityKeccak256(
 		[
 			"bytes16", // nonce
@@ -804,4 +825,4 @@ async function signBackMessage(
 		]
 	);
 	return await signMessage(message, signer);
-}
+};

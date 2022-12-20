@@ -28,7 +28,7 @@ contract MarketWithRisk is Market {
 		bytes16 marketId,
 		uint256 risk
 	) external view returns (uint256) {
-		return _getOddsWithRisk(wager, odds, propositionId, marketId);
+		return _getOddsWithRisk(wager, odds, propositionId, marketId, risk);
 	}
 
 	function _getOddsWithRisk(

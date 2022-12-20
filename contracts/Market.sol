@@ -207,7 +207,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		uint256 wager,
 		uint256 odds
 	) external view returns (uint256) {
-		return _getPayout(propositionId, marketId, wager, odds, 1);
+		return _getPayout(propositionId, marketId, wager, odds);
 	}
 
 	function _getPayout(
@@ -310,7 +310,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		return _getCount();
 	}
 
-	function settle(uint256 index) external {
+	function settle(uint64 index) external {
 		Bet memory bet = _bets[index];
 		require(bet.settled == false, "settle: Bet has already settled");
 
