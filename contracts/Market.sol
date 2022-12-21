@@ -33,7 +33,7 @@ contract Market is IMarket, Ownable, ERC721 {
 	Bet[] private _bets;
 
 	// MarketID => Bets Indexes
-	mapping(bytes16 => uint256[]) private _marketBets;
+	mapping(bytes16 => uint64[]) private _marketBets;
 
 	// MarketID => amount bet
 	mapping(bytes16 => uint256) private _marketTotal;
@@ -308,25 +308,32 @@ contract Market is IMarket, Ownable, ERC721 {
 		Bet memory bet = _bets[index];
 		require(bet.settled == false, "settle: Bet has already settled");
 
+		_settle(index);
+	}
+
+	function _settle(uint64 index) internal {
+		_bets[index].settled = true;
+
 		if (_getExpiry(index) > block.timestamp) {
-			_settle(index, true);
+			_payout(index, true);
 			return;
 		}
 
+		Bet memory bet = _bets[index];
 		bool result = IOracle(_oracle).checkResult(
 			bet.marketId,
 			bet.propositionId
 		);
-		_settle(index, result);
+
+		_payout(index, result);
 	}
 
-	function _settle(uint256 id, bool result) private {
+	function _payout(uint256 id, bool result) private {
 		require(
 			_bets[id].payoutDate < block.timestamp,
 			"_settle: Payout date not reached"
 		);
 
-        _bets[id].settled = true;
         _totalInPlay -= _bets[id].amount;
         _totalExposure -= _bets[id].payout - _bets[id].amount;
         _inplayCount --;
@@ -346,6 +353,16 @@ contract Market is IMarket, Ownable, ERC721 {
 		_burn(id);
 
 		emit Settled(id, _bets[id].payout, result, _bets[id].owner);
+	}
+
+	function settleMarket(bytes16 marketId) external {
+		uint64[] memory bets = _marketBets[marketId];
+
+		for (uint64 i = 0; i < bets.length; i++) {
+			if (_bets[bets[i]].settled == false) {
+				_settle(bets[i]);
+			}
+		}
 	}
 
 	function grantSigner(address signer) external onlyOwner {
