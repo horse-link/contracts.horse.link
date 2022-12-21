@@ -720,6 +720,84 @@ describe("Market", () => {
 
 			expect(await market.settle(index)).to.emit(market, "Settled");
 		});
+
+		it.only("Should settle multiple bets on a market", async () => {
+			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
+			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
+			const close = 0;
+
+			const latestBlockNumber = await ethers.provider.getBlockNumber();
+			const latestBlock = await ethers.provider.getBlock(latestBlockNumber);
+
+			const end = latestBlock.timestamp + 10000;
+			const marketId = makeMarketId(new Date(), "ABC", "1");
+			const max = 5;
+
+			for (let i = 1; i <= max; i++) {
+				const nonce = i.toString();
+				const propositionId = makePropositionId("ABC", i);
+
+				const betSignature = await signBackMessage(
+					nonce,
+					marketId,
+					propositionId,
+					odds,
+					close,
+					end,
+					owner
+				);
+
+				expect(
+					await market
+						.connect(bob)
+						.back(
+							formatBytes16String(nonce),
+							formatBytes16String(propositionId),
+							formatBytes16String(marketId),
+							wager,
+							odds,
+							close,
+							end,
+							betSignature
+						)
+				).to.emit(market, "Placed");
+
+				const count = await market.getCount();
+				expect(count).to.equal(i, "There should be more bets");
+
+				const bet = await market.getBetByIndex(i - 1);
+				expect(bet[0]).to.equal(wager, "Bet amount should be same as wager");
+			}
+
+			let inPlayCount = await market.getInPlayCount();
+			expect(inPlayCount, "In play count should be 10").to.equal(max);
+
+			// add a result
+			const propositionId = makePropositionId("ABC", 1);
+			const signature = await signSetResultMessage(
+				marketId,
+				propositionId,
+				oracleSigner
+			);
+
+			const oracleOwner = await oracle.getOwner();
+			expect(oracleOwner).to.equal(oracleSigner.address);
+			await oracle.setResult(
+				formatBytes16String(marketId),
+				formatBytes16String(propositionId),
+				signature
+			);
+
+			await hre.network.provider.request({
+				method: "evm_setNextBlockTimestamp",
+				params: [end + 7200]
+			});
+
+			await market.settleMarket(formatBytes16String(marketId));
+
+			inPlayCount = await market.getInPlayCount();
+			// expect(inPlay).to.equal(0);
+		});
 	});
 
 	describe("ACL", () => {

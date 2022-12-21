@@ -12,6 +12,9 @@ import "./IOracle.sol";
 import "./SignatureLib.sol";
 import "./OddsLib.sol";
 
+// import console log
+import "hardhat/console.sol";
+
 // Put these in the ERC721 contract
 struct Bet {
 	bytes16 propositionId;
@@ -301,7 +304,7 @@ contract Market is IMarket, Ownable, ERC721 {
 
 		emit Placed(_getCount() - 1, propositionId, marketId, wager, payout, _msgSender());
 
-		return _getCount();
+		return _getCount() - 1;
 	}
 
 	function settle(uint64 index) external {
@@ -356,11 +359,19 @@ contract Market is IMarket, Ownable, ERC721 {
 	}
 
 	function settleMarket(bytes16 marketId) external {
-		uint64[] memory bets = _marketBets[marketId];
+		// uint64[] memory bets = _marketBets[marketId];
 
-		for (uint64 i = 0; i < bets.length; i++) {
-			if (_bets[bets[i]].settled == false) {
-				_settle(bets[i]);
+		uint256 total = _marketBets[marketId].length;
+		console.log("total", total);
+
+		for (uint64 i = 1; i < total; i++) {
+			uint64 index = _marketBets[marketId][i];
+
+			console.log("index", index);
+
+			Bet memory bet = _bets[index];
+			if (bet.settled == false) {
+				_settle(index);
 			}
 		}
 	}
