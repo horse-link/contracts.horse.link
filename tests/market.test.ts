@@ -672,7 +672,7 @@ describe("Market", () => {
 			expect(balance).to.equal(bobBalance.add(betPayout));
 		});
 
-		it.only("Should payout wage after timeout has been reached", async () => {
+		it("Should payout wage after timeout has been reached", async () => {
 			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
 			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
 			const close = 0;

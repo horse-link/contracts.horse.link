@@ -52,17 +52,26 @@ contract MarketWithRisk is Market {
 		uint256 risk,
 		SignatureLib.Signature calldata signature
 	) external returns (uint256) {
-		uint256 payout = wager * _getOddsWithRisk(wager, odds, propositionId, marketId, risk);
-		return _back(
+		bytes32 messageHash = keccak256(abi.encodePacked(
 			nonce,
 			propositionId,
 			marketId,
-			wager,
 			odds,
 			close,
 			end,
-			payout,
-			signature
+			risk
+		));
+
+		require(isValidSignature(messageHash, signature) == true, "back: Invalid signature");
+
+		uint256 payout = wager * _getOddsWithRisk(wager, odds, propositionId, marketId, risk);
+		return _back(
+			propositionId,
+			marketId,
+			wager,
+			close,
+			end,
+			payout
 		);
 	}
 }

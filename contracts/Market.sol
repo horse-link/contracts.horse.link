@@ -362,11 +362,11 @@ contract Market is IMarket, Ownable, ERC721 {
 		return _isSigner(signer);
 	}
 
-	function _isSigner(address signer) private view returns (bool) {
+	function _isSigner(address signer) internal view returns (bool) {
 		return _signers[signer];
 	}
 
-	function isValidSignature(bytes32 messageHash, SignatureLib.Signature calldata signature) private view returns (bool) {
+	function isValidSignature(bytes32 messageHash, SignatureLib.Signature calldata signature) internal view returns (bool) {
 		address signer = SignatureLib.recoverSigner(messageHash, signature);
 		assert(signer != address(0));
 		return _isSigner(signer);
