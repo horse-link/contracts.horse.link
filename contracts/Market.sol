@@ -247,28 +247,22 @@ contract Market is IMarket, Ownable, ERC721 {
 		assert(payout > 0);
 
 		return _back(
-			nonce,
 			propositionId,
 			marketId,
 			wager,
-			odds,
 			close,
 			end,
-			payout,
-			signature
+			payout
 		);
 	}
 
 	function _back(
-		bytes16 nonce,
 		bytes16 propositionId,
 		bytes16 marketId,
 		uint256 wager,
-		uint256 odds,
 		uint256 close,
 		uint256 end,
-		uint256 payout,
-		SignatureLib.Signature calldata signature
+		uint256 payout
 	) internal returns (uint256) {
 		require(
 			end > block.timestamp && block.timestamp > close,
