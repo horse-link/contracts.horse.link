@@ -86,12 +86,12 @@ contract Market is IMarket, Ownable, ERC721 {
 		return _inplayCount;
 	}
 
-	function getCount() external view returns (uint256) {
+	function getCount() external view returns (uint64) {
 		return _getCount();
 	}
 
-	function _getCount() private view returns (uint256) {
-		return _bets.length;
+	function _getCount() private view returns (uint64) {
+		return uint64(_bets.length);
 	}
 
 	function getTotalExposure() external view returns (uint256) {

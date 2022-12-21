@@ -5,6 +5,7 @@ import "./SignatureLib.sol";
 
 interface IMarket {
 	function getMargin() external view returns (uint8);
+	function getCount() external view returns (uint64);
 	function getTotalInPlay() external view returns (uint256);
 	function getInPlayCount() external view returns (uint256);
 	function getTotalExposure() external view returns (uint256);
