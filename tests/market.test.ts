@@ -696,6 +696,7 @@ describe("Market", () => {
 				owner
 			);
 
+			const index = 0;
 			expect(
 				await market
 					.connect(bob)
@@ -709,9 +710,16 @@ describe("Market", () => {
 						end,
 						betSignature
 					)
-			).to.emit(market, "Placed");
-
-			const index = 0;
+			)
+				.to.emit(market, "Placed")
+				.withArgs(
+					index,
+					"0x30313933343841424330315730310000",
+					"0x30313933343841424330310000000000",
+					wager,
+					272727300,
+					bob.address
+				);
 
 			await hre.network.provider.request({
 				method: "evm_setNextBlockTimestamp",
@@ -721,7 +729,7 @@ describe("Market", () => {
 			expect(await market.settle(index)).to.emit(market, "Settled");
 		});
 
-		it.only("Should settle multiple bets on a market", async () => {
+		it.skip("Should settle multiple bets on a market", async () => {
 			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
 			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
 			const close = 0;

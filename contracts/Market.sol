@@ -109,16 +109,16 @@ contract Market is IMarket, Ownable, ERC721 {
 		return address(_vault);
 	}
 
-	function getExpiry(uint64 id) external view returns (uint256) {
-		return _getExpiry(id);
+	function getExpiry(uint64 index) external view returns (uint256) {
+		return _getExpiry(index);
 	}
 
 	function getMarketTotal(bytes16 marketId) external view returns (uint256) {
 		return _marketTotal[marketId];
 	}
 
-	function _getExpiry(uint64 id) private view returns (uint256) {
-		return _bets[id].payoutDate + timeout;
+	function _getExpiry(uint64 index) private view returns (uint256) {
+		return _bets[index].payoutDate + timeout;
 	}
 
 	function getBetByIndex(uint64 index)
@@ -331,31 +331,31 @@ contract Market is IMarket, Ownable, ERC721 {
 		_payout(index, result);
 	}
 
-	function _payout(uint256 id, bool result) private {
+	function _payout(uint256 index, bool result) private {
 		require(
-			_bets[id].payoutDate < block.timestamp,
+			_bets[index].payoutDate < block.timestamp,
 			"_settle: Payout date not reached"
 		);
 
-        _totalInPlay -= _bets[id].amount;
-        _totalExposure -= _bets[id].payout - _bets[id].amount;
+        _totalInPlay -= _bets[index].amount;
+        _totalExposure -= _bets[index].payout - _bets[index].amount;
         _inplayCount --;
 
         address underlying = _vault.asset();
 
         if (result == true) {
             // Transfer the win to the punter
-            IERC20(underlying).transfer(_bets[id].owner, _bets[id].payout);
+            IERC20(underlying).transfer(_bets[index].owner, _bets[index].payout);
         }
 
         if (result == false) {
             // Transfer the proceeds to the vault, less market margin
-            IERC20(underlying).transfer(address(_vault), _bets[id].payout);
+            IERC20(underlying).transfer(address(_vault), _bets[index].payout);
         }
 
-		_burn(id);
+		_burn(index);
 
-		emit Settled(id, _bets[id].payout, result, _bets[id].owner);
+		emit Settled(index, _bets[index].payout, result, _bets[index].owner);
 	}
 
 	function settleMarket(bytes16 marketId) external {
@@ -410,7 +410,7 @@ contract Market is IMarket, Ownable, ERC721 {
 	);
 
 	event Settled(
-		uint256 id,
+		uint256 index,
 		uint256 payout,
 		bool result,
 		address indexed owner
