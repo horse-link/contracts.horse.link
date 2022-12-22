@@ -745,7 +745,7 @@ describe("Market", () => {
 
 			const end = latestBlock.timestamp + 10000;
 			const marketId = makeMarketId(new Date(), "ABC", "1");
-			const max = 2;
+			const max = 5;
 
 			for (let i = 0; i < max; i++) {
 				console.log("i", i);
@@ -812,7 +812,7 @@ describe("Market", () => {
 			await market.settleMarket(formatBytes16String(marketId));
 
 			inPlayCount = await market.getInPlayCount();
-			// expect(inPlay).to.equal(0);
+			expect(inPlayCount).to.equal(0);
 		});
 	});
 
