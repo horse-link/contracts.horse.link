@@ -290,25 +290,23 @@ contract Market is IMarket, Ownable, ERC721 {
 		// add to the total potential payout for this proposition
 		_potentialPayout[propositionId] += payout;
 
-		console.log(_getCount());
+		uint64 index = _getCount();
+		console.log(index);
 
 		_bets.push(
 			Bet(propositionId, marketId, wager, payout, end, false, _msgSender())
 		);
 
-		console.log(_getCount());
-
-		// use _getCount() to avoid stack too deep
-		_marketBets[marketId].push(_getCount());
-		_mint(_msgSender(), _getCount() - 1);
+		_marketBets[marketId].push(index);
+		_mint(_msgSender(), index);
 
 		_totalInPlay += wager;
 		_totalExposure += (payout - wager);
 		_inplayCount++;
 
-		emit Placed(_getCount() - 1, propositionId, marketId, wager, payout, _msgSender());
+		emit Placed(index, propositionId, marketId, wager, payout, _msgSender());
 
-		return _getCount() - 1;
+		return index;
 	}
 
 	function settle(uint64 index) external {

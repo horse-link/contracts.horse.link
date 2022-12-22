@@ -745,7 +745,7 @@ describe("Market", () => {
 
 			const end = latestBlock.timestamp + 10000;
 			const marketId = makeMarketId(new Date(), "ABC", "1");
-			const max = 1;
+			const max = 2;
 
 			for (let i = 0; i < max; i++) {
 				console.log("i", i);
