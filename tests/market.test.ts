@@ -735,7 +735,7 @@ describe("Market", () => {
 				.withArgs(index, 272727300, true, bob.address);
 		});
 
-		it.skip("Should settle multiple bets on a market", async () => {
+		it.only("Should settle multiple bets on a market", async () => {
 			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
 			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
 			const close = 0;
@@ -745,11 +745,13 @@ describe("Market", () => {
 
 			const end = latestBlock.timestamp + 10000;
 			const marketId = makeMarketId(new Date(), "ABC", "1");
-			const max = 5;
+			const max = 1;
 
-			for (let i = 1; i <= max; i++) {
+			for (let i = 0; i < max; i++) {
+				console.log("i", i);
+
 				const nonce = i.toString();
-				const propositionId = makePropositionId("ABC", i);
+				const propositionId = makePropositionId("ABC", i + 1);
 
 				const betSignature = await signBackMessage(
 					nonce,
@@ -777,9 +779,9 @@ describe("Market", () => {
 				).to.emit(market, "Placed");
 
 				const count = await market.getCount();
-				expect(count).to.equal(i, "There should be more bets");
+				expect(count).to.equal(i + 1, "There should be more bets");
 
-				const bet = await market.getBetByIndex(i - 1);
+				const bet = await market.getBetByIndex(i);
 				expect(bet[0]).to.equal(wager, "Bet amount should be same as wager");
 			}
 

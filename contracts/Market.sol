@@ -290,9 +290,13 @@ contract Market is IMarket, Ownable, ERC721 {
 		// add to the total potential payout for this proposition
 		_potentialPayout[propositionId] += payout;
 
+		console.log(_getCount());
+
 		_bets.push(
 			Bet(propositionId, marketId, wager, payout, end, false, _msgSender())
 		);
+
+		console.log(_getCount());
 
 		// use _getCount() to avoid stack too deep
 		_marketBets[marketId].push(_getCount());
@@ -359,8 +363,9 @@ contract Market is IMarket, Ownable, ERC721 {
 		// uint64[] memory bets = _marketBets[marketId];
 
 		uint256 total = _marketBets[marketId].length;
+		console.log("total", total);
 
-		for (uint64 i = 1; i < total; i++) {
+		for (uint64 i = 0; i < total; i++) {
 			uint64 index = _marketBets[marketId][i];
 
 			console.log("index", index);
