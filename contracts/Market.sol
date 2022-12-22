@@ -358,15 +358,11 @@ contract Market is IMarket, Ownable, ERC721 {
 	}
 
 	function settleMarket(bytes16 marketId) external {
-		// uint64[] memory bets = _marketBets[marketId];
-
-		uint256 total = _marketBets[marketId].length;
-		console.log("total", total);
+		uint64[] memory bets = _marketBets[marketId];
+		uint256 total = bets.length;
 
 		for (uint64 i = 0; i < total; i++) {
-			uint64 index = _marketBets[marketId][i];
-
-			console.log("index", index);
+			uint64 index = bets[i];
 
 			Bet memory bet = _bets[index];
 			if (bet.settled == false) {
