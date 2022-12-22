@@ -557,6 +557,7 @@ describe("Market", () => {
 				method: "evm_setNextBlockTimestamp",
 				params: [end + 7200]
 			});
+
 			expect(await market.settle(index)).to.emit(market, "Settled");
 
 			const vaultBalanceAfter = await underlying.balanceOf(vault.address);
@@ -654,7 +655,10 @@ describe("Market", () => {
 				method: "evm_setNextBlockTimestamp",
 				params: [end + 7200]
 			});
-			expect(await market.settle(index)).to.emit(market, "Settled");
+
+			expect(await market.settle(index))
+				.to.emit(market, "Settled")
+				.withArgs(index, betPayout, true, bob.address);
 
 			const newNftBalance = await market.balanceOf(bob.address);
 			expect(newNftBalance).to.equal(0, "Bob should have no NFTs now");
@@ -723,10 +727,12 @@ describe("Market", () => {
 
 			await hre.network.provider.request({
 				method: "evm_setNextBlockTimestamp",
-				params: [end + 30 * 24 * 60 * 60]
+				params: [end + 31 * 24 * 60 * 60]
 			});
 
-			expect(await market.settle(index)).to.emit(market, "Settled");
+			expect(await market.settle(index))
+				.to.emit(market, "Settled")
+				.withArgs(index, 272727300, true, bob.address);
 		});
 
 		it.skip("Should settle multiple bets on a market", async () => {

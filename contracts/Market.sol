@@ -317,7 +317,7 @@ contract Market is IMarket, Ownable, ERC721 {
 	function _settle(uint64 index) internal {
 		_bets[index].settled = true;
 
-		if (_getExpiry(index) > block.timestamp) {
+		if (block.timestamp > _getExpiry(index)) {
 			_payout(index, true);
 			return;
 		}
@@ -342,27 +342,23 @@ contract Market is IMarket, Ownable, ERC721 {
         _inplayCount --;
 
         address underlying = _vault.asset();
-
-        if (result == true) {
-            // Transfer the win to the punter
-            IERC20(underlying).transfer(_bets[index].owner, _bets[index].payout);
-        }
+		address recipient = _bets[index].owner;
 
         if (result == false) {
             // Transfer the proceeds to the vault, less market margin
-            IERC20(underlying).transfer(address(_vault), _bets[index].payout);
+            recipient = address(_vault);
         }
 
+		IERC20(underlying).transfer(recipient, _bets[index].payout);
 		_burn(index);
 
-		emit Settled(index, _bets[index].payout, result, _bets[index].owner);
+		emit Settled(index, _bets[index].payout, result, recipient);
 	}
 
 	function settleMarket(bytes16 marketId) external {
 		// uint64[] memory bets = _marketBets[marketId];
 
 		uint256 total = _marketBets[marketId].length;
-		console.log("total", total);
 
 		for (uint64 i = 1; i < total; i++) {
 			uint64 index = _marketBets[marketId][i];
@@ -413,6 +409,6 @@ contract Market is IMarket, Ownable, ERC721 {
 		uint256 index,
 		uint256 payout,
 		bool result,
-		address indexed owner
+		address indexed recipient
 	);
 }
