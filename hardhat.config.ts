@@ -17,7 +17,7 @@ const defaultRpcUrl = "http://localhost:8545";
 export default {
 	gasReporter: {
 		enabled: true,
-		currency: "USD",
+		currency: "usd",
 		gasPrice: "auto",
 		showInChart: true
 	},

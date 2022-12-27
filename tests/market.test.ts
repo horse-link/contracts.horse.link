@@ -166,7 +166,7 @@ describe("Market", () => {
 			.deposit(ethers.utils.parseUnits("1000", tokenDecimals), alice.address);
 	});
 
-	it("should have properties set on deploy", async () => {
+	it("Should have properties set on deploy", async () => {
 		const margin = await market.getMargin();
 		expect(margin, "margin should be set").to.equal(MARGIN);
 
