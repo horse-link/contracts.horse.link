@@ -12,9 +12,6 @@ import "./IOracle.sol";
 import "./SignatureLib.sol";
 import "./OddsLib.sol";
 
-// import console log
-import "hardhat/console.sol";
-
 // Put these in the ERC721 contract
 struct Bet {
 	bytes16 propositionId;
@@ -291,7 +288,6 @@ contract Market is IMarket, Ownable, ERC721 {
 		_potentialPayout[propositionId] += payout;
 
 		uint64 index = _getCount();
-		console.log(index);
 
 		_bets.push(
 			Bet(propositionId, marketId, wager, payout, end, false, _msgSender())

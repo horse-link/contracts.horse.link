@@ -418,7 +418,7 @@ describe("Market", () => {
 		);
 	});
 
-	it("should not allow a betting attack", async () => {
+	it("Should not allow a betting attack", async () => {
 		// Whale has some USDT but he wants more
 		const whaleOriginalBalance = await underlying.balanceOf(whale.address);
 
@@ -718,8 +718,8 @@ describe("Market", () => {
 				.to.emit(market, "Placed")
 				.withArgs(
 					index,
-					"0x30313933343841424330315730310000",
-					"0x30313933343841424330310000000000",
+					formatBytes16String(propositionId),
+					formatBytes16String(marketId),
 					wager,
 					272727300,
 					bob.address
@@ -735,7 +735,7 @@ describe("Market", () => {
 				.withArgs(index, 272727300, true, bob.address);
 		});
 
-		it.only("Should settle multiple bets on a market", async () => {
+		it("Should settle multiple bets on a market", async () => {
 			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
 			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
 			const close = 0;
@@ -748,8 +748,6 @@ describe("Market", () => {
 			const max = 5;
 
 			for (let i = 0; i < max; i++) {
-				console.log("i", i);
-
 				const nonce = i.toString();
 				const propositionId = makePropositionId("ABC", i + 1);
 
