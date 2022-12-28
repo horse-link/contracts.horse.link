@@ -815,20 +815,20 @@ describe("Market", () => {
 	});
 
 	describe("ACL", () => {
-		it("should not be a valid signer", async () => {
+		it("Should not be a valid signer", async () => {
 			const newSigner = await ethers.Wallet.createRandom();
 			const isSigner = await market.isSigner(newSigner.address);
 			expect(isSigner).to.equal(false);
 		});
 
-		it("should allow a new signer to be granted by owner", async () => {
+		it("Should allow a new signer to be granted by owner", async () => {
 			const newSigner = await ethers.Wallet.createRandom();
 			await market.connect(owner).grantSigner(newSigner.address);
 			const isSigner = await market.isSigner(newSigner.address);
 			expect(isSigner).to.equal(true);
 		});
 
-		it("should not allow alice to grant a new signer", async () => {
+		it("Should not allow alice to grant a new signer", async () => {
 			const newSigner = await ethers.Wallet.createRandom();
 			await expect(
 				market.connect(alice).grantSigner(newSigner.address)
@@ -848,7 +848,7 @@ describe("Market", () => {
 	});
 
 	describe("Risky Markets", () => {
-		it.skip("should account for market risk coefficient", async () => {
+		it.skip("Should account for market risk coefficient", async () => {
 			const wager = ethers.utils.parseUnits("50", USDT_DECIMALS);
 			const targetOdds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
 			const propositionId = makePropositionId("ABC", 1);

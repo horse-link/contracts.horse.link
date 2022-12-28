@@ -17,9 +17,10 @@ const defaultRpcUrl = "http://localhost:8545";
 export default {
 	gasReporter: {
 		enabled: true,
-		currency: "usd",
-		gasPrice: "auto",
-		showInChart: true
+		currency: "USD",
+		// gasPrice: 21,
+		showInChart: true,
+		coinmarketcap: process.env.COINMARKETCAP_API_KEY
 	},
 	paths: {
 		sources: "./contracts",
