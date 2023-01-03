@@ -25,23 +25,23 @@ def get_oracle() -> str:
     return data['addresses']['marketOracle']
 
 
-def load_market(address: str):
-    with open('./artifacts/contracts/Market.sol/Market.json') as f:
-        data = json.load(f)
-        abi = data['abi']
-        contract = web3.eth.contract(address=address, abi=abi)
-        return contract
+def load_market(address: str, token: str):
+    response = requests.get(f'https://raw.githubusercontent.com/horse-link/contracts.horse.link/main/deployments/goerli/{token}Market.json')
+    data = response.json()
+    abi = data['abi']
+    contract = web3.eth.contract(address=address, abi=abi)
+    return contract
 
 
 def load_oracle():
 
     address = get_oracle()
 
-    with open('./artifacts/contracts/MarketOracle.sol/MarketOracle.json') as f:
-        data = json.load(f)
-        abi = data['abi']
-        contract = web3.eth.contract(address=address, abi=abi)
-        return contract
+    response = requests.get('https://raw.githubusercontent.com/horse-link/contracts.horse.link/main/deployments/goerli/MarketOracle.json')
+    data = response.json()
+    abi = data['abi']
+    contract = web3.eth.contract(address=address, abi=abi)
+    return contract
 
 
 def get_count(contract) -> int:
@@ -156,12 +156,11 @@ def update_market_oracle(market_address, oracle):
             print(e)
 
 
-def settle_market(market_address, oracle):
-    print(f"Settling market {market_address}")
+def settle_market(market, oracle):
+    print(f"Settling market {market}")
     now = datetime.now().timestamp()
     print(f"Current Time: {now}")
 
-    market = load_market(market_address)
     count = get_count(market)
     
     # settle each bet in reverse order
@@ -180,14 +179,14 @@ def settle_market(market_address, oracle):
                 oracle_result = get_result(oracle, market_id)
                     
                 if oracle_result != empty_array:
-                    print(f"Settling bet {i} for market {market_address}")
+                    print(f"Settling bet {i} for market {market}")
 
                     tx_receipt = settle(market, i)
                     print(tx_receipt)
 
             else:
                 print(
-                    f"Bet {i} for market {market_address} is too old or already settled")
+                    f"Bet {i} for market {market} is too old or already settled")
                 break
         except Exception as e:
             print(e)
@@ -201,7 +200,10 @@ def main():
     # settle each market
     for market_address in market_addresses:
         # update_market_oracle(market_address['address'], oracle)
-        settle_market(market_address['address'], oracle)
+
+        # need to get list of tokens
+        market = load_market(market_address['address'], 'Usdt')
+        settle_market(market, oracle)
 
 
 if __name__ == '__main__':
