@@ -110,47 +110,50 @@ def update_market_oracle(market_address, oracle):
     market = load_market(market_address)
     count = get_count(market)
 
-    # settle each bet in reverse order
+    # update each bet in reverse order
     for i in range(count - 1, 0, -1):
-        bet = market.functions.getBetByIndex(i).call()
+        try:
+            bet = market.functions.getBetByIndex(i).call()
 
-        # check if bet is less than 2 hours old
-        if bet[2] > now - 60 * 60 * 24 and bet[3] == False:
+            # check if bet is less than 2 hours old
+            if bet[2] > now - 60 * 60 * 24 and bet[3] == False:
 
-            # check if bet has a result
-            market_id = bet[5][0:11]
-            mid = market_id.decode('ASCII')
-            print(f"Market ID: {mid}")
+                # check if bet has a result
+                market_id = bet[5][0:11]
+                mid = market_id.decode('ASCII')
+                print(f"Market ID: {mid}")
 
-            # Note: this url will change to the results endpoint
-            response = requests.get(
-                f'https://horse.link/api/bets/sign/{mid}')
+                # Note: this url will change to the results endpoint
+                response = requests.get(
+                    f'https://horse.link/api/bets/sign/{mid}')
 
-            result = response.json()
+                result = response.json()
 
-            # check if the bet has a result from the api
-            if response.status_code == 200 and result.get('winningPropositionId') is not None:
+                # check if the bet has a result from the api
+                if response.status_code == 200 and result.get('winningPropositionId') is not None:
 
-                oracle_result = get_result(oracle, market_id)
-                
-                # check if the result is already set on the oracle
-                if oracle_result == empty_array:
-                    # set result on oracle
-                    print(
-                        f"Setting result for market {market_address} to the oracle")
+                    oracle_result = get_result(oracle, market_id)
+                    
+                    # check if the result is already set on the oracle
+                    if oracle_result == empty_array:
+                        # set result on oracle
+                        print(
+                            f"Setting result for market {market_address} to the oracle")
 
-                    signature = response.json()['marketOracleResultSig']
-                    proposition_id = response.json()['winningPropositionId']
+                        signature = response.json()['marketOracleResultSig']
+                        proposition_id = response.json()['winningPropositionId']
 
-                    tx_receipt = set_result(
-                        oracle, market_id, proposition_id, signature)
+                        tx_receipt = set_result(
+                            oracle, market_id, proposition_id, signature)
 
-                    print(tx_receipt)
+                        print(tx_receipt)
 
-        else:
-            print(
-                f"Bet {i} for market {market_address} is too old or already settled")
-            break
+            else:
+                print(
+                    f"Bet {i} for market {market_address} is too old or already settled")
+                break
+        except Exception as e:
+            print(e)
 
 
 def settle_market(market_address, oracle):
@@ -160,31 +163,34 @@ def settle_market(market_address, oracle):
 
     market = load_market(market_address)
     count = get_count(market)
-
+    
     # settle each bet in reverse order
     for i in range(count - 1, 0, -1):
-        bet = market.functions.getBetByIndex(i).call()
+        try:
+            bet = market.functions.getBetByIndex(i).call()
 
-        # check if is ready to
-        if bet[2] > now - 60 * 60 * 24 and bet[3] == False:
+            # check if is ready to
+            if bet[2] > now - 60 * 60 * 24 and bet[3] == False:
 
-            # check if bet has a result
-            market_id = bet[5][0:11]
-            mid = market_id.decode('ASCII')
-            print(f"Market ID: {mid}")
+                # check if bet has a result
+                market_id = bet[5][0:11]
+                mid = market_id.decode('ASCII')
+                print(f"Market ID: {mid}")
 
-            oracle_result = get_result(oracle, market_id)
-                
-            if oracle_result != empty_array:
-                print(f"Settling bet {i} for market {market_address}")
+                oracle_result = get_result(oracle, market_id)
+                    
+                if oracle_result != empty_array:
+                    print(f"Settling bet {i} for market {market_address}")
 
-                tx_receipt = settle(market, i)
-                print(tx_receipt)
+                    tx_receipt = settle(market, i)
+                    print(tx_receipt)
 
-        else:
-            print(
-                f"Bet {i} for market {market_address} is too old or already settled")
-            break
+            else:
+                print(
+                    f"Bet {i} for market {market_address} is too old or already settled")
+                break
+        except Exception as e:
+            print(e)
 
 
 def main():
@@ -194,7 +200,7 @@ def main():
 
     # settle each market
     for market_address in market_addresses:
-        update_market_oracle(market_address['address'], oracle)
+        # update_market_oracle(market_address['address'], oracle)
         settle_market(market_address['address'], oracle)
 
 
