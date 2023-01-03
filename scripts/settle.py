@@ -103,11 +103,10 @@ def settle(market, index):
     return tx_receipt
 
 
-def update_market_oracle(market_address, oracle):
+def update_market_oracle(market, oracle):
     now = datetime.now().timestamp()
     print(f"Current Time: {now}")
 
-    market = load_market(market_address)
     count = get_count(market)
 
     # update each bet in reverse order
@@ -138,7 +137,7 @@ def update_market_oracle(market_address, oracle):
                     if oracle_result == empty_array:
                         # set result on oracle
                         print(
-                            f"Setting result for market {market_address} to the oracle")
+                            f"Setting result for market {market} to the oracle")
 
                         signature = response.json()['marketOracleResultSig']
                         proposition_id = response.json()['winningPropositionId']
@@ -150,7 +149,7 @@ def update_market_oracle(market_address, oracle):
 
             else:
                 print(
-                    f"Bet {i} for market {market_address} is too old or already settled")
+                    f"Bet {i} for market {market} is too old or already settled")
                 break
         except Exception as e:
             print(e)
@@ -199,10 +198,10 @@ def main():
 
     # settle each market
     for market_address in market_addresses:
-        # update_market_oracle(market_address['address'], oracle)
-
         # need to get list of tokens
         market = load_market(market_address['address'], 'Usdt')
+
+        update_market_oracle(market, oracle)
         settle_market(market, oracle)
 
 
