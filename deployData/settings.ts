@@ -28,7 +28,7 @@ export const UnderlyingTokens: TokenDeployDetails[] = [
 	}
 ];
 
-export const RegistryToken = {
+export const Token = {
 	name: "HorseLink",
 	symbol: "HL",
 	decimals: 18

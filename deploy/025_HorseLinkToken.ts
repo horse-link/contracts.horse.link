@@ -3,7 +3,7 @@ import { parseEther } from "ethers/lib/utils";
 import "hardhat-deploy";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { RegistryToken } from "../deployData/settings";
+import { Token } from "../deployData/settings";
 
 /*
  * Deploy a test ERC-20 token to be used as the governance token for a Registry contract
@@ -14,32 +14,37 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	const { deploy, execute } = deployments;
 	const { deployer } = await getNamedAccounts();
 
-	const deployResult = await deploy("RegistryToken", {
+	const deployResult = await deploy("Token", {
 		contract: "Token",
 		from: deployer,
-		args: [
-			RegistryToken.name,
-			RegistryToken.symbol,
-			RegistryToken.decimals ?? 18
-		],
+		args: [Token.name, Token.symbol, Token.decimals ?? 18],
 		log: true,
 		autoMine: true, //If test environment, speed up deployment by mining the block immediately
 		skipIfAlreadyDeployed: false
 	});
 	if (deployResult?.newlyDeployed) {
 		console.log(
-			`RegistryToken deployed at ${deployResult.address} using ${
+			`Token deployed at ${deployResult.address} using ${
 				deployResult.receipt?.gasUsed ?? "?"
 			} gas`
 		);
 		await execute(
-			"RegistryToken",
+			"Token",
 			{ from: deployer, log: true },
 			"mint",
 			deployer,
 			parseEther("1000000000")
 		);
 	}
+
+	// await hre.run("verify:verify", {
+	// 	address: deployResult.address,
+	// 	constructorArguments: [
+	// 		Token.name,
+	// 		Token.symbol,
+	// 		Token.decimals ?? 18
+	// 	],
+	// });
 };
 export default func;
-func.tags = ["registryToken", "token"];
+func.tags = ["token"];

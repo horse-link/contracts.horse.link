@@ -34,15 +34,15 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 	for (const tokenDetails of UnderlyingTokens) {
 		const vaultDeployment = await deployments.get(tokenDetails.vaultName);
-		let tokenAddress: string;
-		if (network.tags.production) {
-			tokenAddress = namedAccounts[tokenDetails.deploymentName];
-		} else {
+		let tokenAddress: string = namedAccounts[tokenDetails.deploymentName];
+
+		if (!network.tags.production) {
 			const tokenDeployment = await deployments.get(
 				tokenDetails.deploymentName
 			);
 			tokenAddress = tokenDeployment.address;
 		}
+
 		const marketDeployment = await deploy(tokenDetails.marketName, {
 			contract: "Market",
 			from: deployer,
@@ -55,6 +55,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 				OddsLib: oddsLib.address
 			}
 		});
+
 		if (marketDeployment?.newlyDeployed) {
 			await execute(
 				tokenDetails.vaultName,
@@ -79,7 +80,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 			}
 		}
 
-		const token: Token = await ethers.getContractAt("Token", tokenAddress);
 		if (!network.tags.production && !network.tags.testing) {
 			const token: Token = await ethers.getContractAt("Token", tokenAddress);
 
@@ -107,6 +107,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 		}
 	}
 };
+
 export default func;
 func.tags = ["market"];
 func.dependencies = ["vault", "oracle"];

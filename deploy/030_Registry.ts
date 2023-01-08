@@ -9,19 +9,22 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	const { deployments, getNamedAccounts } = hre;
 	const { deploy } = deployments;
 	const { deployer } = await getNamedAccounts();
-	const registryTokenDeployment: Deployment = await deployments.get(
-		"RegistryToken"
-	);
+	const tokenDeployment: Deployment = await deployments.get("Token");
 
-	await deploy("Registry", {
+	const deploymentResult = await deploy("Registry", {
 		from: deployer,
-		args: [registryTokenDeployment.address],
+		args: [tokenDeployment.address],
 		log: true,
 		autoMine: true,
 		skipIfAlreadyDeployed: false
 	});
+
+	// await hre.run("verify:verify", {
+	// 	address: deploymentResult.address,
+	// 	constructorArguments: [deploymentResult.address]
+	// });
 };
 
 export default func;
 func.tags = ["registry"];
-func.dependencies = ["registryToken"];
+func.dependencies = ["token"];

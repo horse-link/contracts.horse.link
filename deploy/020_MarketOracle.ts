@@ -26,6 +26,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 		},
 		skipIfAlreadyDeployed: false
 	});
+
 	if (deployResult?.newlyDeployed) {
 		console.log(
 			`contract MarketOracle deployed at ${deployResult.address} using ${

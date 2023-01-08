@@ -42,6 +42,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 				deployResult.address
 			);
 		}
+
+		// await hre.run("verify:verify", {
+		// 	address: deployResult.address,
+		// 	constructorArguments: [tokenAddress, process.env.VAULT_LOCK_TIME]
+		// });
 	}
 };
 export default func;

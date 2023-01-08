@@ -1,11 +1,10 @@
 import { config as dotenvConfig } from "dotenv";
 dotenvConfig();
-//import "@nomiclabs/hardhat-etherscan";
-//import "@nomiclabs/hardhat-waffle";
+
+import "@nomiclabs/hardhat-etherscan";
 import "@openzeppelin/hardhat-upgrades";
 import "@typechain/hardhat";
 import "hardhat-gas-reporter";
-//import "hardhat-contract-sizer";
 import "hardhat-deploy";
 import "@nomiclabs/hardhat-ethers";
 import "solidity-coverage";
@@ -15,10 +14,12 @@ const defaultKey =
 const defaultRpcUrl = "http://localhost:8545";
 
 export default {
+	etherscan: {
+		apiKey: `${process.env.ETHERSCAN_API_KEY}`
+	},
 	gasReporter: {
 		enabled: true,
 		currency: "USD",
-		// gasPrice: 21,
 		showInChart: true,
 		coinmarketcap: process.env.COINMARKETCAP_API_KEY
 	},
@@ -46,11 +47,6 @@ export default {
 			url: process.env.GOERLI_URL || defaultRpcUrl,
 			accounts: [process.env.GOERLI_DEPLOYER || defaultKey],
 			saveDeployment: true,
-			verify: {
-				etherscan: {
-					apiKey: process.env.ETHERSCAN_API_KEY
-				}
-			},
 			gasMultiplier: 2,
 			tags: ["uat"]
 		},
