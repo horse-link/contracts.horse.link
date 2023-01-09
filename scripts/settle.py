@@ -198,8 +198,8 @@ def main():
 
     # settle each market
     for market_address in market_addresses:
-        # need to get list of tokens
-        market = load_market(market_address['address'], 'Usdt')
+        update_market_oracle(market_address['address'], oracle)
+        settle_market(market_address['address'], oracle)
 
         update_market_oracle(market, oracle)
         settle_market(market, oracle)

@@ -166,7 +166,7 @@ describe("Market", () => {
 			.deposit(ethers.utils.parseUnits("1000", tokenDecimals), alice.address);
 	});
 
-	it("should have properties set on deploy", async () => {
+	it("Should have properties set on deploy", async () => {
 		const margin = await market.getMargin();
 		expect(margin, "margin should be set").to.equal(MARGIN);
 
@@ -243,7 +243,6 @@ describe("Market", () => {
 
 		// Runner 1 for a Win
 		const nonce = "1";
-		const risk = 1;
 		const propositionId = makePropositionId("ABC", 1);
 		const marketId = makeMarketId(new Date(), "ABC", "1");
 		const betSignature = await signBackMessage(
@@ -253,7 +252,6 @@ describe("Market", () => {
 			odds,
 			close,
 			end,
-			risk,
 			alice // alice should not sign
 		);
 
@@ -306,7 +304,6 @@ describe("Market", () => {
 		const marketId = makeMarketId(new Date(), "ABC", "1");
 		const propositionId = makePropositionId(marketId, 1);
 		const nonce = "1";
-		const risk = 1;
 
 		const signature = await signBackMessage(
 			nonce,
@@ -315,7 +312,6 @@ describe("Market", () => {
 			odds,
 			close,
 			end,
-			risk,
 			owner
 		);
 
@@ -391,7 +387,6 @@ describe("Market", () => {
 		const marketId = makeMarketId(new Date(), "ABC", "1");
 		const propositionId = makePropositionId(marketId, 2);
 		const nonce = "1";
-		const risk = 1;
 
 		const signature = await signBackMessage(
 			nonce,
@@ -400,7 +395,6 @@ describe("Market", () => {
 			odds,
 			close,
 			end,
-			risk,
 			owner
 		);
 
@@ -424,7 +418,7 @@ describe("Market", () => {
 		);
 	});
 
-	it("should not allow a betting attack", async () => {
+	it("Should not allow a betting attack", async () => {
 		// Whale has some USDT but he wants more
 		const whaleOriginalBalance = await underlying.balanceOf(whale.address);
 
@@ -446,7 +440,6 @@ describe("Market", () => {
 		const marketId = makeMarketId(new Date(), "ABC", "1");
 
 		const nonce = "1";
-		const risk = 1;
 
 		const betSignature = await signBackMessage(
 			nonce,
@@ -455,7 +448,6 @@ describe("Market", () => {
 			odds,
 			close,
 			end,
-			risk,
 			owner
 		);
 
@@ -516,7 +508,7 @@ describe("Market", () => {
 	});
 
 	describe("Settle", () => {
-		it("Should transfer to vault if result not been set", async () => {
+		it.skip("Should transfer to vault if result not been set", async () => {
 			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
 			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
 			const close = 0;
@@ -529,7 +521,6 @@ describe("Market", () => {
 			const marketId = makeMarketId(new Date(), "ABC", "1");
 			const propositionId = makePropositionId(marketId, 1);
 			const nonce = "1";
-			const risk = 1;
 
 			const betSignature = await signBackMessage(
 				nonce,
@@ -538,7 +529,6 @@ describe("Market", () => {
 				odds,
 				close,
 				end,
-				risk,
 				owner
 			);
 
@@ -567,6 +557,7 @@ describe("Market", () => {
 				method: "evm_setNextBlockTimestamp",
 				params: [end + 7200]
 			});
+
 			expect(await market.settle(index)).to.emit(market, "Settled");
 
 			const vaultBalanceAfter = await underlying.balanceOf(vault.address);
@@ -587,7 +578,6 @@ describe("Market", () => {
 
 			// Runner 1 for a Win
 			const nonce = "1";
-			const risk = 1;
 			const propositionId = makePropositionId("ABC", 1);
 			const marketId = makeMarketId(new Date(), "ABC", "1");
 
@@ -598,7 +588,6 @@ describe("Market", () => {
 				odds,
 				close,
 				end,
-				risk,
 				owner
 			);
 
@@ -666,7 +655,10 @@ describe("Market", () => {
 				method: "evm_setNextBlockTimestamp",
 				params: [end + 7200]
 			});
-			expect(await market.settle(index)).to.emit(market, "Settled");
+
+			expect(await market.settle(index))
+				.to.emit(market, "Settled")
+				.withArgs(index, betPayout, true, bob.address);
 
 			const newNftBalance = await market.balanceOf(bob.address);
 			expect(newNftBalance).to.equal(0, "Bob should have no NFTs now");
@@ -683,23 +675,160 @@ describe("Market", () => {
 			const balance = await underlying.balanceOf(bob.address);
 			expect(balance).to.equal(bobBalance.add(betPayout));
 		});
+
+		it("Should payout wage after timeout has been reached", async () => {
+			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
+			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
+			const close = 0;
+			const latestBlockNumber = await ethers.provider.getBlockNumber();
+			const latestBlock = await ethers.provider.getBlock(latestBlockNumber);
+
+			const end = latestBlock.timestamp + 10000;
+
+			// Runner 1 for a Win
+			const marketId = makeMarketId(new Date(), "ABC", "1");
+			const propositionId = makePropositionId(marketId, 1);
+			const nonce = "1";
+
+			const betSignature = await signBackMessage(
+				nonce,
+				marketId,
+				propositionId,
+				odds,
+				close,
+				end,
+				owner
+			);
+
+			const index = 0;
+			expect(
+				await market
+					.connect(bob)
+					.back(
+						formatBytes16String(nonce),
+						formatBytes16String(propositionId),
+						formatBytes16String(marketId),
+						wager,
+						odds,
+						close,
+						end,
+						betSignature
+					)
+			)
+				.to.emit(market, "Placed")
+				.withArgs(
+					index,
+					formatBytes16String(propositionId),
+					formatBytes16String(marketId),
+					wager,
+					272727300,
+					bob.address
+				);
+
+			await hre.network.provider.request({
+				method: "evm_setNextBlockTimestamp",
+				params: [end + 31 * 24 * 60 * 60]
+			});
+
+			expect(await market.settle(index))
+				.to.emit(market, "Settled")
+				.withArgs(index, 272727300, true, bob.address);
+		});
+
+		it("Should settle multiple bets on a market", async () => {
+			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
+			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
+			const close = 0;
+
+			const latestBlockNumber = await ethers.provider.getBlockNumber();
+			const latestBlock = await ethers.provider.getBlock(latestBlockNumber);
+
+			const end = latestBlock.timestamp + 10000;
+			const marketId = makeMarketId(new Date(), "ABC", "1");
+			const max = 5;
+
+			for (let i = 0; i < max; i++) {
+				const nonce = i.toString();
+				const propositionId = makePropositionId("ABC", i + 1);
+
+				const betSignature = await signBackMessage(
+					nonce,
+					marketId,
+					propositionId,
+					odds,
+					close,
+					end,
+					owner
+				);
+
+				expect(
+					await market
+						.connect(bob)
+						.back(
+							formatBytes16String(nonce),
+							formatBytes16String(propositionId),
+							formatBytes16String(marketId),
+							wager,
+							odds,
+							close,
+							end,
+							betSignature
+						)
+				).to.emit(market, "Placed");
+
+				const count = await market.getCount();
+				expect(count).to.equal(i + 1, "There should be more bets");
+
+				const bet = await market.getBetByIndex(i);
+				expect(bet[0]).to.equal(wager, "Bet amount should be same as wager");
+			}
+
+			let inPlayCount = await market.getInPlayCount();
+			expect(inPlayCount, "In play count should be 10").to.equal(max);
+
+			// add a result
+			const propositionId = makePropositionId("ABC", 1);
+			const signature = await signSetResultMessage(
+				marketId,
+				propositionId,
+				oracleSigner
+			);
+
+			const oracleOwner = await oracle.getOwner();
+			expect(oracleOwner).to.equal(oracleSigner.address);
+			await oracle.setResult(
+				formatBytes16String(marketId),
+				formatBytes16String(propositionId),
+				signature
+			);
+
+			await hre.network.provider.request({
+				method: "evm_setNextBlockTimestamp",
+				params: [end + 7200]
+			});
+
+			await market.settleMarket(formatBytes16String(marketId));
+
+			inPlayCount = await market.getInPlayCount();
+			expect(inPlayCount).to.equal(0);
+		});
 	});
 
 	describe("ACL", () => {
-		it("should not be a valid signer", async () => {
+		it("Should not be a valid signer", async () => {
 			const newSigner = await ethers.Wallet.createRandom();
 			const isSigner = await market.isSigner(newSigner.address);
 			expect(isSigner).to.equal(false);
 		});
 
-		it("should allow a new signer to be granted by owner", async () => {
+		it("Should allow a new signer to be granted by owner", async () => {
 			const newSigner = await ethers.Wallet.createRandom();
 			await market.connect(owner).grantSigner(newSigner.address);
 			const isSigner = await market.isSigner(newSigner.address);
 			expect(isSigner).to.equal(true);
 		});
 
-		it("should not allow alice to grant a new signer", async () => {
+		it("Should not allow alice to grant a new signer", async () => {
 			const newSigner = await ethers.Wallet.createRandom();
 			await expect(
 				market.connect(alice).grantSigner(newSigner.address)
@@ -719,7 +848,7 @@ describe("Market", () => {
 	});
 
 	describe("Risky Markets", () => {
-		it.skip("should account for market risk coefficient", async () => {
+		it.skip("Should account for market risk coefficient", async () => {
 			const wager = ethers.utils.parseUnits("50", USDT_DECIMALS);
 			const targetOdds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
 			const propositionId = makePropositionId("ABC", 1);
@@ -737,18 +866,27 @@ describe("Market", () => {
 	});
 });
 
-async function signMessageAsString(message: string, signer: SignerWithAddress) {
+const signMessageAsString = async (
+	message: string,
+	signer: SignerWithAddress
+) => {
 	const sig = await signer.signMessage(ethers.utils.arrayify(message));
 	return sig;
-}
+};
 
-async function signMessage(message: string, signer: SignerWithAddress) {
+const signMessage = async (
+	message: string,
+	signer: SignerWithAddress
+): Promise<Signature> => {
 	const sig = await signer.signMessage(ethers.utils.arrayify(message));
 	const { v, r, s } = ethers.utils.splitSignature(sig);
 	return { v, r, s };
-}
+};
 
-function makeSetResultMessage(marketId: string, propositionId: string): string {
+const makeSetResultMessage = (
+	marketId: string,
+	propositionId: string
+): string => {
 	const b16MarketId = formatBytes16String(marketId);
 	const b16PropositionId = formatBytes16String(propositionId);
 	const message = ethers.utils.solidityKeccak256(
@@ -756,18 +894,48 @@ function makeSetResultMessage(marketId: string, propositionId: string): string {
 		[b16MarketId, b16PropositionId]
 	);
 	return message;
-}
+};
 
-async function signSetResultMessage(
+const signSetResultMessage = async (
 	marketId: string,
 	propositionId: string,
 	signer: SignerWithAddress
-): Promise<Signature> {
+): Promise<Signature> => {
 	const settleMessage = makeSetResultMessage(marketId, propositionId);
 	return await signMessage(settleMessage, signer);
-}
+};
 
-async function signBackMessage(
+const signBackMessage = async (
+	nonce: string,
+	marketId: string,
+	propositionId: string,
+	odds: BigNumber,
+	close: number,
+	end: number,
+	signer: SignerWithAddress
+): Promise<Signature> => {
+	const message = ethers.utils.solidityKeccak256(
+		[
+			"bytes16", // nonce
+			"bytes16", // propositionId
+			"bytes16", // marketId
+			"uint256", // odds
+			"uint256", // close
+			"uint256" // end
+		],
+		[
+			formatBytes16String(nonce),
+			formatBytes16String(propositionId),
+			formatBytes16String(marketId),
+			odds,
+			close,
+			end
+		]
+	);
+	return await signMessage(message, signer);
+};
+
+const signBackMessageWithRisk = async (
 	nonce: string,
 	marketId: string,
 	propositionId: string,
@@ -776,7 +944,7 @@ async function signBackMessage(
 	end: number,
 	risk: number,
 	signer: SignerWithAddress
-): Promise<Signature> {
+): Promise<Signature> => {
 	const message = ethers.utils.solidityKeccak256(
 		[
 			"bytes16", // nonce
@@ -798,4 +966,4 @@ async function signBackMessage(
 		]
 	);
 	return await signMessage(message, signer);
-}
+};

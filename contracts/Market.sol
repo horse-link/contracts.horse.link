@@ -33,7 +33,7 @@ contract Market is IMarket, Ownable, ERC721 {
 	Bet[] private _bets;
 
 	// MarketID => Bets Indexes
-	mapping(bytes16 => uint256[]) private _marketBets;
+	mapping(bytes16 => uint64[]) private _marketBets;
 
 	// MarketID => amount bet
 	mapping(bytes16 => uint256) private _marketTotal;
@@ -86,12 +86,12 @@ contract Market is IMarket, Ownable, ERC721 {
 		return _inplayCount;
 	}
 
-	function getCount() external view returns (uint256) {
+	function getCount() external view returns (uint64) {
 		return _getCount();
 	}
 
-	function _getCount() private view returns (uint256) {
-		return _bets.length;
+	function _getCount() private view returns (uint64) {
+		return uint64(_bets.length);
 	}
 
 	function getTotalExposure() external view returns (uint256) {
@@ -106,19 +106,19 @@ contract Market is IMarket, Ownable, ERC721 {
 		return address(_vault);
 	}
 
-	function getExpiry(uint64 id) external view returns (uint256) {
-		return _getExpiry(id);
+	function getExpiry(uint64 index) external view returns (uint256) {
+		return _getExpiry(index);
 	}
 
 	function getMarketTotal(bytes16 marketId) external view returns (uint256) {
 		return _marketTotal[marketId];
 	}
 
-	function _getExpiry(uint64 id) private view returns (uint256) {
-		return _bets[id].payoutDate + timeout;
+	function _getExpiry(uint64 index) private view returns (uint256) {
+		return _bets[index].payoutDate + timeout;
 	}
 
-	function getBetByIndex(uint256 index)
+	function getBetByIndex(uint64 index)
 		external
 		view
 		returns (
@@ -134,7 +134,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		return _getBet(index);
 	}
 
-	function _getBet(uint256 index)
+	function _getBet(uint64 index)
 		private
 		view
 		returns (
@@ -167,7 +167,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		uint256 wager,
 		uint256 odds,
 		bytes16 propositionId,
-		bytes16 marketId,
+		bytes16 marketId
 	) internal view returns (uint256) {
 		if (wager <= 1 || odds <= 1) return 1;
 
@@ -207,7 +207,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		uint256 wager,
 		uint256 odds
 	) external view returns (uint256) {
-		return _getPayout(propositionId, marketId, wager, odds, 1);
+		return _getPayout(propositionId, marketId, wager, odds);
 	}
 
 	function _getPayout(
@@ -247,27 +247,22 @@ contract Market is IMarket, Ownable, ERC721 {
 		assert(payout > 0);
 
 		return _back(
-			nonce,
 			propositionId,
 			marketId,
 			wager,
-			odds,
 			close,
 			end,
-			signature
+			payout
 		);
 	}
 
 	function _back(
-		bytes16 nonce,
 		bytes16 propositionId,
 		bytes16 marketId,
 		uint256 wager,
-		uint256 odds,
 		uint256 close,
 		uint256 end,
 		uint256 payout
-		SignatureLib.Signature calldata signature
 	) internal returns (uint256) {
 		require(
 			end > block.timestamp && block.timestamp > close,
@@ -292,59 +287,84 @@ contract Market is IMarket, Ownable, ERC721 {
 		// add to the total potential payout for this proposition
 		_potentialPayout[propositionId] += payout;
 
+		uint64 index = _getCount();
+
 		_bets.push(
 			Bet(propositionId, marketId, wager, payout, end, false, _msgSender())
 		);
 
-		// use _getCount() to avoid stack too deep
-		_marketBets[marketId].push(_getCount());
-		_mint(_msgSender(), _getCount() - 1);
+		_marketBets[marketId].push(index);
+		_mint(_msgSender(), index);
 
 		_totalInPlay += wager;
 		_totalExposure += (payout - wager);
 		_inplayCount++;
 
-		emit Placed(_getCount() - 1, propositionId, marketId, wager, payout, _msgSender());
+		emit Placed(index, propositionId, marketId, wager, payout, _msgSender());
 
-		return _getCount();
+		return index;
 	}
 
-	function settle(uint256 index) external {
+	function settle(uint64 index) external {
 		Bet memory bet = _bets[index];
 		require(bet.settled == false, "settle: Bet has already settled");
+
+		_settle(index);
+	}
+
+	function _settle(uint64 index) internal {
+		_bets[index].settled = true;
+
+		if (block.timestamp > _getExpiry(index)) {
+			_payout(index, true);
+			return;
+		}
+
+		Bet memory bet = _bets[index];
 		bool result = IOracle(_oracle).checkResult(
 			bet.marketId,
 			bet.propositionId
 		);
-		_settle(index, result);
+
+		_payout(index, result);
 	}
 
-	function _settle(uint256 id, bool result) private {
+	function _payout(uint256 index, bool result) private {
 		require(
-			_bets[id].payoutDate < block.timestamp,
+			_bets[index].payoutDate < block.timestamp,
 			"_settle: Payout date not reached"
 		);
 
-        _bets[id].settled = true;
-        _totalInPlay -= _bets[id].amount;
-        _totalExposure -= _bets[id].payout - _bets[id].amount;
+        _totalInPlay -= _bets[index].amount;
+        _totalExposure -= _bets[index].payout - _bets[index].amount;
         _inplayCount --;
 
         address underlying = _vault.asset();
-
-        if (result == true) {
-            // Transfer the win to the punter
-            IERC20(underlying).transfer(_bets[id].owner, _bets[id].payout);
-        }
+		address recipient = _bets[index].owner;
 
         if (result == false) {
             // Transfer the proceeds to the vault, less market margin
-            IERC20(underlying).transfer(address(_vault), _bets[id].payout);
+            recipient = address(_vault);
         }
 
-		_burn(id);
+		IERC20(underlying).transfer(recipient, _bets[index].payout);
+		_burn(index);
 
-		emit Settled(id, _bets[id].payout, result, _bets[id].owner);
+		emit Settled(index, _bets[index].payout, result, recipient);
+	}
+
+	function settleMarket(bytes16 marketId) external {
+		uint64[] memory bets = _marketBets[marketId];
+		uint256 total = bets.length;
+
+		for (uint64 i = 0; i < total; i++) {
+			uint64 index = bets[i];
+
+			Bet memory bet = _bets[index];
+			if (bet.settled == false) {
+				_settle(index);
+			}
+		}
 	}
 
 	function grantSigner(address signer) external onlyOwner {
@@ -361,11 +381,11 @@ contract Market is IMarket, Ownable, ERC721 {
 		return _isSigner(signer);
 	}
 
-	function _isSigner(address signer) private view returns (bool) {
+	function _isSigner(address signer) internal view returns (bool) {
 		return _signers[signer];
 	}
 
-	function isValidSignature(bytes32 messageHash, SignatureLib.Signature calldata signature) private view returns (bool) {
+	function isValidSignature(bytes32 messageHash, SignatureLib.Signature calldata signature) internal view returns (bool) {
 		address signer = SignatureLib.recoverSigner(messageHash, signature);
 		assert(signer != address(0));
 		return _isSigner(signer);
@@ -381,9 +401,9 @@ contract Market is IMarket, Ownable, ERC721 {
 	);
 
 	event Settled(
-		uint256 id,
+		uint256 index,
 		uint256 payout,
 		bool result,
-		address indexed owner
+		address indexed recipient
 	);
 }
