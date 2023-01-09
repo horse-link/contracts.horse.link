@@ -53,4 +53,5 @@ interface IMarket {
 	) external returns (uint256);
 
 	function settle(uint64 index) external;
+	function settleMarket(bytes16 marketId) external;
 }
