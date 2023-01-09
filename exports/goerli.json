@@ -387,7 +387,7 @@
       ]
     },
     "DaiMarket": {
-      "address": "0x09934dAD8e442CD5f370646559225556380f669E",
+      "address": "0x93D8B52E7662Ca04878952874182Ce1a02943712",
       "abi": [
         {
           "inputs": [
@@ -1283,7 +1283,7 @@
       ]
     },
     "DaiVault": {
-      "address": "0x775D911a40B947896753BBF8bA5aa745e95bAD5B",
+      "address": "0x6d07FfbE3901b11AC1ac7D7EaAFDc8bF3a8591B3",
       "abi": [
         {
           "inputs": [
@@ -2319,7 +2319,7 @@
       ]
     },
     "Registry": {
-      "address": "0x9ce49De865D7D97ae5F24073De05eAc6253346E0",
+      "address": "0x633cbfd50f9b9875fa1daadc821b8ed5ae2e7c5f",
       "abi": [
         {
           "inputs": [
@@ -3291,7 +3291,7 @@
       ]
     },
     "UsdtMarket": {
-      "address": "0x1Be1cf11cb82Cc4851CE31D03915dDd515757d42",
+      "address": "0x1166ea50982d11ec567bDc594Be4c9A5DbD3A68D",
       "abi": [
         {
           "inputs": [
@@ -4187,7 +4187,7 @@
       ]
     },
     "UsdtVault": {
-      "address": "0x60084681A437e7624bE33D2336832c8C39Ce4033",
+      "address": "0x8b631095747da934067964db3927e1e845ef76a2",
       "abi": [
         {
           "inputs": [
