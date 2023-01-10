@@ -4,12 +4,11 @@ dotenvConfig();
 //import "@nomiclabs/hardhat-waffle";
 import "@openzeppelin/hardhat-upgrades";
 import "@typechain/hardhat";
+import "hardhat-gas-reporter";
 //import "hardhat-contract-sizer";
 import "hardhat-deploy";
 import "@nomiclabs/hardhat-ethers";
-//import "hardhat-gas-reporter";
 import "solidity-coverage";
-//import "./scripts/tasks";
 
 const defaultKey =
 	"0000000000000000000000000000000000000000000000000000000000000001";
@@ -18,9 +17,10 @@ const defaultRpcUrl = "http://localhost:8545";
 export default {
 	gasReporter: {
 		enabled: true,
-		currency: "ETH",
-		gasPrice: "auto",
-		showInChart: true
+		currency: "USD",
+		// gasPrice: 21,
+		showInChart: true,
+		coinmarketcap: process.env.COINMARKETCAP_API_KEY
 	},
 	paths: {
 		sources: "./contracts",

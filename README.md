@@ -26,7 +26,7 @@ There are 5 main types of contracts along with supporting solidity libraries, wh
 
 ### Token
 
-Horse Link issues 100m standard ERC20 tokens HL / Horse Link for its members to be used in the future as a DAO governance token, distribution of protocol fees and other member perks.
+Horse Link issues 100 million standard ERC20 tokens HL / Horse Link for its members to be used in the future as a DAO governance token, distribution of protocol fees and other member perks.
 
 ### Vaults
 
