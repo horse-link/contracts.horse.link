@@ -180,8 +180,8 @@ Greedy markets draw 100% of the lay collateral from the Vault. This is favourabl
 ```text
 Given calculated odds are 3:1,
 And the Vault has 10,000 assets,
-And the Market balance is 250 assets,
-When a bet of 100 assets is placed,
+And the Market balance is 250 assets
+When a bet of 100 assets is placed
 Then the Vault lends 300 assets to the Market
 ```
 
@@ -193,7 +193,8 @@ Markets that are non greedy use the collateral under management first, instead o
 Given calculated odds are 3:1,
 And the Vault has 10,000 assets,
 And the Market has 250 assets,
-When a bet of 100 assets is placed,
+And the runner being bet on has 0 existing bets
+When a bet of 100 assets is placed
 Then the Vault lends 50 assets to the Market
 ```
 
