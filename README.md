@@ -162,7 +162,7 @@ where
 
 ```text
 o = Offered odds
-O = TAB fixed odds
+O = Market fixed odds
 v = Vault total assets
 w = Wager amount
 sm = Sum of all wagers on that market
