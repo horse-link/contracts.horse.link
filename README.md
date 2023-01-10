@@ -178,11 +178,11 @@ Markets can either be "Greedy" or "Not Greedy", but for v1.0 we assume Greedy Ma
 Greedy markets draw 100% of the lay collateral from the Vault. This is favourable for Vault owners, as they get maximum dividends for collateral they lend.
 
 ```text
-Given calculated odds are 2:1,
+Given calculated odds are 3:1,
 And the Vault has 10,000 assets,
-And the Market balance is 100 assets,
+And the Market balance is 250 assets,
 When a bet of 100 assets is placed,
-Then the Vault lends 200 assets to the Market
+Then the Vault lends 300 assets to the Market
 ```
 
 ### Non Greedy Markets
@@ -190,10 +190,11 @@ Then the Vault lends 200 assets to the Market
 Markets that are non greedy use the collateral under management first, instead of transferring assets from the connected Vault.
 
 ```text
-Given calculated odds are 2:1,
-And the Market has 100 assets,
+Given calculated odds are 3:1,
+And the Vault has 10,000 assets,
+And the Market has 250 assets,
 When a bet of 100 assets is placed,
-Then the Vault lends 100 assets to the Market
+Then the Vault lends 50 assets to the Market
 ```
 
 ### Registry
