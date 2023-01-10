@@ -200,11 +200,11 @@ Then the Vault lends 50 assets to the Market
 
 ### Registry
 
-The registry contract is a mapping of Vaults and Markets used by the protocol. This allows a single source of truth for calling applications and smart contracts. It also has the ability to only allow token holds to modify the contracts it registers.
+The registry contract is a mapping of Vaults and Markets used by the protocol. This allows a single source of truth for calling applications and smart contracts. It also has the ability to only allow token holders to modify the contracts it registers.
 
 ### Oracle
 
-The `MarketOracle.sol` contract allows authorised account to set results based on the Market ID and the Proposition ID. The results are either set from a python script `settle.py` in the event of a losing Proposition or by the front end should the user win and claim their profits. The market owner is responsible for providing a signed result after the event.
+The `MarketOracle.sol` contract allows authorised accounts to set results based on the Market ID and the Proposition ID. The results are either set from a python script `settle.py` in the event of a losing Proposition or by the front end should the user win and claim their profits. The market owner is responsible for providing a signed result after the event.
 
 ## Configuration
 
