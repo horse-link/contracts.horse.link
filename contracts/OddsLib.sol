@@ -3,7 +3,6 @@ pragma solidity =0.8.10;
 
 import "@openzeppelin/contracts/utils/math/Math.sol";
 
-
 library OddsLib {
 
     uint256 public constant PRECISION = 1e6;
