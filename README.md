@@ -100,13 +100,13 @@ Alice's shares are burnt, reducing her share balance to 0. The Vault will have 1
 
 5. Vault settles Carol's bet and has now 3700 DAI in total assets, while the total shares are still 1000 DAI.
 
-| User                                    | Action  | Amount   | Shares | Total Assets | Total Shares |
-| --------------------------------------- | ------- | -------- | ------ | ------------ | ------------ |
-| Alice                                   | Deposit | 1000 DAI | 1000   | 1000 DAI     | 1000         |
-| Bob                                     | Deposit | 1000 DAI | 1000   | 2000 DAI     | 2000         |
-| Vault (on Carol's behalf)               | Lend    | 1800 DAI | 0      | 200 DAI      | 2000         |
-| Alice                                   | Redeem  | 100 DAI  | (1000) | 100 DAI      | 1000         |
-| Market (profit from Carol's losing bet) | Settle  | 3600 DAI | 0      | 3700 DAI     | 1000         |
+| User                                     | Action  | Amount   | Shares | Total Assets | Total Shares |
+| ---------------------------------------- | ------- | -------- | ------ | ------------ | ------------ |
+| Alice                                    | Deposit | 1000 DAI | 1000   | 1000 DAI     | 1000         |
+| Bob                                      | Deposit | 1000 DAI | 1000   | 2000 DAI     | 2000         |
+| Vault (on Carol's behalf)                | Lend    | 1800 DAI | 0      | 200 DAI      | 2000         |
+| Alice                                    | Redeem  | 100 DAI  | (1000) | 100 DAI      | 1000         |
+| Market (revenue from Carol's losing bet) | Settle  | 3600 DAI | 0      | 3700 DAI     | 1000         |
 
 Carol's bet is now settled and the Vault has an exposure of 0 DAI and has made 1800 DAI on the losing bet. The profit and exposure are returned to the vault. The total assets in the Vault are now 3700 DAI.
 
@@ -118,6 +118,25 @@ The perfomance of the Vault is the ratio of the shares to the assets. In the abo
 
 A donation attack is when a user deposits a large amount of assets into the Vault without incrementing the balance from the deposit function, skewing the ratio of assets to shares. https://forum.openzeppelin.com/t/erc4626-vault-implementation-for-totalassets-in-base-contract/29474. In our use case, we discuss the possibility that an attacker could attempt to place a large bet, draining the vault, then deposit a large amount of assets into the Vault to skew the ratio of assets to shares.
 
+1. Assuming Alice and Bob have deposited into the vault as shown in vault example above
+
+| User  | Action  | Amount   | Shares | Total Assets | Total Shares |
+| ----- | ------- | -------- | ------ | ------------ | ------------ |
+| Alice | Deposit | 1000 DAI | 1000   | 1000 DAI     | 1000         |
+| Bob   | Deposit | 1000 DAI | 1000   | 2000 DAI     | 2000         |
+
+2. Attacker makes a 10 DAI bet on runner with odds of 180:1
+
+| User                         | Action  | Amount   | Shares | Total Assets | Total Shares |
+| ---------------------------- | ------- | -------- | ------ | ------------ | ------------ |
+| Alice                        | Deposit | 1000 DAI | 1000   | 1000 DAI     | 1000         |
+| Bob                          | Deposit | 1000 DAI | 1000   | 2000 DAI     | 2000         |
+| Vault (on attacker's behalf) | Lend    | 1800 DAI | 0      | 200 DAI      | 2000         |
+
+Vault lends 1800 DAI to the market (to cover the exposure for the attackers's bet) leaving 200 DAI of total assets. Given the Vault now has 200 DAI in total assets but still 2000 shares, the performance of the Vault is 200 / 2000 = 0.1 devaluing each share making them comparitively cheap for the attacker to aquire.
+
+3. Attacker deposits 10,000 DAI and receives 100,000 shares
+
 | User                         | Action  | Amount    | Shares | Total Assets | Total Shares |
 | ---------------------------- | ------- | --------- | ------ | ------------ | ------------ |
 | Alice                        | Deposit | 1000 DAI  | 1000   | 1000 DAI     | 1000         |
@@ -125,30 +144,38 @@ A donation attack is when a user deposits a large amount of assets into the Vaul
 | Vault (on attacker's behalf) | Lend    | 1800 DAI  | 0      | 200 DAI      | 2000         |
 | Attacker                     | Deposit | 10000 DAI | 100000 | 10200 DAI    | 102000       |
 
-In the above example, the Vault had 200 DAI in total assets and 2000 shares. The performance of the Vault is 200 / 2000 = 0.1 devaluing each share making them comparitively cheap for the attacker.
-
 ```text
 shares received = 2000 / 200 * 10000 = 100000
 ```
 
-The attacker loses their bet and it is settled, casuing the market to return the profit and exposure.
+4. The attacker loses their bet and it is settled, casuing the market to return the profit and exposure.
 
-| User                                       | Action  | Amount       | Shares   | Total Assets | Total Shares |
-| ------------------------------------------ | ------- | ------------ | -------- | ------------ | ------------ |
-| Alice                                      | Deposit | 1000 DAI     | 1000     | 1000 DAI     | 1000         |
-| Bob                                        | Deposit | 1000 DAI     | 1000     | 2000 DAI     | 2000         |
-| Vault (on attacker's behalf)               | Lend    | 1800 DAI     | 0        | 200 DAI      | 2000         |
-| Attacker                                   | Deposit | 10000 DAI    | 100000   | 10200 DAI    | 102000       |
-| Market (profit from Attacker's losing bet) | Settle  | 3600 DAI     | 0        | 13800 DAI    | 102000       |
-| Attacker                                   | Redeem  | 13529.41 DAI | (100000) | 270.59 DAI   | 2000         |
+| User                                        | Action  | Amount    | Shares | Total Assets | Total Shares |
+| ------------------------------------------- | ------- | --------- | ------ | ------------ | ------------ |
+| Alice                                       | Deposit | 1000 DAI  | 1000   | 1000 DAI     | 1000         |
+| Bob                                         | Deposit | 1000 DAI  | 1000   | 2000 DAI     | 2000         |
+| Vault (on attacker's behalf)                | Lend    | 1800 DAI  | 0      | 200 DAI      | 2000         |
+| Attacker                                    | Deposit | 10000 DAI | 100000 | 10200 DAI    | 102000       |
+| Market (revenue from Attacker's losing bet) | Settle  | 1810 DAI  | 0      | 12010 DAI    | 102000       |
 
-The attacker redeems their shares for 13529.41 DAI:
+5. The attacker redeems their shares for 11774.51 DAI
+
+| User                                        | Action  | Amount       | Shares   | Total Assets | Total Shares |
+| ------------------------------------------- | ------- | ------------ | -------- | ------------ | ------------ |
+| Alice                                       | Deposit | 1000 DAI     | 1000     | 1000 DAI     | 1000         |
+| Bob                                         | Deposit | 1000 DAI     | 1000     | 2000 DAI     | 2000         |
+| Vault (on attacker's behalf)                | Lend    | 1800 DAI     | 0        | 200 DAI      | 2000         |
+| Attacker                                    | Deposit | 10000 DAI    | 100000   | 10200 DAI    | 102000       |
+| Market (revenue from Attacker's losing bet) | Settle  | 1810 DAI     | 0        | 12010 DAI    | 102000       |
+| Attacker                                    | Redeem  | 11774.51 DAI | (100000) | 235.49 DAI   | 2000         |
 
 ```text
-share = 13800 * 100000 / 102000 = 13529.41
+share = 12010 * 100000 / 102000 = 11774.51
 ```
 
-The total assets in the vault is now 270.59 DAI giving a performance of: 270.59 DAI / 2000 shares \* 100 = 13.52% (0.14 DAI per share) compared to before the attack when the performance was 2000 DAI / 2000 shares \* 100 = 100% (1 DAI per share).
+The attacker spent 10 DAI to place the bet, 10000 depositing into vault and was able to withdraw 11774.51 resulting in a profit of 1764.51 DAI.
+
+The total assets in the vault is now 235.49 DAI giving a performance of: 235.49 DAI / 2000 shares \* 100 = 11.77% (0.12 DAI per share) compared to before the attack when the performance was 2000 DAI / 2000 shares \* 100 = 100% (1 DAI per share).
 
 ### Market
 
