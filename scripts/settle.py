@@ -42,11 +42,6 @@ def load_oracle():
         return contract
 
 
-def get_count(contract):
-    count = contract.functions.getCount().call()
-    return count
-
-
 def get_result(oracle, marketId):
     result = oracle.functions.getResult(marketId).call()
     return result
@@ -106,13 +101,13 @@ def main():
     # settle each market
     for market_address in market_addresses:
         market = load_market(market_address['address'])
-        count = get_count(market)
+        count = market.functions.getCount().call()
 
         # settle each bet in reverse order
         for i in range(count - 1, 0, -1):
             bet = market.functions.getBetByIndex(i).call()
 
-            # check if bet is less than 2 hours old
+            # check if bet is less than 24 hours old
             if bet[2] > now - 60 * 60 * 24:
 
                 # check if bet is settled via the api
@@ -120,36 +115,38 @@ def main():
                 mid = market_id.decode('ASCII')
                 print(f"Market ID: {mid}")
 
-                # Note: this url will change to the results endpoint
-                response = requests.get(f'https://horse.link/api/bets/sign/{mid}')
-                # print(response.json())
-                print(response.status_code)
-                print(response.json()['marketResultAdded'])
+                if bet[3] == False:
 
-                if response.status_code == 200 and response.json()['marketResultAdded'] == False:
-                    print(f"Adding result for bet {i} to the oracle")
+                    # Note: this url will change to the results endpoint
+                    response = requests.get(f'https://horse.link/api/bets/sign/{mid}')
 
-                settled = bet[3]
-                if response.status_code == 200 and bet[3] == False:
+                    # If we have a result from the API and the oracle has not already added the result
+                    if response.status_code == 200 and response.json()['marketResultAdded'] == False:
+                        # set result on oracle
+                        print(f"Adding result for bet {i} to the oracle")
+                        signature = response.json()['marketOracleResultSig']
+                        proposition_id = response.json()['winningPropositionId']
+                        tx_receipt = set_result(
+                            oracle, market_id, proposition_id, signature)
 
-                    # set result on oracle
-                    signature = response.json()['marketOracleResultSig']
-                    proposition_id = response.json()['winningPropositionId']
-                    tx_receipt = set_result(
-                        oracle, market_id, proposition_id, signature)
+                        print(tx_receipt)
 
-                    print(tx_receipt)
+                    # If we have a result from the API and the oracle has already added the result
+                    if response.status_code == 200 and response.json()['marketResultAdded'] == True:
+                        print(f"Settling bet {i} for market {market_address['address']}")
 
-                    # print(f"Settling bet {i} for market {market_address['address']}")
+                        # get result from oracle
+                        signature = get_result(oracle, market_id)
 
-                    # # get result from oracle
-                    # signature = get_result(oracle, market_id)
-
-                    # tx_receipt = settle(market, i, signature)
-                    # print(tx_receipt)
+                        tx_receipt = settle(market, i, signature)
+                        print(tx_receipt)
+                    else:
+                        print(
+                            f"Bet {i} for market {market_address['address']} already settled or result not added")
                 else:
                     print(
                         f"Bet {i} for market {market_address['address']} already settled")
+
             else:
                 print(f"Bet {i} for market {market_address['address']} is too old")
                 break
