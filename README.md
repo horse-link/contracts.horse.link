@@ -214,7 +214,7 @@ Then the Vault lends 300 assets to the Market
 
 #### Non Greedy Markets
 
-Markets that are non greedy use the collateral under management first, instead of transferring assets from the connected Vault.
+Markets that are non greedy use the collateral under management first, instead of borrowing assets from the connected Vault.
 
 ```text
 Given calculated odds are 3:1,
