@@ -212,7 +212,7 @@ When a bet of 100 assets is placed
 Then the Vault lends 300 assets to the Market
 ```
 
-### Non Greedy Markets
+#### Non Greedy Markets
 
 Markets that are non greedy use the collateral under management first, instead of transferring assets from the connected Vault.
 
