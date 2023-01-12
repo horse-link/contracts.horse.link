@@ -69,7 +69,7 @@ def set_result(oracle, marketId, propositionId, signature):
     return tx_receipt
 
 
-def settle(market, index, signature):
+def settle(index):
     account_from = {
         'private_key': os.getenv('PRIVATE_KEY'),
         'address': '0x155c21c846b68121ca59879B3CCB5194F5Ae115E',
@@ -115,15 +115,20 @@ def main():
                 mid = market_id.decode('ASCII')
                 print(f"Market ID: {mid}")
 
+                # check if bet is settled
                 if bet[3] == False:
 
-                    # Note: this url will change to the results endpoint
+                    # check if result has been added to the oracle
+                    result = get_result(oracle, market_id)
+
+                    # call api to get result
                     response = requests.get(f'https://horse.link/api/bets/sign/{mid}')
 
                     # If we have a result from the API and the oracle has not already added the result
-                    if response.status_code == 200 and response.json()['marketResultAdded'] == False:
+                    if response.status_code == 200 and result == False:
                         # set result on oracle
                         print(f"Adding result for bet {i} to the oracle")
+
                         signature = response.json()['marketOracleResultSig']
                         proposition_id = response.json()['winningPropositionId']
                         tx_receipt = set_result(
@@ -132,13 +137,10 @@ def main():
                         print(tx_receipt)
 
                     # If we have a result from the API and the oracle has already added the result
-                    if response.status_code == 200 and response.json()['marketResultAdded'] == True:
+                    if response.status_code == 200 and result == True:
                         print(f"Settling bet {i} for market {market_address['address']}")
 
-                        # get result from oracle
-                        signature = get_result(oracle, market_id)
-
-                        tx_receipt = settle(market, i, signature)
+                        tx_receipt = settle(i)
                         print(tx_receipt)
                     else:
                         print(
