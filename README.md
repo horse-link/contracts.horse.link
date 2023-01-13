@@ -61,7 +61,7 @@ So when Bob deposits 1000 DAI they receive 1000 shares:
 shares received = 1000 / 1000 * 1000 = 1000
 ```
 
-The Vault is now holding 2000 DAI in "totalAssets". If Alice withdraws 500 shares, she will receive 500 DAI. Now, let's say Carol places a bet of 1800 DAI on a market that is backed by the Vault at 1:1. The Vault will lend 1800 DAI to the market. 200 DAI remain in the vault and it will have a total exposure of 1800 DAI.
+The Vault is now holding 2000 DAI in "totalAssets". If Alice withdraws 500 shares, she will receive 500 DAI. Now, let's say Carol places a bet of 1800 DAI on a market that is backed by the Vault at 1:1. The Vault will lend 1800 DAI to the market. 200 DAI remain in the Vault and it will have a total exposure of 1800 DAI.
 
 3. Carol places bet of 1800 DAI at 1:1 odds
 
@@ -108,7 +108,7 @@ Alice's shares are burnt, reducing her share balance to 0. The Vault will have 1
 | Alice                                    | Redeem  | 100 DAI  | (1000) | 100 DAI      | 1000         |
 | Market (revenue from Carol's losing bet) | Settle  | 3600 DAI | 0      | 3700 DAI     | 1000         |
 
-Carol's bet is now settled and the Vault has an exposure of 0 DAI and has made 1800 DAI on the losing bet. The profit and exposure are returned to the vault. The total assets in the Vault are now 3700 DAI.
+Carol's bet is now settled and the Vault has an exposure of 0 DAI and has made 1800 DAI on the losing bet. The profit and exposure are returned to the Vault. The total assets in the Vault are now 3700 DAI.
 
 If the bet was a winning bet, the market pays out the winning proposition. The performance of the Vault would be low, as the bettor has won assets from the Market, which will now not be returned to the Vault.
 
@@ -116,9 +116,9 @@ The perfomance of the Vault is the ratio of the shares to the assets. In the abo
 
 #### Analysing a donation attack
 
-A donation attack is when a user deposits a large amount of assets into the Vault without incrementing the balance from the deposit function, skewing the ratio of assets to shares. https://forum.openzeppelin.com/t/erc4626-vault-implementation-for-totalassets-in-base-contract/29474. In our use case, we discuss the possibility that an attacker could attempt to place a large bet, draining the vault, then deposit a large amount of assets into the Vault to skew the ratio of assets to shares.
+A donation attack is when a user deposits a large amount of assets into the Vault without incrementing the balance from the deposit function, skewing the ratio of assets to shares. https://forum.openzeppelin.com/t/erc4626-vault-implementation-for-totalassets-in-base-contract/29474. In our use case, we discuss the possibility that an attacker could attempt to place a large bet, draining the Vault, then deposit a large amount of assets into the Vault to skew the ratio of assets to shares.
 
-1. Assuming Alice and Bob have deposited into the vault as shown in vault example above
+1. Assuming Alice and Bob have deposited into the Vault as shown in Vault example above
 
 | User  | Action  | Amount   | Shares | Total Assets | Total Shares |
 | ----- | ------- | -------- | ------ | ------------ | ------------ |
@@ -133,7 +133,7 @@ A donation attack is when a user deposits a large amount of assets into the Vaul
 | Bob                          | Deposit | 1000 DAI | 1000   | 2000 DAI     | 2000         |
 | Vault (on attacker's behalf) | Lend    | 1800 DAI | 0      | 200 DAI      | 2000         |
 
-Vault lends 1800 DAI to the market (to cover the exposure for the attackers's bet) leaving 200 DAI of total assets. Given the Vault now has 200 DAI in total assets but still 2000 shares, the performance of the Vault is 200 / 2000 = 0.1 devaluing each share making them comparitively cheap for the attacker to aquire.
+Vault lends 1800 DAI to the market (to cover the exposure for the attackers's bet) leaving 200 DAI of total assets. Given the Vault now has 200 DAI in total assets but still 2000 shares, the performance of the Vault is 200 / 2000 = 0.1 devaluing each share making them comparitively cheap for the attacker to acquire.
 
 3. Attacker deposits 10,000 DAI and receives 100,000 shares
 
@@ -148,7 +148,7 @@ Vault lends 1800 DAI to the market (to cover the exposure for the attackers's be
 shares received = 2000 / 200 * 10000 = 100000
 ```
 
-4. The attacker loses their bet and it is settled, casuing the market to return the profit and exposure.
+4. The attacker loses their bet and it is settled, causing the market to return the profit and exposure.
 
 | User                                        | Action  | Amount    | Shares | Total Assets | Total Shares |
 | ------------------------------------------- | ------- | --------- | ------ | ------------ | ------------ |
@@ -173,9 +173,9 @@ shares received = 2000 / 200 * 10000 = 100000
 share = 12010 * 100000 / 102000 = 11774.51
 ```
 
-The attacker spent 10 DAI to place the bet, 10000 depositing into vault and was able to withdraw 11774.51 resulting in a profit of 1764.51 DAI.
+The attacker spent 10 DAI to place the bet, 10000 depositing into Vault and was able to withdraw 11774.51 resulting in a profit of 1764.51 DAI.
 
-The total assets in the vault is now 235.49 DAI giving a performance of: 235.49 DAI / 2000 shares \* 100 = 11.77% (0.12 DAI per share) compared to before the attack when the performance was 2000 DAI / 2000 shares \* 100 = 100% (1 DAI per share).
+The total assets in the Vault is now 235.49 DAI giving a performance of: 235.49 DAI / 2000 shares \* 100 = 11.77% (0.12 DAI per share) compared to before the attack when the performance was 2000 DAI / 2000 shares \* 100 = 100% (1 DAI per share).
 
 ### Market
 
