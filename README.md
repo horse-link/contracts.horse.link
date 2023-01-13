@@ -116,7 +116,9 @@ The perfomance of the Vault is the ratio of the shares to the assets. In the abo
 
 #### Analysing a donation attack
 
-A donation attack is when a user deposits a large amount of assets into the Vault without incrementing the balance from the deposit function, skewing the ratio of assets to shares. https://forum.openzeppelin.com/t/erc4626-vault-implementation-for-totalassets-in-base-contract/29474. In our use case, we discuss the possibility that an attacker could attempt to place a large bet, draining the Vault, then deposit a large amount of assets into the Vault to skew the ratio of assets to shares.
+The donation attack (aka inflation attack) is a known exploit with ERC4626 vaults when the amount of underlying assets change without the amount of shares reflecting that. This makes all the share more (or less) valuable, which means that someone buying shares will get less (or more) than they would have expected. The bigger the inflation (or deflation), the bigger the effect of the attack, which makes Horse Link particularly sensitive as the vaults balance can change significatly when funds are withdrawn to cover the exposure of bets.
+
+In our use case, we discuss the possibility that an attacker could attempt to place a bet with high odds, draining the Vault, then deposit a large amount of assets into the Vault to skew the ratio of assets to shares.
 
 1. Assuming Alice and Bob have deposited into the Vault as shown in Vault example above
 
