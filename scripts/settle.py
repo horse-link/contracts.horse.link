@@ -122,14 +122,14 @@ def main():
                     result = get_result(oracle, market_id)
 
                     # call api to get result
-                    response = requests.get(f'https://horse.link/api/bets/sign/{mid}')
+                    response = requests.get(f'https://horse.link/api/markets/result/{mid}')
 
                     # If we have a result from the API and the oracle has not already added the result
-                    if response.status_code == 200 and result == False:
+                    if response.status_code == 200 and result == b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00':
                         # set result on oracle
                         print(f"Adding result for bet {i} to the oracle")
 
-                        signature = response.json()['marketOracleResultSig']
+                        signature = response.json()['signature']
                         proposition_id = response.json()['winningPropositionId']
                         tx_receipt = set_result(
                             oracle, market_id, proposition_id, signature)
@@ -137,7 +137,7 @@ def main():
                         print(tx_receipt)
 
                     # If we have a result from the API and the oracle has already added the result
-                    if response.status_code == 200 and result == True:
+                    if response.status_code == 200 and result != b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00':
                         print(f"Settling bet {i} for market {market_address['address']}")
 
                         tx_receipt = settle(i)
