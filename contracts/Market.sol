@@ -5,6 +5,8 @@ pragma abicoder v2;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+//Import Hardhat console.log
+import "hardhat/console.sol";
 
 import "./IVault.sol";
 import "./IMarket.sol";
@@ -36,13 +38,19 @@ contract Market is IMarket, Ownable, ERC721 {
 	mapping(bytes16 => uint64[]) private _marketBets;
 
 	// MarketID => amount bet
-	mapping(bytes16 => uint256) private _marketTotal;
+	mapping(bytes16 => uint256) private _marketTotalWagers;
 
 	// MarketID => PropositionID => amount bet
 	mapping(bytes16 => mapping(uint16 => uint256)) private _marketBetAmount;
 
 	// PropositionID => amount bet
 	mapping(bytes16 => uint256) private _potentialPayout;
+
+	// MarketID => current maximum payout for the market
+	//mapping(bytes16 => uint256) private _maxMarketPayout;
+
+	// MarketID => PropositionID => proposition with the maximum payout for this market
+	mapping(bytes16 => bytes16) private _maxMarketPayoutProposition;
 
 	uint256 private _totalInPlay;
 	uint256 private _totalExposure;
@@ -110,8 +118,8 @@ contract Market is IMarket, Ownable, ERC721 {
 		return _getExpiry(index);
 	}
 
-	function getMarketTotal(bytes16 marketId) external view returns (uint256) {
-		return _marketTotal[marketId];
+	function getMarketTotalWagers(bytes16 marketId) external view returns (uint256) {
+		return _marketTotalWagers[marketId];
 	}
 
 	function _getExpiry(uint64 index) private view returns (uint256) {
@@ -173,15 +181,9 @@ contract Market is IMarket, Ownable, ERC721 {
 
         uint256 pool = _vault.getMarketAllowance();
         
-		// If the pool is not sufficient to cover a new bet for this proposition
+		// If the pool is not sufficient to cover a new bet
 		if (pool == 0) return 1;
 
-		// exclude the current total potential payout from the pool
-		if (_potentialPayout[propositionId] > pool) {
-			return 1;
-		}
-
-		pool -= _potentialPayout[propositionId]; 
 
 		// Calculate the new odds
 		uint256 adjustedOdds = _getAdjustedOdds(wager, odds, pool);
@@ -277,28 +279,31 @@ contract Market is IMarket, Ownable, ERC721 {
 
         address underlying = _vault.asset();
 
-        // escrow
+		// Escrow the wager
         IERC20(underlying).transferFrom(_msgSender(), _self, wager);
-        IERC20(underlying).transferFrom(address(_vault), _self, (payout - wager));
 
-		// add to in play total for this marketId
-		_marketTotal[marketId] += wager;
+		// Add to in play total for this marketId
+		_marketTotalWagers[marketId] += wager;
+		_totalInPlay += wager;
+		_inplayCount++;
 
-		// add to the total potential payout for this proposition
-		_potentialPayout[propositionId] += payout;
+		// If the payout for this proposition will be greater than the current max payout for the market
+		uint256 maxPayout = _potentialPayout[_maxMarketPayoutProposition[marketId]]; 
+		uint256 cover = payout - wager;
+		// If the payout for this proposition will be greater than the current max payout for the market (and hence the amount currently covered)
+		if (_potentialPayout[propositionId] + cover > maxPayout) { 
+			// Get any additional cover we need for this market
+			_maxMarketPayoutProposition[marketId] = propositionId;
+			IERC20(underlying).transferFrom(address(_vault), _self, cover) ;
+			_totalExposure += cover;
+		}
 
 		uint64 index = _getCount();
-
 		_bets.push(
 			Bet(propositionId, marketId, wager, payout, end, false, _msgSender())
 		);
-
 		_marketBets[marketId].push(index);
 		_mint(_msgSender(), index);
-
-		_totalInPlay += wager;
-		_totalExposure += (payout - wager);
-		_inplayCount++;
 
 		emit Placed(index, propositionId, marketId, wager, payout, _msgSender());
 
@@ -336,7 +341,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		);
 
         _totalInPlay -= _bets[index].amount;
-        _totalExposure -= _bets[index].payout - _bets[index].amount;
+        _totalExposure -= _bets[index].payout - _bets[index].amount; // TODO: What about the bets for other propositions that will not be paid out? Their "exposure" is not being removed from the totalExposure
         _inplayCount --;
 
         address underlying = _vault.asset();

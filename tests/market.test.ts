@@ -328,9 +328,9 @@ describe("Market", () => {
 				signature
 			);
 
-		expect(await market.getMarketTotal(formatBytes16String(marketId))).to.equal(
-			ethers.utils.parseUnits("100", USDT_DECIMALS)
-		);
+		expect(
+			await market.getMarketTotalWagers(formatBytes16String(marketId))
+		).to.equal(ethers.utils.parseUnits("100", USDT_DECIMALS));
 
 		balance = await underlying.balanceOf(bob.address);
 		expect(balance).to.equal(
