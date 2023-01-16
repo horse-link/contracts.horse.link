@@ -9,8 +9,9 @@ contract MarketCurved is Market {
     constructor(
         IVault vault,
         uint8 fee,
+		uint8 timeoutDays,
         address oracle
-    ) Market(vault, fee, oracle) {
+    ) Market(vault, fee, timeoutDays, oracle) {
     }
 
     function _getAdjustedOdds(

@@ -44,6 +44,7 @@ describe("Market", () => {
 	const USDT_DECIMALS = 6;
 	const ODDS_DECIMALS = 6;
 	const MARGIN = 100;
+	const TIMEOUT_DAYS = 5;
 
 	beforeEach(async () => {
 		[owner, alice, bob, carol, whale] = await ethers.getSigners();
@@ -118,7 +119,7 @@ describe("Market", () => {
 
 		// https://www.npmjs.com/package/hardhat-deploy?activeTab=readme#handling-contract-using-libraries
 		// https://stackoverflow.com/questions/71389974/how-can-i-link-library-and-contract-in-one-file
-		const args = [vault.address, MARGIN, oracle.address];
+		const args = [vault.address, MARGIN, TIMEOUT_DAYS, oracle.address];
 		market = (await marketFactory.deploy(...args)) as Market;
 
 		await vault.setMarket(market.address, ethers.constants.MaxUint256);
@@ -349,7 +350,10 @@ describe("Market", () => {
 
 		// Should get expiry after back bet
 		const expiry = await market.getExpiry(0);
-		expect(expiry).to.equal(end + 2592000, "Should have expiry set");
+		expect(expiry).to.equal(
+			end + TIMEOUT_DAYS * 86400,
+			"Should have expiry set"
+		);
 
 		const tokenOwner = await market.ownerOf(0);
 		expect(tokenOwner, "Bob should have a bet NFT").to.equal(bob.address);
