@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity =0.8.10;
+pragma solidity =0.8.15;
 pragma abicoder v2;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -17,8 +17,9 @@ contract MarketWithRisk is Market {
     constructor(
         IVault vault,
         uint8 fee,
+		uint8 timeoutDays,
         address oracle
-    ) Market(vault, fee, oracle) {
+    ) Market(vault, fee, timeoutDays, oracle) {
     }
 
 	function getOddsWithRisk(
