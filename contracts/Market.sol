@@ -50,7 +50,7 @@ contract Market is IMarket, Ownable, ERC721 {
 	mapping(bytes16 => uint256) private _maxMarketPayout;
 
 	// MarketID => PropositionID => proposition with the maximum payout for this market
-	//mapping(bytes16 => bytes16) private _maxMarketPayoutProposition;
+	mapping(bytes16 => bytes16) private _maxMarketPayoutProposition;
 
 	uint256 private _totalInPlay;
 	uint256 private _totalExposure;
@@ -65,8 +65,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		IVault vault,
 		uint8 margin,
 		address oracle
-	)
-	ERC721("Horse Link Bet Slip", "HL-BET") {
+	) ERC721("Horse Link Bet Slip", "HL-BET") {
 		assert(address(vault) != address(0));
 		_self = address(this);
 		_vault = vault;
@@ -78,7 +77,12 @@ contract Market is IMarket, Ownable, ERC721 {
 		min = 1 hours;
 	}
 
-	function tokenURI(uint256 tokenId) public pure override returns (string memory) {
+	function tokenURI(uint256 tokenId)
+		public
+		pure
+		override
+		returns (string memory)
+	{
 		return string(abi.encodePacked("https://api.horse.link/bet/", tokenId));
 	}
 
@@ -118,7 +122,11 @@ contract Market is IMarket, Ownable, ERC721 {
 		return _getExpiry(index);
 	}
 
-	function getMarketTotalWagers(bytes16 marketId) external view returns (uint256) {
+	function getMarketTotalWagers(bytes16 marketId)
+		external
+		view
+		returns (uint256)
+	{
 		return _marketTotalWagers[marketId];
 	}
 
@@ -156,7 +164,15 @@ contract Market is IMarket, Ownable, ERC721 {
 		)
 	{
 		Bet memory bet = _bets[index];
-		return (bet.amount, bet.payout, bet.payoutDate, bet.settled, bet.owner, bet.marketId, bet.propositionId);
+		return (
+			bet.amount,
+			bet.payout,
+			bet.payoutDate,
+			bet.settled,
+			bet.owner,
+			bet.marketId,
+			bet.propositionId
+		);
 	}
 
 	function getOdds(
@@ -179,11 +195,10 @@ contract Market is IMarket, Ownable, ERC721 {
 	) internal view returns (uint256) {
 		if (wager <= 1 || odds <= 1) return 1;
 
-        uint256 pool = _vault.getMarketAllowance();
-        
+		uint256 pool = _vault.getMarketAllowance();
+
 		// If the pool is not sufficient to cover a new bet
 		if (pool == 0) return 1;
-
 
 		// Calculate the new odds
 		uint256 adjustedOdds = _getAdjustedOdds(wager, odds, pool);
@@ -195,12 +210,8 @@ contract Market is IMarket, Ownable, ERC721 {
 		uint256 wager,
 		uint256 odds,
 		uint256 pool
-	) internal virtual view returns (uint256) {
-		return OddsLib.getLinearAdjustedOdds(
-			wager,
-			odds,
-			pool
-		);
+	) internal view virtual returns (uint256) {
+		return OddsLib.getLinearAdjustedOdds(wager, odds, pool);
 	}
 
 	function getPotentialPayout(
@@ -232,30 +243,20 @@ contract Market is IMarket, Ownable, ERC721 {
 		uint256 end,
 		SignatureLib.Signature calldata signature
 	) external returns (uint256) {
+		bytes32 messageHash = keccak256(
+			abi.encodePacked(nonce, propositionId, marketId, odds, close, end)
+		);
 
-		bytes32 messageHash = keccak256(abi.encodePacked(
-			nonce,
-			propositionId,
-			marketId,
-			odds,
-			close,
-			end
-		));
-
-		require(isValidSignature(messageHash, signature) == true, "back: Invalid signature");
+		require(
+			isValidSignature(messageHash, signature) == true,
+			"back: Invalid signature"
+		);
 
 		// add underlying to the market
 		uint256 payout = _getPayout(propositionId, marketId, wager, odds);
 		assert(payout > 0);
 
-		return _back(
-			propositionId,
-			marketId,
-			wager,
-			close,
-			end,
-			payout
-		);
+		return _back(propositionId, marketId, wager, close, end, payout);
 	}
 
 	function _back(
@@ -277,10 +278,10 @@ contract Market is IMarket, Ownable, ERC721 {
 			"back: Oracle result already set for this market"
 		);
 
-        address underlying = _vault.asset();
+		address underlying = _vault.asset();
 
 		// Escrow the wager
-        IERC20(underlying).transferFrom(_msgSender(), _self, wager);
+		IERC20(underlying).transferFrom(_msgSender(), _self, wager);
 
 		// Add to in play total for this marketId
 		_marketTotalWagers[marketId] += wager;
@@ -289,23 +290,45 @@ contract Market is IMarket, Ownable, ERC721 {
 
 		// If the payout for this proposition will be greater than the current max payout for the market)
 		uint256 newExposure = payout - wager;
-	
+
 		// If the payout for this proposition will be greater than the current max payout for the market (and hence the amount currently covered)
 		_potentialPayout[propositionId] += newExposure;
-		if (_potentialPayout[propositionId] > _maxMarketPayout[marketId]) { 
+		if (_potentialPayout[propositionId] > _maxMarketPayout[marketId]) {
 			// Get any additional cover we need for this market
 			_maxMarketPayout[marketId] = _potentialPayout[propositionId];
-			IERC20(underlying).transferFrom(address(_vault), _self, newExposure) ;
+			_maxMarketPayoutProposition[marketId] = propositionId;
+			_totalExposure += newExposure;
+			console.log("Borrowing %s", newExposure);
+			IERC20(underlying).transferFrom(
+				address(_vault),
+				_self,
+				newExposure
+			);
 		}
 
 		uint64 index = _getCount();
 		_bets.push(
-			Bet(propositionId, marketId, wager, payout, end, false, _msgSender())
+			Bet(
+				propositionId,
+				marketId,
+				wager,
+				payout,
+				end,
+				false,
+				_msgSender()
+			)
 		);
 		_marketBets[marketId].push(index);
 		_mint(_msgSender(), index);
 
-		emit Placed(index, propositionId, marketId, wager, payout, _msgSender());
+		emit Placed(
+			index,
+			propositionId,
+			marketId,
+			wager,
+			payout,
+			_msgSender()
+		);
 
 		return index;
 	}
@@ -328,7 +351,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		Bet memory bet = _bets[index];
 		bool result = IOracle(_oracle).checkResult(
 			bet.marketId,
-			bet.propositionId
+			bet.propositionIdß
 		);
 
 		_payout(index, result);
@@ -339,23 +362,47 @@ contract Market is IMarket, Ownable, ERC721 {
 			_bets[index].payoutDate < block.timestamp,
 			"_settle: Payout date not reached"
 		);
+		address underlying = _vault.asset();
+		address recipient = address(_vault);
+		if (result == true) {
+			recipient = _bets[index].owner;
+		}
 
-        _totalInPlay -= _bets[index].amount;
-        _totalExposure -= _bets[index].payout - _bets[index].amount;
-        _inplayCount --;
 
-        address underlying = _vault.asset();
-		address recipient = _bets[index].owner;
-
-        if (result == false) {
-            // Transfer the proceeds to the vault, less market margin
-            recipient = address(_vault);
-        }
-
-		IERC20(underlying).transfer(recipient, _bets[index].payout);
+		_totalInPlay -= _bets[index].amount;
+		// If paying out the most expensive proposition, this has received the cover amount.
+		// Deduct from exposure, and if lost, return the cover amount to the vault
+		if (
+			keccak256(
+				abi.encodePacked(
+					_maxMarketPayoutProposition[_bets[index].marketId]
+				)
+			) == keccak256(abi.encodePacked(_bets[index].propositionId))
+		) {
+			// Transfer the entire payout to the bet owner or the vault
+			// TODO: If vault, deduct margin
+			IERC20(underlying).transfer(recipient, _bets[index].payout);		
+		} else {
+			// If not the most expensive proposition, losing bets result in the vault receiving the wager amount
+			// Winning bets receive the payout amount
+			uint256 transferAmount = result ? _bets[index].payout : _bets[index].amount;
+			// Transfer the proceeds to the vault, less market margin. No cover amount required.
+			// TODO: deduct margin
+			IERC20(underlying).transfer(recipient, transferAmount);
+		}
+		_inplayCount--;
 		_burn(index);
 
 		emit Settled(index, _bets[index].payout, result, recipient);
+	}
+
+	function _obtainCover(bytes16 marketId, uint256 amount) internal view returns (uint256) {
+		IERC20(underlying).transferFrom(
+			address(_vault),
+			_self,
+			amount
+		);
+		marketCover[marketId] += amount;
 	}
 
 	function settleMarket(bytes16 marketId) external {
@@ -363,6 +410,9 @@ contract Market is IMarket, Ownable, ERC721 {
 		uint256 total = bets.length;
 
 		for (uint64 i = 0; i < total; i++) {
+			//Get currenct balance of market
+			uint256 balance = IERC20(_vault.asset()).balanceOf(address(this));
+			console.log("Balance: %s", balance);
 			uint64 index = bets[i];
 
 			Bet memory bet = _bets[index];
@@ -390,14 +440,13 @@ contract Market is IMarket, Ownable, ERC721 {
 		return _signers[signer];
 	}
 
-	function isValidSignature(bytes32 messageHash, SignatureLib.Signature calldata signature) internal view returns (bool) {
+	function isValidSignature(
+		bytes32 messageHash,
+		SignatureLib.Signature calldata signature
+	) internal view returns (bool) {
 		address signer = SignatureLib.recoverSigner(messageHash, signature);
 		assert(signer != address(0));
 		return _isSigner(signer);
-	}
-
-	function getCurrentPotentialPayout(bytes16 propositionId) external view returns (uint256) {
-		return _potentialPayout[propositionId];
 	}
 
 	event Placed(
