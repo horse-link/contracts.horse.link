@@ -11,6 +11,7 @@ import {
 import { solidity } from "ethereum-waffle";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { formatBytes16String, makeMarketId, makePropositionId } from "./utils";
+import { randomInt } from "crypto";
 
 type Signature = {
 	v: BigNumberish;
@@ -415,6 +416,147 @@ describe("Market", () => {
 		expect(balance).to.equal(
 			ethers.utils.parseUnits("800", USDT_DECIMALS),
 			"Should have $800 USDT after a $200 bet"
+		);
+	});
+
+	it("Should only borrow the minimum amount required to back a market", async () => {
+		// Alice bets on $10 horse 1, with a payout of $100
+		// Market borrows payout - wager amount
+		// Betty bets $10 on horse 2, with a payout of $90
+		// Market does not borrow any amount
+		// Carol bets another $10 on horse 2, bringing the total potential payout for this horse to $180
+		// Market borrows $80 to cover the new potential payout
+		const marketId = makeMarketId(new Date(), "ABC", "1");
+		const horses = [
+			ethers.utils.parseUnits("10", ODDS_DECIMALS),
+			ethers.utils.parseUnits("9", ODDS_DECIMALS)
+		];
+		const proposition1 = makePropositionId(marketId, 1);
+		const proposition2 = makePropositionId(marketId, 2);
+		const close = 0;
+		const end = 1000000000000;
+
+		const totalAssets1 = await vault.totalAssets();
+		expect(totalAssets1).to.equal(
+			ethers.utils.parseUnits("1000", USDT_DECIMALS),
+			"Should have $1,000 USDT total assets"
+		);
+		const nonce = "1";
+
+		const sigBack1 = await signBackMessage(
+			nonce,
+			marketId,
+			proposition1,
+			horses[0],
+			close,
+			end,
+			owner
+		);
+
+		const sigBack2 = await signBackMessage(
+			nonce,
+			marketId,
+			proposition2,
+			horses[1],
+			close,
+			end,
+			owner
+		);
+
+		// 1. Alice bets on $10 horse 1, with a payout of $100
+		await underlying
+			.connect(carol)
+			.approve(market.address, ethers.utils.parseUnits("10", tokenDecimals));
+
+		await market
+			.connect(carol)
+			.back(
+				formatBytes16String(nonce),
+				formatBytes16String(proposition1),
+				formatBytes16String(marketId),
+				ethers.utils.parseUnits("10", USDT_DECIMALS),
+				horses[0],
+				close,
+				end,
+				sigBack1
+			);
+		let horse1Payout = await market.getCurrentPotentialPayout(
+			formatBytes16String(proposition1)
+		);
+		let horse2Payout = await market.getCurrentPotentialPayout(
+			formatBytes16String(proposition2)
+		);
+		expect(horse1Payout).to.be.gt(horse2Payout);
+
+		// Market borrows payout - wager amount
+		const totalAssets2 = await vault.totalAssets();
+		expect(totalAssets2, "Should have had to borrow initial cover").to.be.lt(
+			totalAssets1
+		);
+
+		// 2. Betty bets $10 on horse 2, with a payout of $90
+		await underlying
+			.connect(carol)
+			.approve(market.address, ethers.utils.parseUnits("10", tokenDecimals));
+
+		await market
+			.connect(carol)
+			.back(
+				formatBytes16String(nonce),
+				formatBytes16String(proposition2),
+				formatBytes16String(marketId),
+				ethers.utils.parseUnits("10", USDT_DECIMALS),
+				horses[1],
+				close,
+				end,
+				sigBack2
+			);
+		horse1Payout = await market.getCurrentPotentialPayout(
+			formatBytes16String(proposition1)
+		);
+		horse2Payout = await market.getCurrentPotentialPayout(
+			formatBytes16String(proposition2)
+		);
+		expect(horse1Payout).to.be.gt(horse2Payout);
+
+		// Market does not borrow any amount
+		const totalAssets3 = await vault.totalAssets();
+		expect(totalAssets3, "Market should not need to borrow").to.equal(
+			totalAssets2
+		);
+
+		// 3. Carol bets another $10 on horse 2, bringing the total potential payout for this horse to $180 (assuming no slippage)
+		await underlying
+			.connect(carol)
+			.approve(market.address, ethers.utils.parseUnits("10", tokenDecimals));
+
+		await market
+			.connect(carol)
+			.back(
+				formatBytes16String(nonce),
+				formatBytes16String(proposition2),
+				formatBytes16String(marketId),
+				ethers.utils.parseUnits("10", USDT_DECIMALS),
+				horses[1],
+				close,
+				end,
+				sigBack2
+			);
+
+		horse1Payout = await market.getCurrentPotentialPayout(
+			formatBytes16String(proposition1)
+		);
+		horse2Payout = await market.getCurrentPotentialPayout(
+			formatBytes16String(proposition2)
+		);
+		expect(horse2Payout, "Horse 2 should have more riding on it now").to.be.gt(
+			horse1Payout
+		);
+
+		// Market borrows payout - wager amount
+		const totalAssets4 = await vault.totalAssets();
+		expect(totalAssets4, "Should have had to borrow extra cover").to.be.lt(
+			totalAssets3
 		);
 	});
 

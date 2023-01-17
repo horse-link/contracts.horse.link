@@ -43,14 +43,14 @@ contract Market is IMarket, Ownable, ERC721 {
 	// MarketID => PropositionID => amount bet
 	mapping(bytes16 => mapping(uint16 => uint256)) private _marketBetAmount;
 
-	// PropositionID => amount bet
+	// PropositionID => amount that could be paid out for this proposition
 	mapping(bytes16 => uint256) private _potentialPayout;
 
 	// MarketID => current maximum payout for the market
-	//mapping(bytes16 => uint256) private _maxMarketPayout;
+	mapping(bytes16 => uint256) private _maxMarketPayout;
 
 	// MarketID => PropositionID => proposition with the maximum payout for this market
-	mapping(bytes16 => bytes16) private _maxMarketPayoutProposition;
+	//mapping(bytes16 => bytes16) private _maxMarketPayoutProposition;
 
 	uint256 private _totalInPlay;
 	uint256 private _totalExposure;
@@ -287,15 +287,15 @@ contract Market is IMarket, Ownable, ERC721 {
 		_totalInPlay += wager;
 		_inplayCount++;
 
-		// If the payout for this proposition will be greater than the current max payout for the market
-		uint256 maxPayout = _potentialPayout[_maxMarketPayoutProposition[marketId]]; 
-		uint256 cover = payout - wager;
+		// If the payout for this proposition will be greater than the current max payout for the market)
+		uint256 newExposure = payout - wager;
+	
 		// If the payout for this proposition will be greater than the current max payout for the market (and hence the amount currently covered)
-		if (_potentialPayout[propositionId] + cover > maxPayout) { 
+		_potentialPayout[propositionId] += newExposure;
+		if (_potentialPayout[propositionId] > _maxMarketPayout[marketId]) { 
 			// Get any additional cover we need for this market
-			_maxMarketPayoutProposition[marketId] = propositionId;
-			IERC20(underlying).transferFrom(address(_vault), _self, cover) ;
-			_totalExposure += cover;
+			_maxMarketPayout[marketId] = _potentialPayout[propositionId];
+			IERC20(underlying).transferFrom(address(_vault), _self, newExposure) ;
 		}
 
 		uint64 index = _getCount();
@@ -341,7 +341,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		);
 
         _totalInPlay -= _bets[index].amount;
-        _totalExposure -= _bets[index].payout - _bets[index].amount; // TODO: What about the bets for other propositions that will not be paid out? Their "exposure" is not being removed from the totalExposure
+        _totalExposure -= _bets[index].payout - _bets[index].amount;
         _inplayCount --;
 
         address underlying = _vault.asset();
@@ -394,6 +394,10 @@ contract Market is IMarket, Ownable, ERC721 {
 		address signer = SignatureLib.recoverSigner(messageHash, signature);
 		assert(signer != address(0));
 		return _isSigner(signer);
+	}
+
+	function getCurrentPotentialPayout(bytes16 propositionId) external view returns (uint256) {
+		return _potentialPayout[propositionId];
 	}
 
 	event Placed(
