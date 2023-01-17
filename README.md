@@ -26,7 +26,7 @@ There are 5 main types of contracts along with supporting solidity libraries, wh
 
 ### Token
 
-Horse Link issues 100m standard ERC20 tokens HL / Horse Link for its members to be used in the future as a DAO governance token, distribution of protocol fees and other member perks.
+Horse Link issues 100 million standard ERC20 tokens HL / Horse Link for its members to be used in the future as a DAO governance token, distribution of protocol fees and other member perks.
 
 ### Vaults
 
@@ -35,6 +35,13 @@ The Vault contracts are ERC4626 contracts used to manage the underlying ERC20 as
 The following is a worked example of the relationship between users' deposits and shares.
 
 1. Alice deposits 1000 DAI into the Vault and receives 1000 shares.
+
+| User  | Action  | Amount   | Shares | Total Assets | Total Shares |
+| ----- | ------- | -------- | ------ | ------------ | ------------ |
+| Alice | Deposit | 1000 DAI | 1000   | 1000 DAI     | 1000         |
+
+Initial share price is 1 DAI so Alice receives 1000 shares.
+
 2. Bob deposits 1000 DAI into the Vault and receives 1000 shares.
 
 | User  | Action  | Amount   | Shares | Total Assets | Total Shares |
@@ -42,108 +49,149 @@ The following is a worked example of the relationship between users' deposits an
 | Alice | Deposit | 1000 DAI | 1000   | 1000 DAI     | 1000         |
 | Bob   | Deposit | 1000 DAI | 1000   | 2000 DAI     | 2000         |
 
-The Vault is now holding 2000 DAI in "totalAssets". If Alice withdraws 500 shares, she will receive 500 DAI. Now, let's say a bet of 1800 DAI is placed on a market that is backed by the Vault at 1:1. The Vault will lend 1800 DAI to the market. 200 DAI remain in the vault and it will have a total exposure of 1800 DAI.
-
-3. Vault lends 1800 DAI to the market and has 200 DAI left in total assets.
-
-| User  | Action  | Amount   | Shares | Total Assets | Total Shares |
-| ----- | ------- | -------- | ------ | ------------ | ------------ |
-| Alice | Deposit | 1000 DAI | 1000   | 1000 DAI     | 1000         |
-| Bob   | Deposit | 1000 DAI | 1000   | 2000 DAI     | 2000         |
-| Vault | Lend    | 1800 DAI | 0      | 200 DAI      | 2000         |
-
-While the bet is active, Alice can redeem her 1000 shares if she chooses so, but will but the exchange rate per share will be significantly lower than 1 DAI per share. Her share is represented by the following equation:
+Number of shares received when depositing is represented by the following equation:
 
 ```text
-share = (totalAssets * shares) / totalShares
+shares received = total shares / total assets * deposit
+```
+
+So when Bob deposits 1000 DAI they receive 1000 shares:
+
+```text
+shares received = 1000 / 1000 * 1000 = 1000
+```
+
+The Vault is now holding 2000 DAI in "totalAssets". If Alice withdraws 500 shares, she will receive 500 DAI. Now, let's say Carol places a bet of 1800 DAI on a market that is backed by the Vault at 1:1. The Vault will lend 1800 DAI to the market. 200 DAI remain in the Vault and it will have a total exposure of 1800 DAI.
+
+3. Carol places bet of 1800 DAI at 1:1 odds
+
+| User                      | Action  | Amount   | Shares | Total Assets | Total Shares |
+| ------------------------- | ------- | -------- | ------ | ------------ | ------------ |
+| Alice                     | Deposit | 1000 DAI | 1000   | 1000 DAI     | 1000         |
+| Bob                       | Deposit | 1000 DAI | 1000   | 2000 DAI     | 2000         |
+| Vault (on Carol's behalf) | Lend    | 1800 DAI | 0      | 200 DAI      | 2000         |
+
+Vault lends 1800 DAI to the market (to cover the exposure for Carol's bet) and has 200 DAI left in total assets.
+
+While Carol's bet is active, Alice can redeem her 1000 shares if she chooses so, but the exchange rate per share will be significantly lower than 1 DAI per share. Her share is represented by the following equation:
+
+```text
+share = totalAssets * shares / totalShares
 ```
 
 Eg:
 
 ```text
-share = (200 * 1000) / 2000 = 100 DAI
+share = 200 * 1000 / 2000 = 100 DAI
 ```
 
-Upon redeeming the shares will be burnt and Alice share balance will be 0. The Vault will have 100 DAI in total assets and 1000 shares.
+Upon redeeming, Alice's shares would be burnt.
 
-4. Alice redeems 1000 shares for 100 DAI. Those shares are burnt.
+4. Alice redeems 1000 shares for 100 DAI.
 
-| User  | Action  | Amount   | Shares | Total Assets | Total Shares |
-| ----- | ------- | -------- | ------ | ------------ | ------------ |
-| Alice | Deposit | 1000 DAI | 1000   | 1000 DAI     | 1000         |
-| Bob   | Deposit | 1000 DAI | 1000   | 2000 DAI     | 2000         |
-| Vault | Lend    | 1800 DAI | 0      | 200 DAI      | 2000         |
-| Alice | Redeem  | 100 DAI  | (1000) | 100 DAI      | 1000         |
+| User                      | Action  | Amount   | Shares | Total Assets | Total Shares |
+| ------------------------- | ------- | -------- | ------ | ------------ | ------------ |
+| Alice                     | Deposit | 1000 DAI | 1000   | 1000 DAI     | 1000         |
+| Bob                       | Deposit | 1000 DAI | 1000   | 2000 DAI     | 2000         |
+| Vault (on Carol's behalf) | Lend    | 1800 DAI | 0      | 200 DAI      | 2000         |
+| Alice                     | Redeem  | 100 DAI  | (1000) | 100 DAI      | 1000         |
 
-The bet is now settled and the Vault has an exposure of 0 DAI and has made 1800 DAI on the losing bet. The total assets in the Vault are now 3700 DAI.
+Alice's shares are burnt, reducing her share balance to 0. The Vault will have 100 DAI in total assets and 1000 shares.
+
+5. Vault settles Carol's bet and has now 3700 DAI in total assets, while the total shares are still 1000 DAI.
+
+| User                                     | Action  | Amount   | Shares | Total Assets | Total Shares |
+| ---------------------------------------- | ------- | -------- | ------ | ------------ | ------------ |
+| Alice                                    | Deposit | 1000 DAI | 1000   | 1000 DAI     | 1000         |
+| Bob                                      | Deposit | 1000 DAI | 1000   | 2000 DAI     | 2000         |
+| Vault (on Carol's behalf)                | Lend    | 1800 DAI | 0      | 200 DAI      | 2000         |
+| Alice                                    | Redeem  | 100 DAI  | (1000) | 100 DAI      | 1000         |
+| Market (revenue from Carol's losing bet) | Settle  | 3600 DAI | 0      | 3700 DAI     | 1000         |
+
+Carol's bet is now settled and the Vault has an exposure of 0 DAI and has made 1800 DAI on the losing bet. The profit and exposure are returned to the Vault. The total assets in the Vault are now 3700 DAI.
 
 If the bet was a winning bet, the market pays out the winning proposition. The performance of the Vault would be low, as the bettor has won assets from the Market, which will now not be returned to the Vault.
 
-| User   | Action  | Amount     | Shares | Total Assets | Total Shares |
-| ------ | ------- | ---------- | ------ | ------------ | ------------ |
-| Alice  | Deposit | 1000 DAI   | 1000   | 1000 DAI     | 1000         |
-| Bob    | Deposit | 1000 DAI   | 1000   | 2000 DAI     | 2000         |
-| Carol  | Back    | 1800 DAI   | 0      | 0 DAI        | 0            |
-| Vault  | Lend    | 1800 DAI   | 0      | 200 DAI      | 2000         |
-| Market | Settle  | (3600) DAI | 0      | 200 DAI      | 2000         |
-| Carol  | Settle  | 3600 DAI   | 0      | 3600 DAI     | 0            |
-
-5. Vault settles the bet and has now 3700 DAI in total assets, while the total shares are still 1000 (HL-DAI).
-
-| User   | Action  | Amount   | Shares | Total Assets | Total Shares |
-| ------ | ------- | -------- | ------ | ------------ | ------------ |
-| Alice  | Deposit | 1000 DAI | 1000   | 1000 DAI     | 1000         |
-| Bob    | Deposit | 1000 DAI | 1000   | 2000 DAI     | 2000         |
-| Vault  | Lend    | 1800 DAI | 0      | 200 DAI      | 2000         |
-| Alice  | Redeem  | 100 DAI  | (1000) | 100 DAI      | 1000         |
-| Market | Settle  | 3600 DAI | 0      | 3700 DAI     | 1000         |
-
-The Vault is now holding 3700 DAI in total assets and 1000 shares.  The perfomance of the Vault is the ratio of the shares to the assets. In the above example, the performance is 3700 DAI / 1000 shares * 100 = 370% (3.7 DAI per share).
+The perfomance of the Vault is the ratio of the shares to the assets. In the above example, the performance is: 3700 DAI / 1000 shares \* 100 = 370% (3.7 DAI per share).
 
 #### Analysing a donation attack
 
-A donation attack is when a user deposits a large amount of assets into the Vault without incrementing the balance from the deposit function, skewing the ratio of assets to shares. https://forum.openzeppelin.com/t/erc4626-vault-implementation-for-totalassets-in-base-contract/29474. In our use case, we discuss the the possibility that an attacker could attempt to place a large bet, draining the vault, then deposit a large amount of assets into the Vault to skew the ratio of assets to shares.
+The donation attack (aka inflation attack) is a known exploit with ERC4626 vaults when the amount of underlying assets change without the amount of shares reflecting that. This makes all the share more (or less) valuable, which means that someone buying shares will get less (or more) than they would have expected. The bigger the inflation (or deflation), the bigger the effect of the attack, which makes Horse Link particularly sensitive as the vaults balance can change significatly when funds are withdrawn to cover the exposure of bets.
 
-| User     | Action  | Amount    | Shares | Total Assets | Total Shares |
-| -------- | ------- | --------- | ------ | ------------ | ------------ |
-| Alice    | Deposit | 1000 DAI  | 1000   | 1000 DAI     | 1000         |
-| Bob      | Deposit | 1000 DAI  | 1000   | 2000 DAI     | 2000         |
-| Attacker | Back    | 1800 DAI  | 0      | 2000 DAI     | 2000         |
-| Vault    | Lend    | 1800 DAI  | 0      | 200 DAI      | 2000         |
-| Attacker | Deposit | 10000 DAI | 10000  | 10200 DAI    | 10200        |
-| Market   | Settle  | 3600 DAI  | 0      | 3700 DAI     | 10200        |
+In our use case, we discuss the possibility that an attacker could attempt to place a bet with high odds, draining the Vault, then deposit a large amount of assets into the Vault to skew the ratio of assets to shares.
 
-In the above example, the Vault has 3700 DAI in total assets and 10200 shares. The performance of the Vault is 3700 / 10200 = 0.36. The attacker can not manipulate the share price but the opposite is true. The Vault has now more assets to offset any losses from the market.
+1. Assuming Alice and Bob have deposited into the Vault as shown in Vault example above
 
-Eg:
+| User  | Action  | Amount   | Shares | Total Assets | Total Shares |
+| ----- | ------- | -------- | ------ | ------------ | ------------ |
+| Alice | Deposit | 1000 DAI | 1000   | 1000 DAI     | 1000         |
+| Bob   | Deposit | 1000 DAI | 1000   | 2000 DAI     | 2000         |
+
+2. Attacker makes a 10 DAI bet on runner with odds of 180:1
+
+| User                         | Action  | Amount   | Shares | Total Assets | Total Shares |
+| ---------------------------- | ------- | -------- | ------ | ------------ | ------------ |
+| Alice                        | Deposit | 1000 DAI | 1000   | 1000 DAI     | 1000         |
+| Bob                          | Deposit | 1000 DAI | 1000   | 2000 DAI     | 2000         |
+| Vault (on attacker's behalf) | Lend    | 1800 DAI | 0      | 200 DAI      | 2000         |
+
+Vault lends 1800 DAI to the market (to cover the exposure for the attackers's bet) leaving 200 DAI of total assets. Given the Vault now has 200 DAI in total assets but still 2000 shares, the performance of the Vault is 200 / 2000 = 0.1 devaluing each share making them comparitively cheap for the attacker to acquire.
+
+3. Attacker deposits 10,000 DAI and receives 100,000 shares
+
+| User                         | Action  | Amount    | Shares | Total Assets | Total Shares |
+| ---------------------------- | ------- | --------- | ------ | ------------ | ------------ |
+| Alice                        | Deposit | 1000 DAI  | 1000   | 1000 DAI     | 1000         |
+| Bob                          | Deposit | 1000 DAI  | 1000   | 2000 DAI     | 2000         |
+| Vault (on attacker's behalf) | Lend    | 1800 DAI  | 0      | 200 DAI      | 2000         |
+| Attacker                     | Deposit | 10000 DAI | 100000 | 10200 DAI    | 102000       |
 
 ```text
-share = (totalAssets * shares) / totalShares
-13525.41 = (13800 * 10000) / 10200
+shares received = 2000 / 200 * 10000 = 100000
 ```
 
-| User     | Action  | Amount    | Shares  | Total Assets | Total Shares |
-| -------- | ------- | --------- | ------- | ------------ | ------------ |
-| Alice    | Deposit | 1000 DAI  | 1000    | 1000 DAI     | 1000         |
-| Bob      | Deposit | 1000 DAI  | 1000    | 2000 DAI     | 2000         |
-| Attacker | Back    | 1800 DAI  | 0       | 2000 DAI     | 2000         |
-| Vault    | Lend    | 1800 DAI  | 0       | 200 DAI      | 2000         |
-| Attacker | Deposit | 10000 DAI | 10000   | 10200 DAI    | 10200        |
-| Market   | Settle  | 3600 DAI  | 0       | 13800 DAI    | 10200        |
-| Attacker | Redeem  | DAI       | (10000) | x DAI        | 200          |
+4. The attacker loses their bet and it is settled, causing the market to return the profit and exposure.
+
+| User                                        | Action  | Amount    | Shares | Total Assets | Total Shares |
+| ------------------------------------------- | ------- | --------- | ------ | ------------ | ------------ |
+| Alice                                       | Deposit | 1000 DAI  | 1000   | 1000 DAI     | 1000         |
+| Bob                                         | Deposit | 1000 DAI  | 1000   | 2000 DAI     | 2000         |
+| Vault (on attacker's behalf)                | Lend    | 1800 DAI  | 0      | 200 DAI      | 2000         |
+| Attacker                                    | Deposit | 10000 DAI | 100000 | 10200 DAI    | 102000       |
+| Market (revenue from Attacker's losing bet) | Settle  | 1810 DAI  | 0      | 12010 DAI    | 102000       |
+
+5. The attacker redeems their shares for 11774.51 DAI
+
+| User                                        | Action  | Amount       | Shares   | Total Assets | Total Shares |
+| ------------------------------------------- | ------- | ------------ | -------- | ------------ | ------------ |
+| Alice                                       | Deposit | 1000 DAI     | 1000     | 1000 DAI     | 1000         |
+| Bob                                         | Deposit | 1000 DAI     | 1000     | 2000 DAI     | 2000         |
+| Vault (on attacker's behalf)                | Lend    | 1800 DAI     | 0        | 200 DAI      | 2000         |
+| Attacker                                    | Deposit | 10000 DAI    | 100000   | 10200 DAI    | 102000       |
+| Market (revenue from Attacker's losing bet) | Settle  | 1810 DAI     | 0        | 12010 DAI    | 102000       |
+| Attacker                                    | Redeem  | 11774.51 DAI | (100000) | 235.49 DAI   | 2000         |
+
+```text
+share = 12010 * 100000 / 102000 = 11774.51
+```
+
+The attacker spent 10 DAI to place the bet, 10000 depositing into Vault and was able to withdraw 11774.51 resulting in a profit of 1764.51 DAI.
+
+The total assets in the Vault is now 235.49 DAI giving a performance of: 235.49 DAI / 2000 shares \* 100 = 11.77% (0.12 DAI per share) compared to before the attack when the performance was 2000 DAI / 2000 shares \* 100 = 100% (1 DAI per share).
 
 ### Market
 
 Market contracts define the logic in which they calculate the odds per event or market. Our protocol offers two types of market contracts, where the odds slippage calculation is either on a linear decay or a non-linear decay. The linear decay market `Market.sol` is a simple market that calculates the odds based on the total assets in the Vault and the total exposure of the Vault. The non-linear decay market `MarketCurved.sol` is more complex and is more expensive to calculate the odds, but offers smoother odds to its caller.
 
 ```text
-o = O - O * (w / (V + (sm - sp)))
+o = O - O * (w / (v + (sm - sp)))
 ```
 
 where
 
 ```text
-O = Offered odds
+o = Offered odds
+O = Market fixed odds
 v = Vault total assets
 w = Wager amount
 sm = Sum of all wagers on that market
@@ -159,31 +207,33 @@ Markets can either be "Greedy" or "Not Greedy", but for v1.0 we assume Greedy Ma
 Greedy markets draw 100% of the lay collateral from the Vault. This is favourable for Vault owners, as they get maximum dividends for collateral they lend.
 
 ```text
-Given calculated odds are 2:1,
-And the Vault has 10,000 assets,
-And the Market balance is 100 assets,
-When a bet of 100 assets is placed,
-Then the Vault lends 200 assets to the Market
+Given calculated target odds are 5.0,
+And the Vault has 1,000 tokens,
+When a bet of 50 tokens is placed
+Then the true odds are 4.75
+And Vault lends 137.50 tokens to the Market
 ```
 
-### Non Greedy Markets
+#### Non Greedy Markets
 
-Markets that are non greedy use the collateral under management first, instead of transferring assets from the connected Vault.
+Markets that are non greedy use the collateral under management first, instead of borrowing assets from the connected Vault.
 
 ```text
-Given calculated odds are 2:1,
-And the Market has 100 assets,
-When a bet of 100 assets is placed,
-Then the Vault lends 100 assets to the Market
+Given calculated odds are 3:1,
+And the Vault has 10,000 tokens,
+And the Market has 250 tokens,
+And the runner being bet on has 0 existing bets
+When a bet of 100 tokens is placed
+Then the Vault lends 50 tokens to the Market
 ```
 
 ### Registry
 
-The registry contract is a mapping of Vaults and Markets used by the protocol. This allows a single source of truth for calling applications and smart contracts. It also has the ability to only allow token holds to modify the contracts it registers.
+The registry contract is a mapping of Vaults and Markets used by the protocol. This allows a single source of truth for calling applications and smart contracts. It also has the ability to only allow token holders to modify the contracts it registers.
 
 ### Oracle
 
-The `MarketOracle.sol` contract allows authorised account to set results based on the Market ID and the Proposition ID. The results are either set from a python script `settle.py` in the event of a losing Proposition or by the front end should the user win and claim their profits. The market owner is responsible for providing a signed result after the event.
+The `MarketOracle.sol` contract allows authorised accounts to set results based on the Market ID and the Proposition ID. The results are either set from a python script `settle.py` in the event of a losing Proposition or by the front end should the user win and claim their profits. The market owner is responsible for providing a signed result after the event.
 
 ## Configuration
 
