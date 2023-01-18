@@ -853,9 +853,9 @@ describe("Market", () => {
 				.withArgs(index, 272727300, true, bob.address);
 		});
 
-		it.only("Should settle multiple bets on a market", async () => {
-			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
-			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
+		it("Should settle multiple bets on a market", async () => {
+			const baseWager = ethers.utils.parseUnits("10", USDT_DECIMALS);
+			const odds = ethers.utils.parseUnits("2", ODDS_DECIMALS);
 			const close = 0;
 
 			const latestBlockNumber = await ethers.provider.getBlockNumber();
@@ -867,9 +867,10 @@ describe("Market", () => {
 
 			for (let i = 0; i < max; i++) {
 				const marketBalance = await underlying.balanceOf(market.address);
-				console.log("marketBalance", formatUnits(marketBalance, 6));
+				console.log("test: marketBalance", formatUnits(marketBalance, 6));
 				const nonce = i.toString();
 				const propositionId = makePropositionId("ABC", i + 1);
+				const wager = baseWager.mul(i + 1);
 
 				const betSignature = await signBackMessage(
 					nonce,
@@ -931,6 +932,8 @@ describe("Market", () => {
 			await market.settleMarket(formatBytes16String(marketId));
 
 			inPlayCount = await market.getInPlayCount();
+			const marketCover = await market.getTotalExposure();
+			expect(marketCover, "Total exposure should be zero now").to.equal(0);
 			expect(inPlayCount).to.equal(0);
 		});
 	});

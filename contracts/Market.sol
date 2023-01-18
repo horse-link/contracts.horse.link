@@ -43,17 +43,15 @@ contract Market is IMarket, Ownable, ERC721 {
 	// MarketID => PropositionID => amount bet
 	mapping(bytes16 => mapping(uint16 => uint256)) private _marketBetAmount;
 
-	// PropositionID => amount that could be paid out for this proposition
+	// PropositionID => winnings that could be paid out for this proposition
 	mapping(bytes16 => uint256) private _potentialPayout;
 
-	// MarketID => current maximum payout for the market
-	mapping(bytes16 => uint256) private _maxMarketPayout;
-
-	// MarketID => PropositionID => proposition with the maximum payout for this market
-	mapping(bytes16 => bytes16) private _maxMarketPayoutProposition;
+	// MarketID => amount of cover taken for this market
+	mapping(bytes16 => uint256) private _marketCover;
 
 	uint256 private _totalInPlay;
 	uint256 private _totalExposure;
+	uint256 private _totalCover;
 
 	// Can claim after this period regardless
 	uint256 public immutable timeout;
@@ -201,7 +199,11 @@ contract Market is IMarket, Ownable, ERC721 {
 		if (pool == 0) return 1;
 
 		// Calculate the new odds
+		console.log("getOdds(): pool = %s", pool);
+		console.log("getOdds(): wager = %s", wager);
+		console.log("getOdds(): odds = %s", odds);
 		uint256 adjustedOdds = _getAdjustedOdds(wager, odds, pool);
+		console.log("getOdds(): adjustedOdds = %s", adjustedOdds);
 
 		return adjustedOdds;
 	}
@@ -271,6 +273,8 @@ contract Market is IMarket, Ownable, ERC721 {
 			end > block.timestamp && block.timestamp > close,
 			"back: Invalid date"
 		);
+		console.log("back: wager %s", wager);
+		console.log("back: payout %s", payout);
 
 		// Do not allow a bet placed if we know the result
 		require(
@@ -289,22 +293,23 @@ contract Market is IMarket, Ownable, ERC721 {
 		_inplayCount++;
 
 		// If the payout for this proposition will be greater than the current max payout for the market)
-		uint256 newExposure = payout - wager;
+		uint256 newPotentialPayout = payout - wager;
+		console.log("New potential payout %s", newPotentialPayout);
+		console.log("_potentialPayout[propositionId] %s", _potentialPayout[propositionId]);
 
 		// If the payout for this proposition will be greater than the current max payout for the market (and hence the amount currently covered)
-		_potentialPayout[propositionId] += newExposure;
-		if (_potentialPayout[propositionId] > _maxMarketPayout[marketId]) {
+		_potentialPayout[propositionId] += newPotentialPayout;
+		console.log("Plus newPotentialPayout, _potentialPayout[propositionId] = %s", _potentialPayout[propositionId]);
+		console.log("_marketCover[marketId] = %s", _marketCover[marketId]);
+		if (_potentialPayout[propositionId] > _marketCover[marketId]) {
 			// Get any additional cover we need for this market
-			_maxMarketPayout[marketId] = _potentialPayout[propositionId];
-			_maxMarketPayoutProposition[marketId] = propositionId;
-			_totalExposure += newExposure;
-			console.log("Borrowing %s", newExposure);
-			IERC20(underlying).transferFrom(
-				address(_vault),
-				_self,
-				newExposure
-			);
+			uint256 newCoverRequired =_potentialPayout[propositionId] - _marketCover[marketId];			
+			console.log("Obtaining extra cover %s", newCoverRequired);
+			_obtainCover(marketId, newCoverRequired);
+		} else {
+			console.log("No need for extra cover");
 		}
+		_totalExposure += newPotentialPayout;
 
 		uint64 index = _getCount();
 		_bets.push(
@@ -351,7 +356,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		Bet memory bet = _bets[index];
 		bool result = IOracle(_oracle).checkResult(
 			bet.marketId,
-			bet.propositionIdß
+			bet.propositionId
 		);
 
 		_payout(index, result);
@@ -363,46 +368,46 @@ contract Market is IMarket, Ownable, ERC721 {
 			"_settle: Payout date not reached"
 		);
 		address underlying = _vault.asset();
-		address recipient = address(_vault);
-		if (result == true) {
-			recipient = _bets[index].owner;
-		}
-
 
 		_totalInPlay -= _bets[index].amount;
-		// If paying out the most expensive proposition, this has received the cover amount.
-		// Deduct from exposure, and if lost, return the cover amount to the vault
-		if (
-			keccak256(
-				abi.encodePacked(
-					_maxMarketPayoutProposition[_bets[index].marketId]
-				)
-			) == keccak256(abi.encodePacked(_bets[index].propositionId))
-		) {
-			// Transfer the entire payout to the bet owner or the vault
-			// TODO: If vault, deduct margin
-			IERC20(underlying).transfer(recipient, _bets[index].payout);		
+		if (result == true) {
+			// Send the payout to the bet owner
+			IERC20(underlying).transfer(_bets[index].owner, _bets[index].payout);
 		} else {
-			// If not the most expensive proposition, losing bets result in the vault receiving the wager amount
-			// Winning bets receive the payout amount
-			uint256 transferAmount = result ? _bets[index].payout : _bets[index].amount;
-			// Transfer the proceeds to the vault, less market margin. No cover amount required.
-			// TODO: deduct margin
-			IERC20(underlying).transfer(recipient, transferAmount);
+			// Send the bet amount to the vault
+			IERC20(underlying).transfer(address(_vault), _bets[index].amount);
 		}
+
+		_totalExposure -= _bets[index].payout - _bets[index].amount;
 		_inplayCount--;
 		_burn(index);
 
-		emit Settled(index, _bets[index].payout, result, recipient);
+		emit Settled(index, _bets[index].payout, result, result ? _bets[index].owner : address(_vault));
 	}
 
-	function _obtainCover(bytes16 marketId, uint256 amount) internal view returns (uint256) {
-		IERC20(underlying).transferFrom(
+	// Allow the Vault to provide cover for this market
+	function _obtainCover(bytes16 marketId, uint256 amount) internal returns (uint256) {
+		IERC20(_vault.asset()).transferFrom(
 			address(_vault),
 			_self,
 			amount
 		);
-		marketCover[marketId] += amount;
+		_marketCover[marketId] += amount;
+		_totalCover += amount;
+	}
+
+	// Allow the Vault to reclaim any cover it has provided, provided it is not currently covering any bets
+	function reclaimCover() external onlyOwner {
+		IERC20(_vault.asset()).transfer(address(_vault), _totalCover - _totalExposure);
+		_totalCover = _totalExposure;
+	}
+
+	function getMarketCover(bytes16 marketId) external view returns (uint256) {
+		return _marketCover[marketId];
+	}
+
+	function getTotalCover() external view returns (uint256) {
+		return _totalCover;
 	}
 
 	function settleMarket(bytes16 marketId) external {
