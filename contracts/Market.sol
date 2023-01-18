@@ -26,32 +26,29 @@ struct Bet {
 }
 
 contract Market is IMarket, Ownable, ERC721 {
-	uint8 private immutable _margin;
-	IVault private immutable _vault;
-	address private immutable _self;
-	IOracle private immutable _oracle;
+	uint8 internal immutable _margin;
+	IVault internal immutable _vault;
+	address internal immutable _self;
+	IOracle internal immutable _oracle;
 
-	uint256 private _inplayCount; // running count of bets
-	Bet[] private _bets;
+	uint256 internal _inplayCount; // running count of bets
+	Bet[] internal _bets;
 
 	// MarketID => Bets Indexes
-	mapping(bytes16 => uint64[]) private _marketBets;
+	mapping(bytes16 => uint64[]) internal _marketBets;
 
 	// MarketID => amount bet
-	mapping(bytes16 => uint256) private _marketTotalWagers;
+	mapping(bytes16 => uint256) internal _marketTotalWagers;
 
 	// MarketID => PropositionID => amount bet
-	mapping(bytes16 => mapping(uint16 => uint256)) private _marketBetAmount;
+	mapping(bytes16 => mapping(uint16 => uint256)) internal _marketBetAmount;
 
 	// PropositionID => winnings that could be paid out for this proposition
-	mapping(bytes16 => uint256) private _potentialPayout;
+	mapping(bytes16 => uint256) internal _potentialPayout;
 
-	// MarketID => amount of cover taken for this market
-	mapping(bytes16 => uint256) private _marketCover;
-
-	uint256 private _totalInPlay;
-	uint256 private _totalExposure;
-	uint256 private _totalCover;
+	uint256 internal _totalInPlay;
+	uint256 internal _totalExposure;
+	uint256 internal _totalCover;
 
 	// Can claim after this period regardless
 	uint256 public immutable timeout;
@@ -128,7 +125,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		return _marketTotalWagers[marketId];
 	}
 
-	function _getExpiry(uint64 index) private view returns (uint256) {
+	function _getExpiry(uint64 index) internal view returns (uint256) {
 		return _bets[index].payoutDate + timeout;
 	}
 
@@ -149,7 +146,7 @@ contract Market is IMarket, Ownable, ERC721 {
 	}
 
 	function _getBet(uint64 index)
-		private
+		internal
 		view
 		returns (
 			uint256,
@@ -230,7 +227,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		bytes16 marketId,
 		uint256 wager,
 		uint256 odds
-	) private view returns (uint256) {
+	) internal view returns (uint256) {
 		uint256 trueOdds = _getOdds(wager, odds, propositionId, marketId);
 		return Math.max(wager, (trueOdds * wager) / OddsLib.PRECISION);
 	}
@@ -293,22 +290,10 @@ contract Market is IMarket, Ownable, ERC721 {
 		_inplayCount++;
 
 		// If the payout for this proposition will be greater than the current max payout for the market)
-		uint256 newPotentialPayout = payout - wager;
-		console.log("New potential payout %s", newPotentialPayout);
-		console.log("_potentialPayout[propositionId] %s", _potentialPayout[propositionId]);
 
-		// If the payout for this proposition will be greater than the current max payout for the market (and hence the amount currently covered)
-		_potentialPayout[propositionId] += newPotentialPayout;
-		console.log("Plus newPotentialPayout, _potentialPayout[propositionId] = %s", _potentialPayout[propositionId]);
-		console.log("_marketCover[marketId] = %s", _marketCover[marketId]);
-		if (_potentialPayout[propositionId] > _marketCover[marketId]) {
-			// Get any additional cover we need for this market
-			uint256 newCoverRequired =_potentialPayout[propositionId] - _marketCover[marketId];			
-			console.log("Obtaining extra cover %s", newCoverRequired);
-			_obtainCover(marketId, newCoverRequired);
-		} else {
-			console.log("No need for extra cover");
-		}
+		uint256 newPotentialPayout = payout - wager;
+        _potentialPayout[propositionId] += newPotentialPayout;
+        _obtainCover(marketId, propositionId, wager, payout);
 		_totalExposure += newPotentialPayout;
 
 		uint64 index = _getCount();
@@ -347,63 +332,43 @@ contract Market is IMarket, Ownable, ERC721 {
 
 	function _settle(uint64 index) internal {
 		_bets[index].settled = true;
-
-		if (block.timestamp > _getExpiry(index)) {
-			_payout(index, true);
-			return;
-		}
-
 		Bet memory bet = _bets[index];
 		bool result = IOracle(_oracle).checkResult(
 			bet.marketId,
 			bet.propositionId
 		);
 
-		_payout(index, result);
+		if (block.timestamp > _getExpiry(index)) {		
+			result = true;
+		}
+		_payout(index, result);		
+		_totalExposure -= _bets[index].payout - _bets[index].amount;
+		_totalInPlay -= _bets[index].amount;
+		_inplayCount--;
+		_burn(index);
+		emit Settled(index, _bets[index].payout, result, result ? _bets[index].owner : address(_vault));
 	}
 
-	function _payout(uint256 index, bool result) private {
+	function _payout(uint256 index, bool result) internal virtual {
 		require(
 			_bets[index].payoutDate < block.timestamp,
 			"_settle: Payout date not reached"
 		);
-		address underlying = _vault.asset();
-
-		_totalInPlay -= _bets[index].amount;
-		if (result == true) {
-			// Send the payout to the bet owner
-			IERC20(underlying).transfer(_bets[index].owner, _bets[index].payout);
-		} else {
-			// Send the bet amount to the vault
-			IERC20(underlying).transfer(address(_vault), _bets[index].amount);
-		}
-
-		_totalExposure -= _bets[index].payout - _bets[index].amount;
-		_inplayCount--;
-		_burn(index);
-
-		emit Settled(index, _bets[index].payout, result, result ? _bets[index].owner : address(_vault));
+		address recipient = result ? _bets[index].owner : address(_vault.asset());
+		IERC20(_vault.asset()).transfer(recipient, _bets[index].payout);
+		_totalCover -= _bets[index].payout - _bets[index].amount;
 	}
 
 	// Allow the Vault to provide cover for this market
-	function _obtainCover(bytes16 marketId, uint256 amount) internal returns (uint256) {
+	// Standard implementation is to request cover for each and every bet
+	function _obtainCover(bytes16 marketId, bytes16 propositionId, uint256 wager, uint256 payout) internal virtual returns (uint256) {
+		uint256 amount = payout - wager;
 		IERC20(_vault.asset()).transferFrom(
 			address(_vault),
 			_self,
 			amount
 		);
-		_marketCover[marketId] += amount;
 		_totalCover += amount;
-	}
-
-	// Allow the Vault to reclaim any cover it has provided, provided it is not currently covering any bets
-	function reclaimCover() external onlyOwner {
-		IERC20(_vault.asset()).transfer(address(_vault), _totalCover - _totalExposure);
-		_totalCover = _totalExposure;
-	}
-
-	function getMarketCover(bytes16 marketId) external view returns (uint256) {
-		return _marketCover[marketId];
 	}
 
 	function getTotalCover() external view returns (uint256) {
@@ -417,7 +382,6 @@ contract Market is IMarket, Ownable, ERC721 {
 		for (uint64 i = 0; i < total; i++) {
 			//Get currenct balance of market
 			uint256 balance = IERC20(_vault.asset()).balanceOf(address(this));
-			console.log("Balance: %s", balance);
 			uint64 index = bets[i];
 
 			Bet memory bet = _bets[index];

@@ -419,7 +419,7 @@ describe("Market", () => {
 		);
 	});
 
-	it("Should only borrow the minimum amount required to back a market", async () => {
+	it.skip("Greedy market", async () => {
 		// Alice bets on $10 horse 1, with a payout of $100
 		// Market borrows payout - wager amount
 		// Betty bets $10 on horse 2, with a payout of $90
@@ -831,7 +831,8 @@ describe("Market", () => {
 						close,
 						end,
 						betSignature
-					)
+					),
+				"Should emit a Placed event"
 			)
 				.to.emit(market, "Placed")
 				.withArgs(
@@ -848,9 +849,11 @@ describe("Market", () => {
 				params: [end + 31 * 24 * 60 * 60]
 			});
 
-			expect(await market.settle(index))
+			expect(await market.settle(index), "Should emit a Settled event")
 				.to.emit(market, "Settled")
 				.withArgs(index, 272727300, true, bob.address);
+
+			console.log("Test complete");
 		});
 
 		it("Should settle multiple bets on a market", async () => {
