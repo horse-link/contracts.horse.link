@@ -1,4 +1,5 @@
 import hre, { ethers, deployments } from "hardhat";
+import { time } from "@nomicfoundation/hardhat-network-helpers";
 import { BigNumber, BigNumberish, BytesLike } from "ethers";
 import chai, { expect } from "chai";
 import {
@@ -282,7 +283,9 @@ describe("Market", () => {
 		const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
 
 		const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
-		const close = 0;
+		const currentTime = await time.latest();
+		// Assume race closes in 1 hour from now
+		const close = currentTime + 3600;
 		const end = 1000000000000;
 
 		// check vault balance
@@ -368,7 +371,9 @@ describe("Market", () => {
 
 		const wager = ethers.utils.parseUnits("200", USDT_DECIMALS);
 		const odds = ethers.utils.parseUnits("2", ODDS_DECIMALS);
-		const close = 0;
+		const currentTime = await time.latest();
+		// Assume race closes in 1 hour from now
+		const close = currentTime + 3600;
 		const end = 1000000000000;
 
 		// check vault balance
@@ -434,7 +439,9 @@ describe("Market", () => {
 		// Now Whale attacks
 		const wager = ethers.utils.parseUnits("9000", USDT_DECIMALS);
 		const odds = ethers.utils.parseUnits("2", ODDS_DECIMALS);
-		const close = 0;
+		const currentTime = await time.latest();
+		// Assume race closes in 1 hour from now
+		const close = currentTime + 3600;
 
 		// Whale makes a bet but he doesn't care if he loses
 		const latestBlockNumber = await ethers.provider.getBlockNumber();
@@ -515,7 +522,9 @@ describe("Market", () => {
 		it.skip("Should transfer to vault if result not been set", async () => {
 			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
 			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
-			const close = 0;
+			const currentTime = await time.latest();
+			// Assume race closes in 1 hour from now
+			const close = currentTime + 3600;
 			const latestBlockNumber = await ethers.provider.getBlockNumber();
 			const latestBlock = await ethers.provider.getBlock(latestBlockNumber);
 
@@ -573,7 +582,9 @@ describe("Market", () => {
 		it("Should settle bobs winning bet by index", async () => {
 			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
 			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
-			const close = 0;
+			const currentTime = await time.latest();
+			// Assume race closes in 1 hour from now
+			const close = currentTime + 3600;
 
 			const latestBlockNumber = await ethers.provider.getBlockNumber();
 			const latestBlock = await ethers.provider.getBlock(latestBlockNumber);
@@ -683,7 +694,9 @@ describe("Market", () => {
 		it("Should payout wage after timeout has been reached", async () => {
 			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
 			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
-			const close = 0;
+			const currentTime = await time.latest();
+			// Assume race closes in 1 hour from now
+			const close = currentTime + 3600;
 			const latestBlockNumber = await ethers.provider.getBlockNumber();
 			const latestBlock = await ethers.provider.getBlock(latestBlockNumber);
 
@@ -742,7 +755,9 @@ describe("Market", () => {
 		it("Should settle multiple bets on a market", async () => {
 			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
 			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
-			const close = 0;
+			const currentTime = await time.latest();
+			// Assume race closes in 1 hour from now
+			const close = currentTime + 3600;
 
 			const latestBlockNumber = await ethers.provider.getBlockNumber();
 			const latestBlock = await ethers.provider.getBlock(latestBlockNumber);
