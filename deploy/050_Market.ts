@@ -11,10 +11,10 @@ import { UnderlyingTokens } from "../deployData/settings";
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	const { deployments, getNamedAccounts, network } = hre;
 	const { deploy, execute } = deployments;
-
 	const oracle = await deployments.get("MarketOracle");
 	const namedAccounts = await getNamedAccounts();
 	const deployer = namedAccounts.deployer;
+	const timeoutDays = network.tags.production ? 5 : 1; // 5 days in production, otherwise 1 day
 
 	const signatureLib = await deploy("SignatureLib", {
 		contract: "SignatureLib",
@@ -46,7 +46,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 		const marketDeployment = await deploy(tokenDetails.marketName, {
 			contract: "Market",
 			from: deployer,
-			args: [vaultDeployment.address, 0, oracle.address],
+			args: [vaultDeployment.address, 0, timeoutDays, oracle.address],
 			log: true,
 			autoMine: true,
 			skipIfAlreadyDeployed: false,

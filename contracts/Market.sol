@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity =0.8.10;
+pragma solidity =0.8.15;
 pragma abicoder v2;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -57,6 +57,7 @@ contract Market is IMarket, Ownable, ERC721 {
 	constructor(
 		IVault vault,
 		uint8 margin,
+		uint8 timeoutDays,
 		address oracle
 	) ERC721("Horse Link Bet Slip", "HL-BET") {
 		assert(address(vault) != address(0));
@@ -66,7 +67,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		_oracle = IOracle(oracle);
 		_signers[owner()] = true;
 
-		timeout = 30 days;
+		timeout = timeoutDays * 1 days;
 		min = 1 hours;
 	}
 
