@@ -5,7 +5,6 @@ pragma abicoder v2;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-//Import Hardhat console.log
 import "hardhat/console.sol";
 
 import "./IVault.sol";
@@ -48,7 +47,6 @@ contract Market is IMarket, Ownable, ERC721 {
 
 	uint256 internal _totalInPlay;
 	uint256 internal _totalExposure;
-	uint256 internal _totalCover;
 
 	// Can claim after this period regardless
 	uint256 public immutable timeout;
@@ -195,13 +193,10 @@ contract Market is IMarket, Ownable, ERC721 {
 		// If the pool is not sufficient to cover a new bet
 		if (pool == 0) return 1;
 
-		// Calculate the new odds
-		console.log("getOdds(): pool = %s", pool);
-		console.log("getOdds(): wager = %s", wager);
-		console.log("getOdds(): odds = %s", odds);
-		uint256 adjustedOdds = _getAdjustedOdds(wager, odds, pool);
-		console.log("getOdds(): adjustedOdds = %s", adjustedOdds);
+		pool -= _potentialPayout[propositionId]; //TODO: Should be _totalExposure;
 
+		// Calculate the new odds
+		uint256 adjustedOdds = _getAdjustedOdds(wager, odds, pool);
 		return adjustedOdds;
 	}
 
@@ -270,8 +265,6 @@ contract Market is IMarket, Ownable, ERC721 {
 			end > block.timestamp && block.timestamp > close,
 			"back: Invalid date"
 		);
-		console.log("back: wager %s", wager);
-		console.log("back: payout %s", payout);
 
 		// Do not allow a bet placed if we know the result
 		require(
@@ -293,8 +286,9 @@ contract Market is IMarket, Ownable, ERC721 {
 
 		uint256 newPotentialPayout = payout - wager;
         _potentialPayout[propositionId] += newPotentialPayout;
-        _obtainCover(marketId, propositionId, wager, payout);
-		_totalExposure += newPotentialPayout;
+        _totalExposure += _obtainCover(marketId, propositionId, wager, payout);
+
+		console.log("_totalExposure now: %s", _totalExposure);
 
 		uint64 index = _getCount();
 		_bets.push(
@@ -356,7 +350,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		);
 		address recipient = result ? _bets[index].owner : address(_vault.asset());
 		IERC20(_vault.asset()).transfer(recipient, _bets[index].payout);
-		_totalCover -= _bets[index].payout - _bets[index].amount;
+		_totalExposure -= _bets[index].payout - _bets[index].amount;
 	}
 
 	// Allow the Vault to provide cover for this market
@@ -368,11 +362,7 @@ contract Market is IMarket, Ownable, ERC721 {
 			_self,
 			amount
 		);
-		_totalCover += amount;
-	}
-
-	function getTotalCover() external view returns (uint256) {
-		return _totalCover;
+		return amount;
 	}
 
 	function settleMarket(bytes16 marketId) external {

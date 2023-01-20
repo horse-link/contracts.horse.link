@@ -10,14 +10,14 @@ import {
 } from "../build/typechain";
 import { solidity } from "ethereum-waffle";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { formatBytes16String, makeMarketId, makePropositionId } from "./utils";
+import {
+	formatBytes16String,
+	makeMarketId,
+	makePropositionId,
+	signBackMessage,
+	signSetResultMessage
+} from "./utils";
 import { formatUnits } from "ethers/lib/utils";
-
-type Signature = {
-	v: BigNumberish;
-	r: string;
-	s: string;
-};
 
 // MarketId 11 chars
 // AAAAAABBBCC
@@ -992,105 +992,3 @@ describe("Market", () => {
 		});
 	});
 });
-
-const signMessageAsString = async (
-	message: string,
-	signer: SignerWithAddress
-) => {
-	const sig = await signer.signMessage(ethers.utils.arrayify(message));
-	return sig;
-};
-
-const signMessage = async (
-	message: string,
-	signer: SignerWithAddress
-): Promise<Signature> => {
-	const sig = await signer.signMessage(ethers.utils.arrayify(message));
-	const { v, r, s } = ethers.utils.splitSignature(sig);
-	return { v, r, s };
-};
-
-const makeSetResultMessage = (
-	marketId: string,
-	propositionId: string
-): string => {
-	const b16MarketId = formatBytes16String(marketId);
-	const b16PropositionId = formatBytes16String(propositionId);
-	const message = ethers.utils.solidityKeccak256(
-		["bytes16", "bytes16"],
-		[b16MarketId, b16PropositionId]
-	);
-	return message;
-};
-
-const signSetResultMessage = async (
-	marketId: string,
-	propositionId: string,
-	signer: SignerWithAddress
-): Promise<Signature> => {
-	const settleMessage = makeSetResultMessage(marketId, propositionId);
-	return await signMessage(settleMessage, signer);
-};
-
-const signBackMessage = async (
-	nonce: string,
-	marketId: string,
-	propositionId: string,
-	odds: BigNumber,
-	close: number,
-	end: number,
-	signer: SignerWithAddress
-): Promise<Signature> => {
-	const message = ethers.utils.solidityKeccak256(
-		[
-			"bytes16", // nonce
-			"bytes16", // propositionId
-			"bytes16", // marketId
-			"uint256", // odds
-			"uint256", // close
-			"uint256" // end
-		],
-		[
-			formatBytes16String(nonce),
-			formatBytes16String(propositionId),
-			formatBytes16String(marketId),
-			odds,
-			close,
-			end
-		]
-	);
-	return await signMessage(message, signer);
-};
-
-const signBackMessageWithRisk = async (
-	nonce: string,
-	marketId: string,
-	propositionId: string,
-	odds: BigNumber,
-	close: number,
-	end: number,
-	risk: number,
-	signer: SignerWithAddress
-): Promise<Signature> => {
-	const message = ethers.utils.solidityKeccak256(
-		[
-			"bytes16", // nonce
-			"bytes16", // propositionId
-			"bytes16", // marketId
-			"uint256", // odds
-			"uint256", // close
-			"uint256", // end
-			"uint256" // risk
-		],
-		[
-			formatBytes16String(nonce),
-			formatBytes16String(propositionId),
-			formatBytes16String(marketId),
-			odds,
-			close,
-			end,
-			risk
-		]
-	);
-	return await signMessage(message, signer);
-};
