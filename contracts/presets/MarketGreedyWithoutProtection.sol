@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity =0.8.10;
+pragma solidity =0.8.15;
 
 import "../MarketWithoutProtection.sol";
 import "../MarketGreedy.sol";
@@ -10,8 +10,9 @@ contract MarketGreedyWithoutProtection is MarketGreedy {
     constructor(
         IVault vault,
         uint8 fee,
+        uint8 timeoutDays,
         address oracle
-    ) Market(vault, fee, oracle) {
+    ) Market(vault, fee, timeoutDays, oracle) {
     }
 
     function _getAdjustedOdds(

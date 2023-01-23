@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity =0.8.10;
+pragma solidity =0.8.15;
 pragma abicoder v2;
 import "./Market.sol";
 
@@ -10,11 +10,13 @@ abstract contract MarketGreedy is Market {
     // MarketID => amount of cover taken for this market
 	mapping(bytes16 => uint256) private _marketCover;
 	uint256 internal _totalCover;
+	mapping(bytes16 => bytes16) internal _mostExpensivePropositionId;
 
     function getMarketCover(bytes16 marketId) external view returns (uint256) {
 		return _marketCover[marketId];
 	}
 
+	//TODO: Should return the dedection to total exposure to be 
 	function _payout(uint256 index, bool result) internal override {
 		require(
 			_bets[index].payoutDate < block.timestamp,
@@ -22,25 +24,40 @@ abstract contract MarketGreedy is Market {
 		);
 		address underlying = _vault.asset();
 
-		_totalInPlay -= _bets[index].amount;
+		//_totalInPlay -= _bets[index].amount;
 		if (result == true) {
 			// Send the payout to the bet owner
-			IERC20(underlying).transfer(_bets[index].owner, _bets[index].payout);
-			// Deduct from market cover
-            
+			IERC20(underlying).transfer(_bets[index].owner, _bets[index].payout);         
 		} else {
 			// Send the bet amount to the vault
 			IERC20(underlying).transfer(address(_vault), _bets[index].amount);
 			uint256 cover = _bets[index].payout - _bets[index].amount;
 			if (_marketCover[_bets[index].marketId] >= cover) {
 				_marketCover[_bets[index].marketId] -= cover;
-				_totalExposure -= cover;
 			} else {
-				_totalExposure -= _marketCover[_bets[index].marketId];
+				//_totalExposure -= _marketCover[_bets[index].marketId];
 				_marketCover[_bets[index].marketId] = 0;
 			}		
 		}
+
+		//If paying out the most expensive proposition,
+		if (isMostExpensiveProposition(_bets[index].propositionId, _bets[index].marketId)) {
+			console.log("*** Paying out the most expensive proposition");
+			// Deduct from total exposure
+			_totalExposure -= (_bets[index].payout - _bets[index].amount);
+		} else {
+			console.log("*** Not paying out the most expensive proposition");
+		}
         
+	}
+
+	function isMostExpensiveProposition(bytes16 propositionId, bytes16 marketId) internal view returns (bool) {
+		//console.log("Most expensive:");
+		//console.logBytes16(_mostExpensivePropositionId);
+		//console.log("Proposition:");
+		//console.logBytes16(propositionId);
+		bytes16 mostExpensivePropositionId = _mostExpensivePropositionId[marketId];
+		return keccak256(abi.encodePacked(propositionId)) == keccak256(abi.encodePacked(mostExpensivePropositionId));
 	}
 
 	// Overridden to make this "greedy" - it will hold on to the cover amounts for future bets
@@ -53,6 +70,9 @@ abstract contract MarketGreedy is Market {
 		console.log("_marketCover[marketId]: %s", _marketCover[marketId]);
 		if (_potentialPayout[propositionId] > _marketCover[marketId]) {
 			// Get any additional cover we need for this market
+			_mostExpensivePropositionId[marketId] = propositionId;
+			//console.log("New most expensive proposition: ");
+			//console.logBytes16(_mostExpensivePropositionId);
 
 			uint256 amountRequired =_potentialPayout[propositionId] - _marketCover[marketId];
 			//console.log("amountRequired: %s", amountRequired);

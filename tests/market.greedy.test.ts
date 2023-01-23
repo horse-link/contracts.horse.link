@@ -25,16 +25,9 @@ type Signature = {
 	s: string;
 };
 
-// MarketId 11 chars
-// AAAAAABBBCC
-// A = date as days since epoch
-// B = location code
-// C = race number
-const MARKET_ID = "019123BNE01";
-
 chai.use(solidity);
 
-describe.only("Greedy Market", () => {
+describe.only("Greedy Market: play through", () => {
 	let underlying: Token;
 	let tokenDecimals: number;
 	let vault: Vault;
@@ -48,6 +41,15 @@ describe.only("Greedy Market", () => {
 	let oracleSigner: SignerWithAddress;
 	const marketId1 = makeMarketId(new Date(), "ABC", "1");
 	const marketId2 = makeMarketId(new Date(), "DEF", "2");
+	const bet1 = 100;
+	const bet1Odds = 5;
+	const bet2 = 100;
+	const bet2Odds = 4;
+	const bet3 = 50;
+	const bet3Odds = 5;
+	let bet1Cover: BigNumber;
+	let bet2Cover: BigNumber;
+	let bet3Cover: BigNumber;
 
 	const close = 0;
 	const end = 1000000000000;
@@ -116,7 +118,7 @@ describe.only("Greedy Market", () => {
 
 		// https://www.npmjs.com/package/hardhat-deploy?activeTab=readme#handling-contract-using-libraries
 		// https://stackoverflow.com/questions/71389974/how-can-i-link-library-and-contract-in-one-file
-		const args = [vault.address, MARGIN, oracle.address];
+		const args = [vault.address, MARGIN, 1, oracle.address];
 		market = (await marketFactory.deploy(...args)) as Market;
 
 		await vault.setMarket(market.address, ethers.constants.MaxUint256);
@@ -148,24 +150,31 @@ describe.only("Greedy Market", () => {
 			);
 	});
 
-	it("Should get cover from the vault for a new bet", async () => {
-		const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
-		const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
+	it("Bet 1: Should get cover from the vault for a new bet", async () => {
+		const marketId = marketId1;
+		const wager = ethers.utils.parseUnits(bet1.toString(), USDT_DECIMALS);
+		const odds = ethers.utils.parseUnits(bet1Odds.toString(), ODDS_DECIMALS);
+		const potentialWinnings = wager
+			.mul(odds)
+			.div(ethers.utils.parseUnits("1", ODDS_DECIMALS));
+		const originalVaultBalance = await underlying.balanceOf(vault.address);
+		const originalExposure = await market.getTotalExposure();
 		const close = 0;
 		const end = 1000000000000;
-		const propositionId = makePropositionId(marketId1, 1);
-
-		let vaultBalance = await underlying.balanceOf(vault.address);
+		const propositionId = makePropositionId(marketId, 1);
 
 		await underlying
 			.connect(bob)
-			.approve(market.address, ethers.utils.parseUnits("100", tokenDecimals));
+			.approve(
+				market.address,
+				ethers.utils.parseUnits(bet1.toString(), tokenDecimals)
+			);
 
 		const nonce = "1";
 
 		const signature = await signBackMessage(
 			nonce,
-			marketId1,
+			marketId,
 			propositionId,
 			odds,
 			close,
@@ -178,7 +187,7 @@ describe.only("Greedy Market", () => {
 			.back(
 				formatBytes16String(nonce),
 				formatBytes16String(propositionId),
-				formatBytes16String(marketId1),
+				formatBytes16String(marketId),
 				wager,
 				odds,
 				close,
@@ -187,34 +196,44 @@ describe.only("Greedy Market", () => {
 			);
 
 		expect(
-			await market.getMarketTotalWagers(formatBytes16String(marketId1))
-		).to.equal(ethers.utils.parseUnits("100", USDT_DECIMALS));
+			await market.getMarketTotalWagers(formatBytes16String(marketId))
+		).to.equal(ethers.utils.parseUnits(bet1.toString(), USDT_DECIMALS));
 
 		const inPlay = await market.getTotalInPlay();
-		expect(inPlay).to.equal(ethers.utils.parseUnits("100", tokenDecimals));
-
-		vaultBalance = await underlying.balanceOf(vault.address);
-		expect(vaultBalance, "Vault should have covered $400 of the bet").to.equal(
-			BigNumber.from(ethers.utils.parseUnits("999600", tokenDecimals))
+		expect(inPlay).to.equal(
+			ethers.utils.parseUnits(bet1.toString(), tokenDecimals)
 		);
+
+		const newVaultBalance = await underlying.balanceOf(vault.address);
+		const vaultDelta = originalVaultBalance.sub(newVaultBalance);
+		bet1Cover = potentialWinnings.sub(wager);
+		expect(
+			vaultDelta,
+			`Vault should have covered $${ethers.utils.formatUnits(
+				bet1Cover,
+				tokenDecimals
+			)} of the bet`
+		).to.equal(bet1Cover);
+
+		const newExposure = await market.getTotalExposure();
+		expect(
+			newExposure,
+			"Exposure should have gone up by the covered amount"
+		).to.equal(originalExposure.add(bet1Cover));
 
 		const tokenOwner = await market.ownerOf(0);
 		expect(tokenOwner, "Bob should have a bet NFT").to.equal(bob.address);
 	});
 
-	it("Should not get any new cover for a lesser bet on a different proposition in the same market", async () => {
-		const betAmountNumber = 50;
-		const oddsNumber = 4;
-		const wager = ethers.utils.parseUnits(
-			betAmountNumber.toString(),
-			tokenDecimals
-		);
-		const odds = ethers.utils.parseUnits(oddsNumber.toString(), ODDS_DECIMALS);
-		const propositionId = makePropositionId(marketId1, 2);
+	it("Bet 2: Should not get any new cover for a lesser bet on a different proposition in the same market", async () => {
+		const marketId = marketId1;
+		const wager = ethers.utils.parseUnits(bet2.toString(), tokenDecimals);
+		const odds = ethers.utils.parseUnits(bet2Odds.toString(), ODDS_DECIMALS);
+		const propositionId = makePropositionId(marketId, 2);
 
 		const originalVaultBalance = await underlying.balanceOf(vault.address);
 		const originalTotalWagers = await market.getMarketTotalWagers(
-			formatBytes16String(marketId1)
+			formatBytes16String(marketId)
 		);
 		const originalInPlay = await market.getTotalInPlay();
 
@@ -224,7 +243,7 @@ describe.only("Greedy Market", () => {
 
 		const signature = await signBackMessage(
 			nonce,
-			marketId1,
+			marketId,
 			propositionId,
 			odds,
 			close,
@@ -237,7 +256,7 @@ describe.only("Greedy Market", () => {
 			.back(
 				formatBytes16String(nonce),
 				formatBytes16String(propositionId),
-				formatBytes16String(marketId1),
+				formatBytes16String(marketId),
 				wager,
 				odds,
 				close,
@@ -267,22 +286,22 @@ describe.only("Greedy Market", () => {
 		expect(tokenOwner, "Bob should have a bet NFT").to.equal(bob.address);
 	});
 
-	it("Should get cover for a new bet on a different market", async () => {
-		const betAmountNumber = 100;
-		const oddsNumber = 5;
-		const wager = ethers.utils.parseUnits(
-			betAmountNumber.toString(),
-			tokenDecimals
-		);
-		const odds = ethers.utils.parseUnits(oddsNumber.toString(), ODDS_DECIMALS);
+	it("Bet 3: Should get cover for a new bet on a different market", async () => {
+		const odds = ethers.utils.parseUnits(bet3Odds.toString(), ODDS_DECIMALS);
 		const propositionId = makePropositionId(marketId2, 1);
-		const potentialWinnings = ethers.utils.parseUnits("400", ODDS_DECIMALS);
+		const wager = ethers.utils.parseUnits(bet3.toString(), tokenDecimals);
+		const potentialWinnings = wager
+			.mul(odds)
+			.div(ethers.utils.parseUnits("1", ODDS_DECIMALS));
+		const originalVaultBalance = await underlying.balanceOf(vault.address);
 		const winningsTokens = ethers.utils.formatUnits(
 			potentialWinnings,
 			tokenDecimals
 		);
+		console.log(`Betting ${bet3} tokens at odds of ${bet3Odds}`);
 
-		const originalVaultBalance = await underlying.balanceOf(vault.address);
+		console.log(`Potential winnings: ${winningsTokens} tokens`);
+
 		const originalTotalWagers = await market.getMarketTotalWagers(
 			formatBytes16String(marketId2)
 		);
@@ -329,25 +348,29 @@ describe.only("Greedy Market", () => {
 		);
 
 		const newVaultBalance = await underlying.balanceOf(vault.address);
-		const differenceInTokens = originalVaultBalance.sub(newVaultBalance);
+		const vaultDelta = newVaultBalance.sub(originalVaultBalance);
+		bet3Cover = potentialWinnings.sub(wager);
 		expect(
-			differenceInTokens,
-			`Vault should have covered ${winningsTokens} of the bet but instead covered $${differenceInTokens}`
-		).to.equal(potentialWinnings);
-		//expect(vaultBalance.sub(newVaultBalance), "Vault should have covered $400 of the bet").to.equal(
-		//	BigNumber.from(ethers.utils.parseUnits("400", tokenDecimals)),
-		//);
+			vaultDelta,
+			`Vault should have covered $${ethers.utils.formatUnits(
+				bet3Cover,
+				tokenDecimals
+			)} of the bet`
+		).to.equal(vaultDelta);
 
 		const tokenOwner = await market.ownerOf(2);
 		expect(tokenOwner, "Bob should have a bet NFT").to.equal(bob.address);
 	});
 
-	it.skip("Should settle the first bet", async () => {
+	it("Bet 1: Should settle", async () => {
 		const propositionId = makePropositionId(marketId1, 1);
+		const originalExposure = await market.getTotalExposure();
 		await hre.network.provider.request({
 			method: "evm_setNextBlockTimestamp",
 			params: [end + 7200]
 		});
+
+		const originalInPlay = await market.getTotalInPlay();
 
 		const oracleOwner = await oracle.getOwner();
 		const signature = await signSetResultMessage(
@@ -361,11 +384,100 @@ describe.only("Greedy Market", () => {
 			signature
 		);
 
-		await market.connect(alice).settle(0);
+		// Alice won the bet
+		const initialBobBalance = await underlying.balanceOf(bob.address);
+		await market.connect(bob).settle(0);
 
-		await market.connect(owner).settle(0);
+		const newInPlay = await market.getTotalInPlay();
+		const inPlayDelta = originalInPlay.sub(newInPlay);
+		expect(
+			inPlayDelta,
+			"Total In Play should have gone down by the wager amount"
+		).to.equal(ethers.utils.parseUnits(bet1.toString(), tokenDecimals));
 
-		const inPlay = await market.getTotalInPlay();
-		expect(inPlay).to.equal(ethers.utils.parseUnits("140", tokenDecimals));
+		const bobBalance = await underlying.balanceOf(bob.address);
+		const bobDelta = bobBalance.sub(initialBobBalance);
+		expect(bobDelta, "Bob should have won the bet").to.equal(
+			BigNumber.from(bet1).mul(
+				ethers.utils.parseUnits(bet1Odds.toString(), ODDS_DECIMALS)
+			)
+		);
+
+		const newExposure = await market.getTotalExposure();
+		const exposureDelta = originalExposure.sub(newExposure);
+		expect(
+			exposureDelta,
+			"Bet 1: Exposure should have gone down by the covered amount"
+		).to.equal(bet1Cover);
+	});
+
+	it("Should settle the second bet", async () => {
+		const originalInPlay = await market.getTotalInPlay();
+		const originalExposure = await market.getTotalExposure();
+
+		// Bob lost the bet
+		const initialBobBalance = await underlying.balanceOf(bob.address);
+		await market.connect(bob).settle(1);
+
+		const newInPlay = await market.getTotalInPlay();
+		const inPlayDelta = originalInPlay.sub(newInPlay);
+		expect(
+			inPlayDelta,
+			"Total In Play should have gone down by the wager amount"
+		).to.equal(ethers.utils.parseUnits(bet2.toString(), tokenDecimals));
+
+		const bobBalance = await underlying.balanceOf(bob.address);
+		const bobDelta = bobBalance.sub(initialBobBalance);
+		expect(bobDelta, "Bob should have lost the bet").to.equal(0);
+
+		const newExposure = await market.getTotalExposure();
+		const exposureDelta = originalExposure.sub(newExposure);
+		expect(exposureDelta, "Total Exposure should not have gone down").to.equal(
+			BigNumber.from(0)
+		);
+	});
+
+	it("Should settle the third bet", async () => {
+		const propositionId = makePropositionId(marketId2, 1);
+		const signature = await signSetResultMessage(
+			marketId2,
+			propositionId,
+			oracleSigner
+		);
+		await oracle.setResult(
+			formatBytes16String(marketId2),
+			formatBytes16String(propositionId),
+			signature
+		);
+		const originalExposure = await market.getTotalExposure();
+		const originalInPlay = await market.getTotalInPlay();
+
+		// Bob won the bet
+		const initialBobBalance = await underlying.balanceOf(bob.address);
+		await market.connect(bob).settle(2);
+
+		const newInPlay = await market.getTotalInPlay();
+		const inPlayDelta = originalInPlay.sub(newInPlay);
+		expect(
+			inPlayDelta,
+			"Total In Play should have gone down by the wager amount"
+		).to.equal(ethers.utils.parseUnits(bet3.toString(), tokenDecimals));
+
+		const bobBalance = await underlying.balanceOf(bob.address);
+		const bobDelta = bobBalance.sub(initialBobBalance);
+		expect(bobDelta, "Bob should have lost the bet").to.equal(
+			BigNumber.from(bet3).mul(
+				ethers.utils.parseUnits(bet3Odds.toString(), ODDS_DECIMALS)
+			)
+		);
+
+		const newExposure = await market.getTotalExposure();
+		expect(
+			newExposure,
+			"Total Exposure should have gone down by the covered amount"
+		).to.equal(originalExposure.sub(bet3Cover));
+		expect(newExposure, "There should be no exposure").to.equal(
+			BigNumber.from(0)
+		);
 	});
 });
