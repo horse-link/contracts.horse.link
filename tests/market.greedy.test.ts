@@ -20,7 +20,7 @@ import {
 
 chai.use(solidity);
 
-describe.only("Greedy Market: play through", () => {
+describe("Greedy Market: play through", () => {
 	let underlying: Token;
 	let tokenDecimals: number;
 	let vault: Vault;
