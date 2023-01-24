@@ -193,6 +193,10 @@ contract Market is IMarket, Ownable, ERC721 {
 
 		// If the pool is not sufficient to cover a new bet
 		if (pool == 0) return 1;
+		// exclude the current total potential payout from the pool
+		if (_potentialPayout[propositionId] > pool) {
+			return 1;
+		}
 
 		pool -= _potentialPayout[propositionId]; //TODO: Should be _totalExposure;
 

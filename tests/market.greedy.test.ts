@@ -42,7 +42,7 @@ describe("Greedy Market: play through", () => {
 	let bet1Cover: BigNumber;
 	let bet3Cover: BigNumber;
 
-	const close = 0;
+	const close = 1000000000000;
 	const end = 1000000000000;
 
 	const USDT_DECIMALS = 6;
@@ -152,7 +152,7 @@ describe("Greedy Market: play through", () => {
 			.div(ethers.utils.parseUnits("1", ODDS_DECIMALS));
 		const originalVaultBalance = await underlying.balanceOf(vault.address);
 		const originalExposure = await market.getTotalExposure();
-		const close = 0;
+		const close = 1000000000000;
 		const end = 1000000000000;
 		const propositionId = makePropositionId(marketId, 1);
 
