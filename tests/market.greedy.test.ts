@@ -351,8 +351,8 @@ describe("Greedy Market: play through", () => {
 			)} of the bet`
 		).to.equal(vaultDelta);
 
-		//const tokenOwner = await market.ownerOf(2);
-		//expect(tokenOwner, "Bob should have a bet NFT").to.equal(bob.address);
+		const tokenOwner = await market.ownerOf(2);
+		expect(tokenOwner, "Bob should have a bet NFT").to.equal(bob.address);
 	});
 
 	it("Fast forward", async () => {
@@ -463,10 +463,6 @@ describe("Greedy Market: play through", () => {
 		expect(bobDelta, "Bob should have lost the bet").to.equal(
 			BigNumber.from(0)
 		);
-		/*	BigNumber.from(bet3).mul(
-				ethers.utils.parseUnits(bet3Odds.toString(), ODDS_DECIMALS)
-			)
-		);*/
 
 		const newExposure = await market.getTotalExposure();
 		expect(
