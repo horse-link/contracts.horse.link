@@ -5,7 +5,7 @@
     * This allows for the name and symbol to be used contract logic.
 */
 
-pragma solidity ^0.8.0;
+pragma solidity =0.8.15;
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
 import "@openzeppelin/contracts/interfaces/IERC20Metadata.sol";
 

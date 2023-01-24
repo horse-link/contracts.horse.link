@@ -263,7 +263,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		uint256 payout
 	) internal returns (uint256) {
 		require(
-			end > block.timestamp && block.timestamp > close,
+			end > block.timestamp && close > block.timestamp,
 			"back: Invalid date"
 		);
 
