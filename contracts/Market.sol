@@ -5,7 +5,6 @@ pragma abicoder v2;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "hardhat/console.sol";
 
 import "./IVault.sol";
 import "./IMarket.sol";
@@ -288,8 +287,6 @@ contract Market is IMarket, Ownable, ERC721 {
 		uint256 newPotentialPayout = payout - wager;
         _potentialPayout[propositionId] += newPotentialPayout;
         _totalExposure += _obtainCover(marketId, propositionId, wager, payout);
-
-		console.log("_totalExposure now: %s", _totalExposure);
 
 		uint64 index = _getCount();
 		_bets.push(

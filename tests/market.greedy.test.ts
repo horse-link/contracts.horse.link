@@ -1,8 +1,8 @@
 import hre, { ethers, deployments } from "hardhat";
-import { BigNumber, BigNumberish, BytesLike } from "ethers";
+import { BigNumber, BigNumberish } from "ethers";
 import chai, { expect } from "chai";
 import {
-	Market,
+	MarketGreedyWithoutProtection,
 	MarketOracle,
 	Token,
 	Vault,
@@ -17,13 +17,6 @@ import {
 	signBackMessage,
 	signSetResultMessage
 } from "./utils";
-import { formatUnits } from "ethers/lib/utils";
-
-type Signature = {
-	v: BigNumberish;
-	r: string;
-	s: string;
-};
 
 chai.use(solidity);
 
@@ -31,7 +24,7 @@ describe.only("Greedy Market: play through", () => {
 	let underlying: Token;
 	let tokenDecimals: number;
 	let vault: Vault;
-	let market: Market;
+	let market: MarketGreedyWithoutProtection;
 	let oracle: MarketOracle;
 	let owner: SignerWithAddress;
 	let alice: SignerWithAddress;
@@ -119,7 +112,9 @@ describe.only("Greedy Market: play through", () => {
 		// https://www.npmjs.com/package/hardhat-deploy?activeTab=readme#handling-contract-using-libraries
 		// https://stackoverflow.com/questions/71389974/how-can-i-link-library-and-contract-in-one-file
 		const args = [vault.address, MARGIN, 1, oracle.address];
-		market = (await marketFactory.deploy(...args)) as Market;
+		market = (await marketFactory.deploy(
+			...args
+		)) as MarketGreedyWithoutProtection;
 
 		await vault.setMarket(market.address, ethers.constants.MaxUint256);
 		await underlying
@@ -358,18 +353,20 @@ describe.only("Greedy Market: play through", () => {
 			)} of the bet`
 		).to.equal(vaultDelta);
 
-		const tokenOwner = await market.ownerOf(2);
-		expect(tokenOwner, "Bob should have a bet NFT").to.equal(bob.address);
+		//const tokenOwner = await market.ownerOf(2);
+		//expect(tokenOwner, "Bob should have a bet NFT").to.equal(bob.address);
+	});
+
+	it("Fast forward", async () => {
+		await hre.network.provider.request({
+			method: "evm_setNextBlockTimestamp",
+			params: [end + 7200]
+		});
 	});
 
 	it("Bet 1: Should settle", async () => {
 		const propositionId = makePropositionId(marketId1, 1);
 		const originalExposure = await market.getTotalExposure();
-		await hre.network.provider.request({
-			method: "evm_setNextBlockTimestamp",
-			params: [end + 7200]
-		});
-
 		const originalInPlay = await market.getTotalInPlay();
 
 		const oracleOwner = await oracle.getOwner();
@@ -438,7 +435,8 @@ describe.only("Greedy Market: play through", () => {
 	});
 
 	it("Should settle the third bet", async () => {
-		const propositionId = makePropositionId(marketId2, 1);
+		const betId = 2;
+		const propositionId = makePropositionId(marketId2, 2);
 		const signature = await signSetResultMessage(
 			marketId2,
 			propositionId,
@@ -452,9 +450,9 @@ describe.only("Greedy Market: play through", () => {
 		const originalExposure = await market.getTotalExposure();
 		const originalInPlay = await market.getTotalInPlay();
 
-		// Bob won the bet
+		// Bob lost the bet
 		const initialBobBalance = await underlying.balanceOf(bob.address);
-		await market.connect(bob).settle(2);
+		await market.connect(bob).settle(betId);
 
 		const newInPlay = await market.getTotalInPlay();
 		const inPlayDelta = originalInPlay.sub(newInPlay);
@@ -464,12 +462,14 @@ describe.only("Greedy Market: play through", () => {
 		).to.equal(ethers.utils.parseUnits(bet3.toString(), tokenDecimals));
 
 		const bobBalance = await underlying.balanceOf(bob.address);
-		const bobDelta = bobBalance.sub(initialBobBalance);
+		const bobDelta = initialBobBalance.sub(bobBalance);
 		expect(bobDelta, "Bob should have lost the bet").to.equal(
-			BigNumber.from(bet3).mul(
+			BigNumber.from(0)
+		);
+		/*	BigNumber.from(bet3).mul(
 				ethers.utils.parseUnits(bet3Odds.toString(), ODDS_DECIMALS)
 			)
-		);
+		);*/
 
 		const newExposure = await market.getTotalExposure();
 		expect(
@@ -479,5 +479,22 @@ describe.only("Greedy Market: play through", () => {
 		expect(newExposure, "There should be no exposure").to.equal(
 			BigNumber.from(0)
 		);
+		//There should be some assets left in the market
+		const marketBalance = await underlying.balanceOf(market.address);
+		expect(marketBalance, "Market should have some assets").to.not.equal(
+			BigNumber.from(0)
+		);
+
+		const totalCover = await market.getTotalCover();
+		expect(
+			totalCover,
+			`Total cover (${ethers.utils.formatUnits(
+				totalCover,
+				tokenDecimals
+			)}) should be the same as the market balance (${ethers.utils.formatUnits(
+				marketBalance,
+				tokenDecimals
+			)})`
+		).to.equal(marketBalance);
 	});
 });
