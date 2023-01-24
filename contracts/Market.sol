@@ -20,7 +20,6 @@ struct Bet {
 	uint256 payout;
 	uint256 payoutDate;
 	bool settled;
-	address owner;
 }
 
 contract Market is IMarket, Ownable, ERC721 {
@@ -127,7 +126,6 @@ contract Market is IMarket, Ownable, ERC721 {
 			uint256,
 			uint256, // payoutDate
 			bool,
-			address,
 			bytes16, // marketId
 			bytes16 // propositionId
 		)
@@ -143,13 +141,12 @@ contract Market is IMarket, Ownable, ERC721 {
 			uint256,
 			uint256,
 			bool,
-			address,
 			bytes16,
 			bytes16
 		)
 	{
 		Bet memory bet = _bets[index];
-		return (bet.amount, bet.payout, bet.payoutDate, bet.settled, bet.owner, bet.marketId, bet.propositionId);
+		return (bet.amount, bet.payout, bet.payoutDate, bet.settled, bet.marketId, bet.propositionId);
 	}
 
 	function getOdds(
@@ -291,7 +288,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		uint64 index = _getCount();
 
 		_bets.push(
-			Bet(propositionId, marketId, wager, payout, end, false, _msgSender())
+			Bet(propositionId, marketId, wager, payout, end, false)
 		);
 
 		_marketBets[marketId].push(index);
@@ -341,7 +338,8 @@ contract Market is IMarket, Ownable, ERC721 {
         _inplayCount --;
 
         address underlying = _vault.asset();
-		address recipient = _bets[index].owner;
+		// Transfer the proceeds to the owner of the NFT
+		address recipient = ownerOf(index);
 
         if (result == false) {
             // Transfer the proceeds to the vault, less market margin
