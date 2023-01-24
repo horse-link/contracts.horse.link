@@ -371,8 +371,6 @@ contract Market is IMarket, Ownable, ERC721 {
 		uint256 total = bets.length;
 
 		for (uint64 i = 0; i < total; i++) {
-			//Get currenct balance of market
-			uint256 balance = IERC20(_vault.asset()).balanceOf(address(this));
 			uint64 index = bets[i];
 
 			Bet memory bet = _bets[index];
