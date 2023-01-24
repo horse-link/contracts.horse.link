@@ -1,6 +1,6 @@
 import hre, { ethers, deployments } from "hardhat";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
-import { BigNumber, BigNumberish, BytesLike } from "ethers";
+import { BigNumber } from "ethers";
 import chai, { expect } from "chai";
 import {
 	Market,
@@ -18,14 +18,6 @@ import {
 	signBackMessage,
 	signSetResultMessage
 } from "./utils";
-import { formatUnits } from "ethers/lib/utils";
-
-// MarketId 11 chars
-// AAAAAABBBCC
-// A = date as days since epoch
-// B = location code
-// C = race number
-const MARKET_ID = "019123BNE01";
 
 chai.use(solidity);
 
@@ -282,7 +274,6 @@ describe("Market", () => {
 		);
 
 		const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
-
 		const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
 		const currentTime = await time.latest();
 		// Assume race closes in 1 hour from now

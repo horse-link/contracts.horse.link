@@ -126,7 +126,7 @@ const signMessageAsString = async (
 	return sig;
 };
 
-const signBackMessageWithRisk = async (
+async function signBackMessageWithRisk(
 	nonce: string,
 	marketId: string,
 	propositionId: string,
@@ -135,7 +135,7 @@ const signBackMessageWithRisk = async (
 	end: number,
 	risk: number,
 	signer: SignerWithAddress
-): Promise<Signature> => {
+): Promise<Signature> {
 	const message = ethers.utils.solidityKeccak256(
 		[
 			"bytes16", // nonce
@@ -157,4 +157,4 @@ const signBackMessageWithRisk = async (
 		]
 	);
 	return await signMessage(message, signer);
-};
+}

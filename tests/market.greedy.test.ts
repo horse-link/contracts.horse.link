@@ -1,5 +1,5 @@
 import hre, { ethers, deployments } from "hardhat";
-import { BigNumber, BigNumberish } from "ethers";
+import { BigNumber } from "ethers";
 import chai, { expect } from "chai";
 import {
 	MarketGreedyWithoutProtection,
@@ -30,7 +30,6 @@ describe("Greedy Market: play through", () => {
 	let alice: SignerWithAddress;
 	let bob: SignerWithAddress;
 	let carol: SignerWithAddress;
-	let marketSigner: SignerWithAddress;
 	let oracleSigner: SignerWithAddress;
 	const marketId1 = makeMarketId(new Date(), "ABC", "1");
 	const marketId2 = makeMarketId(new Date(), "DEF", "2");
@@ -41,7 +40,6 @@ describe("Greedy Market: play through", () => {
 	const bet3 = 50;
 	const bet3Odds = 5;
 	let bet1Cover: BigNumber;
-	let bet2Cover: BigNumber;
 	let bet3Cover: BigNumber;
 
 	const close = 0;
@@ -53,7 +51,7 @@ describe("Greedy Market: play through", () => {
 
 	before(async () => {
 		[owner, alice, bob, carol] = await ethers.getSigners();
-		marketSigner = alice;
+
 		oracleSigner = owner;
 		const fixture = await deployments.fixture([
 			"token",
@@ -369,7 +367,6 @@ describe("Greedy Market: play through", () => {
 		const originalExposure = await market.getTotalExposure();
 		const originalInPlay = await market.getTotalInPlay();
 
-		const oracleOwner = await oracle.getOwner();
 		const signature = await signSetResultMessage(
 			marketId1,
 			propositionId,
