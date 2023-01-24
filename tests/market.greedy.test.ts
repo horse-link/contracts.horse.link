@@ -190,9 +190,9 @@ describe.only("Greedy Market: play through", () => {
 				signature
 			);
 
-		expect(
-			await market.getMarketTotalWagers(formatBytes16String(marketId))
-		).to.equal(ethers.utils.parseUnits(bet1.toString(), USDT_DECIMALS));
+		expect(await market.getMarketTotal(formatBytes16String(marketId))).to.equal(
+			ethers.utils.parseUnits(bet1.toString(), USDT_DECIMALS)
+		);
 
 		const inPlay = await market.getTotalInPlay();
 		expect(inPlay).to.equal(
@@ -227,7 +227,7 @@ describe.only("Greedy Market: play through", () => {
 		const propositionId = makePropositionId(marketId, 2);
 
 		const originalVaultBalance = await underlying.balanceOf(vault.address);
-		const originalTotalWagers = await market.getMarketTotalWagers(
+		const originalTotalWagers = await market.getMarketTotal(
 			formatBytes16String(marketId)
 		);
 		const originalInPlay = await market.getTotalInPlay();
@@ -259,7 +259,7 @@ describe.only("Greedy Market: play through", () => {
 				signature
 			);
 
-		const newTotalWagers = await market.getMarketTotalWagers(
+		const newTotalWagers = await market.getMarketTotal(
 			formatBytes16String(marketId1)
 		);
 		//Expect the total wagers to have gone up by the wager amount
@@ -297,7 +297,7 @@ describe.only("Greedy Market: play through", () => {
 
 		console.log(`Potential winnings: ${winningsTokens} tokens`);
 
-		const originalTotalWagers = await market.getMarketTotalWagers(
+		const originalTotalWagers = await market.getMarketTotal(
 			formatBytes16String(marketId2)
 		);
 		const originalInPlay = await market.getTotalInPlay();
@@ -328,7 +328,7 @@ describe.only("Greedy Market: play through", () => {
 				signature
 			);
 
-		const newTotalWagers = await market.getMarketTotalWagers(
+		const newTotalWagers = await market.getMarketTotal(
 			formatBytes16String(marketId2)
 		);
 		//Expect the total wagers to have gone up by the wager amount

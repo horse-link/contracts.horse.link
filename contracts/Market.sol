@@ -36,7 +36,7 @@ contract Market is IMarket, Ownable, ERC721 {
 	mapping(bytes16 => uint64[]) internal _marketBets;
 
 	// MarketID => amount bet
-	mapping(bytes16 => uint256) internal _marketTotalWagers;
+	mapping(bytes16 => uint256) internal _marketTotal;
 
 	// MarketID => PropositionID => amount bet
 	mapping(bytes16 => mapping(uint16 => uint256)) internal _marketBetAmount;
@@ -115,12 +115,13 @@ contract Market is IMarket, Ownable, ERC721 {
 		return _getExpiry(index);
 	}
 
-	function getMarketTotalWagers(bytes16 marketId)
+
+	function getMarketTotal(bytes16 marketId)
 		external
 		view
 		returns (uint256)
 	{
-		return _marketTotalWagers[marketId];
+		return _marketTotal[marketId];
 	}
 
 	function _getExpiry(uint64 index) internal view returns (uint256) {
@@ -278,7 +279,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		IERC20(underlying).transferFrom(_msgSender(), _self, wager);
 
 		// Add to in play total for this marketId
-		_marketTotalWagers[marketId] += wager;
+		_marketTotal[marketId] += wager;
 		_totalInPlay += wager;
 		_inplayCount++;
 
