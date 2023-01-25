@@ -291,7 +291,7 @@ contract Market is IMarket, Ownable, ERC721 {
 
 		uint256 newPotentialPayout = payout - wager;
         _potentialPayout[propositionId] += newPotentialPayout;
-        _totalExposure += _obtainCover(marketId, propositionId, wager, payout);
+        _totalExposure += _obtainCollateral(marketId, propositionId, wager, payout);
 
 		uint64 index = _getCount();
 		_bets.push(
@@ -356,7 +356,7 @@ contract Market is IMarket, Ownable, ERC721 {
 
 	// Allow the Vault to provide cover for this market
 	// Standard implementation is to request cover for each and every bet
-	function _obtainCover(bytes16 marketId, bytes16 propositionId, uint256 wager, uint256 payout) internal virtual returns (uint256) {
+	function _obtainCollateral(bytes16 marketId, bytes16 propositionId, uint256 wager, uint256 payout) internal virtual returns (uint256) {
 		uint256 amount = payout - wager;
 		IERC20(_vault.asset()).transferFrom(
 			address(_vault),

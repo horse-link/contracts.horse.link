@@ -478,11 +478,11 @@ describe("Greedy Market: play through", () => {
 			BigNumber.from(0)
 		);
 
-		const totalCover = await market.getTotalCover();
+		const totalCollateral = await market.getTotalCollateral();
 		expect(
-			totalCover,
+			totalCollateral,
 			`Total cover (${ethers.utils.formatUnits(
-				totalCover,
+				totalCollateral,
 				tokenDecimals
 			)}) should be the same as the market balance (${ethers.utils.formatUnits(
 				marketBalance,
