@@ -20,7 +20,6 @@ abstract contract MarketGreedy is Market {
 		);
 		address underlying = _vault.asset();
 
-		//_totalInPlay -= _bets[index].amount;
 		if (result == true) {
 			// Send the payout to the bet owner
 			IERC20(underlying).transfer(_bets[index].owner, _bets[index].payout);
