@@ -17,7 +17,7 @@ abstract contract MarketGreedy is Market {
 	function _payout(uint256 index, bool result) internal override {
 		require(
 			_bets[index].payoutDate < block.timestamp,
-			"_settle: Payout date not reached"
+			"_payout: Payout date not reached"
 		);
 		address underlying = _vault.asset();
 
@@ -42,11 +42,11 @@ abstract contract MarketGreedy is Market {
 		return keccak256(abi.encodePacked(propositionId)) == keccak256(abi.encodePacked(_mostExpensivePropositionId[marketId]));
 	}
 
-	// Overridden to make this "greedy" - it will hold on to the cover amounts for future bets
+	// Overidden to make this "greedy" - it will hold on to the cover amounts for future bets
     // If the payout for this proposition will be greater than the amount of cover set aside for the market
 	// Return the new exposure amount
 	function _obtainCover(bytes16 marketId, bytes16 propositionId, uint256 wager, uint256 payout) internal override returns (uint256) {
-		uint256 result = 0;
+		uint256 result;
 		if (_potentialPayout[propositionId] > _marketCover[marketId]) {
 			// Get any additional cover we need for this market
 			_mostExpensivePropositionId[marketId] = propositionId;
@@ -69,9 +69,6 @@ abstract contract MarketGreedy is Market {
 			}
             _marketCover[marketId] += amountRequired;     
 		}
-		
-		//console.log("_totalCover now: %s", _totalCover);
-		//console.log("_obtainCover() end");
 		return result;
 	}
 
