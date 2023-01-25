@@ -31,7 +31,7 @@ abstract contract MarketGreedy is Market {
 		}
 
 		//If paying out the most expensive proposition,
-		if (_isMostExpensiveProposition(_bets[index].propositionId, _bets[index].marketId)) {
+		if (_isMostExpensiveProposition(_bets[index].propositionId, _bets[index].marketId) == true) {
 			// Deduct from total exposure
 			_totalExposure -= (_bets[index].payout - _bets[index].amount);
 		}
