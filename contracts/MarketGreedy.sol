@@ -20,19 +20,19 @@ abstract contract MarketGreedy is Market {
 		);
 		address underlying = _vault.asset();
 
-		if (result == true) {
-			// Send the payout to the bet owner
-			IERC20(underlying).transfer(_bets[index].owner, _bets[index].payout);
-			_totalCollateral -= _bets[index].payout - _bets[index].amount;  
-		} else {
-			// Send the bet amount to the vault
-			IERC20(underlying).transfer(address(_vault), _bets[index].amount);	
-		}
-
 		//If paying out the most expensive proposition,
 		if (_isMostExpensiveProposition(_bets[index].propositionId, _bets[index].marketId) == true) {
 			// Deduct from total exposure
 			_totalExposure -= (_bets[index].payout - _bets[index].amount);
+		}
+
+		if (result == true) {
+			// Send the payout to the bet owner
+			_totalCollateral -= _bets[index].payout - _bets[index].amount; 
+			IERC20(underlying).transfer(_bets[index].owner, _bets[index].payout);
+		} else {
+			// Send the bet amount to the vault
+			IERC20(underlying).transfer(address(_vault), _bets[index].amount);	
 		}
 	}
 
