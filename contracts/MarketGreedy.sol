@@ -78,8 +78,8 @@ abstract contract MarketGreedy is Market {
 	// Return any unused collateral to the Vault
 	function returnCollateral() external onlyOwner {
 		if (_totalCollateral > _totalExposure) {
-			IERC20(_vault.asset()).transfer(address(_vault), _totalCollateral - _totalExposure);
-			_totalCollateral = _totalExposure;		
+			_totalCollateral = _totalExposure;
+			IERC20(_vault.asset()).transfer(address(_vault), _totalCollateral - _totalExposure);		
 		}
 	}
 }
