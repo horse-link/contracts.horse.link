@@ -1,15 +1,16 @@
 // SPDX-License-Identifier: MIT
-pragma solidity =0.8.10;
+pragma solidity =0.8.15;
 
 import "./SignatureLib.sol";
 
 interface IMarket {
 	function getMargin() external view returns (uint8);
+	function getCount() external view returns (uint64);
 	function getTotalInPlay() external view returns (uint256);
 	function getInPlayCount() external view returns (uint256);
 	function getTotalExposure() external view returns (uint256);
 
-	function getBetByIndex(uint256 index)
+	function getBetByIndex(uint64 index)
 		external
 		view
 		returns (
@@ -17,7 +18,6 @@ interface IMarket {
 			uint256,
 			uint256,
 			bool,
-			address,
 			bytes16,
 			bytes16
 		);
@@ -51,5 +51,6 @@ interface IMarket {
 		SignatureLib.Signature calldata sig
 	) external returns (uint256);
 
-	function settle(uint256 index) external;
+	function settle(uint64 index) external;
+	function settleMarket(bytes16 marketId) external;
 }
