@@ -31,13 +31,13 @@ abstract contract MarketGreedy is Market {
 		}
 
 		//If paying out the most expensive proposition,
-		if (isMostExpensiveProposition(_bets[index].propositionId, _bets[index].marketId)) {
+		if (_isMostExpensiveProposition(_bets[index].propositionId, _bets[index].marketId)) {
 			// Deduct from total exposure
 			_totalExposure -= (_bets[index].payout - _bets[index].amount);
 		}
 	}
 
-	function isMostExpensiveProposition(bytes16 propositionId, bytes16 marketId) internal view returns (bool) {
+	function _isMostExpensiveProposition(bytes16 propositionId, bytes16 marketId) internal view returns (bool) {
 		return keccak256(abi.encodePacked(propositionId)) == keccak256(abi.encodePacked(_mostExpensivePropositionId[marketId]));
 	}
 
