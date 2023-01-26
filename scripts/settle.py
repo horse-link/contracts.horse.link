@@ -49,12 +49,13 @@ def get_result(oracle, marketId):
 
 def set_result(oracle, marketId, propositionId, signature) -> None:
     try:
+        # Can be any account with funds
         account_from = {
-            'private_key': os.getenv('PRIVATE_KEY'),
-            'address': '0x155c21c846b68121ca59879B3CCB5194F5Ae115E',
+            'private_key': os.getenv('SETTLE_PRIVATE_KEY'),
+            'address': '0xF33b9A4efA380Df3B435f755DD2C2AF7fE53C2d1',
         }
 
-        signature_tuple = [signature['v'], signature['s'], signature['r']]
+        signature_tuple = [signature['v'], signature['r'], signature['s']]
 
         encoded=propositionId.encode('utf-8')
         proposition_id=bytearray(encoded)
@@ -78,9 +79,10 @@ def set_result(oracle, marketId, propositionId, signature) -> None:
 
 
 def settle(market, index):
+    # Can be any account with funds
     account_from = {
-        'private_key': os.getenv('PRIVATE_KEY'),
-        'address': '0x155c21c846b68121ca59879B3CCB5194F5Ae115E',
+        'private_key': os.getenv('SETTLE_PRIVATE_KEY'),
+        'address': '0xF33b9A4efA380Df3B435f755DD2C2AF7fE53C2d1',
     }
 
     tx = market.functions.settle(index).buildTransaction(
@@ -116,7 +118,7 @@ def main():
             bet = market.functions.getBetByIndex(i).call()
 
             # check if bet is less than 24 hours old
-            if bet[2] > now - 60 * 60 * 100:
+            if bet[2] > now - 60 * 60 * 140:
 
                 # check if bet is settled via the api
                 market_id = bet[5][0:11]
@@ -146,9 +148,7 @@ def main():
                     if response.status_code == 200 and result != b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00':
                         print(f"Settling bet {i} for market {market_address['address']}")
 
-                        signature = response.json()['signature']
-
-                        tx_receipt = settle(market, i, signature)
+                        tx_receipt = settle(market, i)
                         print(tx_receipt)
                     else:
                         print(
