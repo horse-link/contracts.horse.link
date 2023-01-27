@@ -352,6 +352,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		emit Settled(index, _bets[index].payout, result, recipient);
 	}
 
+	// TODO: Ensure all scratched bets are handled
 	function settleMarket(bytes16 marketId) external {
 		uint64[] memory bets = _marketBets[marketId];
 		uint256 total = bets.length;
