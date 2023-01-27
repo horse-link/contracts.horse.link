@@ -52,6 +52,11 @@ contract Market is IMarket, Ownable, ERC721 {
 
 	mapping(address => bool) private _signers;
 
+	// Race result constants
+    uint8 public constant WINNER = 0x01;
+    uint8 public constant LOSER = 0x02;
+    uint8 public constant SCRATCHED = 0x03;
+
 	constructor(
 		IVault vault,
 		uint8 margin,
@@ -319,15 +324,19 @@ contract Market is IMarket, Ownable, ERC721 {
 		}
 
 		Bet memory bet = _bets[index];
-		bool result = IOracle(_oracle).checkResult(
+		uint8 result = IOracle(_oracle).checkResult(
 			bet.marketId,
 			bet.propositionId
 		);
 
-		_payout(index, result);
+		if (result == SCRATCHED) {
+			_scratch(index);
+		} else {
+			_payout(index, result);
+		}
 	}
 
-	function _payout(uint256 index, bool result) private {
+	function _payout(uint256 index, uint8 result) private {
 		require(
 			_bets[index].payoutDate < block.timestamp,
 			"_settle: Payout date not reached"
@@ -341,12 +350,33 @@ contract Market is IMarket, Ownable, ERC721 {
 		// Transfer the proceeds to the owner of the NFT
 		address recipient = ownerOf(index);
 
-        if (result == false) {
+        if (result == LOSER) {
             // Transfer the proceeds to the vault, less market margin
             recipient = address(_vault);
         }
 
 		IERC20(underlying).transfer(recipient, _bets[index].payout);
+		_burn(index);
+
+		emit Settled(index, _bets[index].payout, result, recipient);
+	}
+
+	// Note: I know this is close to _payout however I think it's better to keep them separate
+	// In preparation for the adjustment of the odds when a bet is scratched
+	function _scratch(uint256 index) private {
+		uint256 lay = _bets[index].payout - _bets[index].amount;
+        _totalInPlay -= _bets[index].amount;
+        _totalExposure -= lay;
+        _inplayCount --;
+
+        address underlying = _vault.asset();
+
+		address recipient = ownerOf(index);
+
+		// Transfer the bet amount to the owner of the NFT
+		IERC20(underlying).transfer(recipient, _bets[index].amount);
+		// Transfer the lay back to the vault
+		IERC20(underlying).transfer(address(_vault), lay);
 		_burn(index);
 
 		emit Settled(index, _bets[index].payout, result, recipient);
@@ -403,7 +433,7 @@ contract Market is IMarket, Ownable, ERC721 {
 	event Settled(
 		uint256 index,
 		uint256 payout,
-		bool result,
+		uint8 result,
 		address indexed recipient
 	);
 }
