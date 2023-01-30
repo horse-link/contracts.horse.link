@@ -5,9 +5,19 @@ import "./SignatureLib.sol";
 
 // Binary Oracle
 interface IOracle {
+    struct Scratched {
+        bytes16 scratchedPropositionId;
+        // Timestamp of when the result was scratched
+        uint256 timestamp;
+        // Odds of the scratched proposition at time of scratching
+        uint256 odds;
+        // Total odds of all runners at time of scratching
+        uint256 totalOdds;
+    }
+
     struct Result {
         bytes16 winningPropositionId;
-        bytes16[] scratchedPropositionIds;
+        Scratched [] scratched;
 	}
 
     function checkResult(
@@ -26,6 +36,8 @@ interface IOracle {
 	function setScratchedResult(
 		bytes16 marketId,
 		bytes16 scratchedPropositionId,
+        uint256 odds,
+        uint256 totalOdds,
 		SignatureLib.Signature calldata signature
 	) external;
 

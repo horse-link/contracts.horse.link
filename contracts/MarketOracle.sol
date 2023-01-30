@@ -36,9 +36,9 @@ contract MarketOracle is IOracle {
 		if (_results[marketId].winningPropositionId == propositionId) {
 			return WINNER;
 		}
-		uint256 totalScratched = _results[marketId].scratchedPropositionIds.length;
+		uint256 totalScratched = _results[marketId].scratched.length;
 		for (uint256 i = 0; i < totalScratched ; i++) {
-			if (_results[marketId].scratchedPropositionIds[i] == propositionId) {
+			if (_results[marketId].scratched[i].scratchedPropositionId == propositionId) {
 				return SCRATCHED;
 			}
 		}
@@ -80,9 +80,11 @@ contract MarketOracle is IOracle {
 	function setScratchedResult(
 		bytes16 marketId,
 		bytes16 scratchedPropositionId,
+		uint256 odds,
+        uint256 totalOdds,
 		SignatureLib.Signature calldata signature
 	) external {
-		bytes32 messageHash = keccak256(abi.encodePacked(marketId, scratchedPropositionId));
+		bytes32 messageHash = keccak256(abi.encodePacked(marketId, scratchedPropositionId, odds, totalOdds));
 		require(
 			isValidSignature(messageHash, signature),
 			"setScratchedResult: Invalid signature"
@@ -92,14 +94,20 @@ contract MarketOracle is IOracle {
 			"setScratchedResult: Invalid propositionId"
 		);
 
-		uint256 totalScratched = _results[marketId].scratchedPropositionIds.length;
+		uint256 totalScratched = _results[marketId].scratched.length;
 		for (uint256 i = 0; i < totalScratched ; i++) {
-			if (_results[marketId].scratchedPropositionIds[i] == scratchedPropositionId) {
+			if (_results[marketId].scratched[i].scratchedPropositionId == scratchedPropositionId) {
 				revert("setScratchedResult: Result already set");
 			}
 		}
 
-		_results[marketId].scratchedPropositionIds.push(scratchedPropositionId);
+		_results[marketId].scratched.push(
+			Scratched(
+				scratchedPropositionId,
+				block.timestamp,
+				odds,
+				totalOdds
+		));
 
 		emit ScratchedSet(marketId, scratchedPropositionId);
 	}

@@ -763,6 +763,7 @@ describe("Market", () => {
 		it("Should settle bobs scratched bet by index", async () => {
 			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
 			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
+			const totalOdds = odds.mul(5);
 			const currentTime = await time.latest();
 			const bobBalance = await underlying.balanceOf(bob.address);
 			const vaultBalance = await underlying.balanceOf(vault.address);
@@ -833,9 +834,11 @@ describe("Market", () => {
 			expect(nftBalance).to.equal(1, "Bob should have 1 NFT");
 
 			// This signature is for a scratched result/propositionId
-			const signature = await signSetResultMessage(
+			const signature = await signSetScratchedMessage(
 				marketId,
 				propositionId,
+				odds,
+				totalOdds,
 				oracleSigner
 			);
 			const oracleOwner = await oracle.getOwner();
@@ -843,6 +846,8 @@ describe("Market", () => {
 			await oracle.setScratchedResult(
 				formatBytes16String(marketId),
 				formatBytes16String(propositionId),
+				odds,
+				totalOdds,
 				signature
 			);
 			const index = 0;
@@ -1215,12 +1220,43 @@ const makeSetResultMessage = (
 	return message;
 };
 
+const makeSetScratchMessage = (
+	marketId: string,
+	propositionId: string,
+	odds: BigNumber,
+	totalOdds: BigNumber
+): string => {
+	const b16MarketId = formatBytes16String(marketId);
+	const b16PropositionId = formatBytes16String(propositionId);
+	const message = ethers.utils.solidityKeccak256(
+		["bytes16", "bytes16", "uint256", "uint256"],
+		[b16MarketId, b16PropositionId, odds, totalOdds]
+	);
+	return message;
+};
+
 const signSetResultMessage = async (
 	marketId: string,
 	propositionId: string,
 	signer: SignerWithAddress
 ): Promise<Signature> => {
 	const settleMessage = makeSetResultMessage(marketId, propositionId);
+	return await signMessage(settleMessage, signer);
+};
+
+const signSetScratchedMessage = async (
+	marketId: string,
+	propositionId: string,
+	odds: BigNumber,
+	totalOdds: BigNumber,
+	signer: SignerWithAddress
+): Promise<Signature> => {
+	const settleMessage = makeSetScratchMessage(
+		marketId,
+		propositionId,
+		odds,
+		totalOdds
+	);
 	return await signMessage(settleMessage, signer);
 };
 

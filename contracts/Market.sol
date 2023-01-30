@@ -365,6 +365,7 @@ contract Market is IMarket, Ownable, ERC721 {
 	// Note: I know this is close to _payout however I think it's better to keep them separate
 	// In preparation for the adjustment of the odds when a bet is scratched
 	function _scratch(uint256 index) private {
+
 		uint256 lay = _bets[index].payout - _bets[index].amount;
         _totalInPlay -= _bets[index].amount;
         _totalExposure -= lay;
