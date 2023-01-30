@@ -117,10 +117,8 @@ def main():
         for i in range(count - 1, 0, -1):
             bet = market.functions.getBetByIndex(i).call()
 
-            # check if bet is settled via the api
-            market_id = bet[5][0:11]
-            mid = market_id.decode('ASCII')
-            print(f"Market ID: {mid}")
+            # bet 2 is payout time
+            if bet[2] > now:
 
             # check if bet is settled
             if bet[3] == False:
@@ -151,8 +149,8 @@ def main():
                     print(
                         f"Bet {i} for market {market_address['address']} already settled or result not added")
             else:
-                print(
-                    f"Bet {i} for market {market_address['address']} already settled")
+                print(f"Bet {i} for market {market_address['address']} is not ready to settle")
+                break
 
 
 if __name__ == '__main__':
