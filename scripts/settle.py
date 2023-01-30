@@ -117,8 +117,8 @@ def main():
         for i in range(count - 1, 0, -1):
             bet = market.functions.getBetByIndex(i).call()
 
-            # check if bet is less than 2 hours old
-            if bet[2] > now - 60 * 60 * 2:
+            # bet 2 is payout time
+            if bet[2] > now:
 
                 # check if bet is settled via the api
                 market_id = bet[5][0:11]
@@ -158,7 +158,7 @@ def main():
                         f"Bet {i} for market {market_address['address']} already settled")
 
             else:
-                print(f"Bet {i} for market {market_address['address']} is too old")
+                print(f"Bet {i} for market {market_address['address']} is not ready to settle")
                 break
 
 
