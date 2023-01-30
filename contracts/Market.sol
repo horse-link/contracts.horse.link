@@ -273,8 +273,9 @@ contract Market is IMarket, Ownable, ERC721 {
 		);
 
 		// Do not allow a bet placed if we know the result
+		// Note: Now that we are checking the close time, this is not strictly necessary
 		require(
-			IOracle(_oracle).checkResult(marketId, propositionId) == false,
+			IOracle(_oracle).checkResult(marketId, propositionId) == 0x02,
 			"back: Oracle result already set for this market"
 		);
 
@@ -319,7 +320,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		_bets[index].settled = true;
 
 		if (block.timestamp > _getExpiry(index)) {
-			_payout(index, true);
+			_payout(index, WINNER);
 			return;
 		}
 
@@ -379,7 +380,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		IERC20(underlying).transfer(address(_vault), lay);
 		_burn(index);
 
-		emit Settled(index, _bets[index].payout, result, recipient);
+		emit Settled(index, _bets[index].payout, SCRATCHED, recipient);
 	}
 
 	// TODO: Ensure all scratched bets are handled

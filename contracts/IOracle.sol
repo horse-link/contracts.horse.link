@@ -5,12 +5,17 @@ import "./SignatureLib.sol";
 
 // Binary Oracle
 interface IOracle {
+    struct Result {
+        bytes16 winningPropositionId;
+        bytes16[] scratchedPropositionIds;
+	}
+
     function checkResult(
         bytes16 marketId,
         bytes16 propositionId
-    ) external view returns (bool);
+    ) external view returns (uint8);
 
-    function getResult(bytes16 marketId) external view returns (bytes16);
+    function getResult(bytes16 marketId) external view returns (Result memory);
 
     function setResult(
         bytes16 marketId,

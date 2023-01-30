@@ -19,6 +19,11 @@ type Signature = {
 	s: string;
 };
 
+// Race result constants
+const WINNER = 0x01;
+const LOSER = 0x02;
+const SCRATCHED = 0x03;
+
 // MarketId 11 chars
 // AAAAAABBBCC
 // A = date as days since epoch
@@ -737,7 +742,7 @@ describe("Market", () => {
 
 			expect(await market.settle(index))
 				.to.emit(market, "Settled")
-				.withArgs(index, betPayout, true, bob.address);
+				.withArgs(index, betPayout, WINNER, bob.address);
 
 			const newNftBalance = await market.balanceOf(bob.address);
 			expect(newNftBalance).to.equal(0, "Bob should have no NFTs now");
@@ -855,7 +860,7 @@ describe("Market", () => {
 
 			expect(await market.connect(carol).settle(index))
 				.to.emit(market, "Settled")
-				.withArgs(index, betPayout, true, carol.address);
+				.withArgs(index, betPayout, WINNER, carol.address);
 
 			const newNftBalance = await market.balanceOf(carol.address);
 			expect(newNftBalance).to.equal(0, "Carol should have no NFTs now");
@@ -931,7 +936,7 @@ describe("Market", () => {
 
 			expect(await market.settle(index))
 				.to.emit(market, "Settled")
-				.withArgs(index, 272727300, true, bob.address);
+				.withArgs(index, 272727300, WINNER, bob.address);
 		});
 
 		it("Should settle multiple bets on a market", async () => {

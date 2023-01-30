@@ -6,11 +6,6 @@ import "./SignatureLib.sol";
 
 contract MarketOracle is IOracle {
 
-	struct Result {
-		bytes16 winningPropositionId;
-		bytes16[] scratchedPropositionIds;
-	}
-
 	// Mapping of marketId => winning propositionId
 	mapping(bytes16 => Result) private _results;
 	address private immutable _owner;
@@ -32,7 +27,7 @@ contract MarketOracle is IOracle {
 	function checkResult(
 		bytes16 marketId,
 		bytes16 propositionId
-	) external view returns (uint) {
+	) external view returns (uint8) {
 		require(
 			propositionId != bytes16(0),
 			"getBinaryResult: Invalid propositionId"
@@ -42,7 +37,7 @@ contract MarketOracle is IOracle {
 			return WINNER;
 		}
 		uint256 totalScratched = _results[marketId].scratchedPropositionIds.length;
-		for (uint64 i = 0; i < totalScratched ; i++) {
+		for (uint256 i = 0; i < totalScratched ; i++) {
 			if (_results[marketId].scratchedPropositionIds[i] == propositionId) {
 				return SCRATCHED;
 			}
@@ -51,7 +46,7 @@ contract MarketOracle is IOracle {
 		return LOSER;
 	}
 
-	function getResult(bytes16 marketId) external view returns (Result) {
+	function getResult(bytes16 marketId) external view returns (Result memory) {
 		require(
 			marketId != bytes16(0),
 			"getBinaryResult: Invalid propositionId"
@@ -97,13 +92,14 @@ contract MarketOracle is IOracle {
 			"setScractchedResult: Invalid propositionId"
 		);
 
-		for (uint64 i = 0; i < totalScratched ; i++) {
+		uint256 totalScratched = _results[marketId].scratchedPropositionIds.length;
+		for (uint256 i = 0; i < totalScratched ; i++) {
 			if (_results[marketId].scratchedPropositionIds[i] == scratchedPropositionId) {
-				revert("setScractchedResult: Result already set")
+				revert("setScractchedResult: Result already set");
 			}
 		}
 
-		_results[marketId].scratchedPropositionId.push(scratchedPropositionId);
+		_results[marketId].scratchedPropositionIds.push(scratchedPropositionId);
 
 		emit ScratchedSet(marketId, scratchedPropositionId);
 	}
