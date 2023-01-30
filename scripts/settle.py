@@ -23,23 +23,23 @@ def get_oracle():
     return data['addresses']['marketOracle']
 
 
-def load_market(address):
-    with open('./artifacts/contracts/Market.sol/Market.json') as f:
-        data = json.load(f)
-        abi = data['abi']
-        contract = web3.eth.contract(address=address, abi=abi)
-        return contract
+def load_market(address, token):
+    response = requests.get(f'https://raw.githubusercontent.com/horse-link/contracts.horse.link/main/deployments/goerli/{token}Market.json')
+    data = response.json()
+    abi = data['abi']
+    contract = web3.eth.contract(address=address, abi=abi)
+    return contract
 
 
 def load_oracle():
 
     address = get_oracle()
 
-    with open('./artifacts/contracts/MarketOracle.sol/MarketOracle.json') as f:
-        data = json.load(f)
-        abi = data['abi']
-        contract = web3.eth.contract(address=address, abi=abi)
-        return contract
+    response = requests.get('https://raw.githubusercontent.com/horse-link/contracts.horse.link/main/deployments/goerli/MarketOracle.json')
+    data = response.json()
+    abi = data['abi']
+    contract = web3.eth.contract(address=address, abi=abi)
+    return contract
 
 
 def get_result(oracle, marketId):
@@ -47,32 +47,42 @@ def get_result(oracle, marketId):
     return result
 
 
-def set_result(oracle, marketId, propositionId, signature):
-    account_from = {
-        'private_key': os.getenv('PRIVATE_KEY'),
-        'address': '0x155c21c846b68121ca59879B3CCB5194F5Ae115E',
-    }
-
-    tx = oracle.functions.setResult(marketId, propositionId, signature).buildTransaction(
-        {
-            'from': account_from['address'],
-            'nonce': web3.eth.get_transaction_count(account_from['address']),
+def set_result(oracle, marketId, propositionId, signature) -> None:
+    try:
+        # Can be any account with funds
+        account_from = {
+            'private_key': os.getenv('SETTLE_PRIVATE_KEY'),
+            'address': '0xF33b9A4efA380Df3B435f755DD2C2AF7fE53C2d1',
         }
-    )
 
-    tx_create = web3.eth.account.sign_transaction(
-        tx, account_from['private_key'])
+        signature_tuple = [signature['v'], signature['r'], signature['s']]
 
-    tx_hash = web3.eth.send_raw_transaction(tx_create.rawTransaction)
-    tx_receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
+        encoded=propositionId.encode('utf-8')
+        proposition_id=bytearray(encoded)
 
-    return tx_receipt
+        tx = oracle.functions.setResult(marketId, proposition_id, signature_tuple).buildTransaction(
+            {
+                'from': account_from['address'],
+                'nonce': web3.eth.get_transaction_count(account_from['address']),
+            }
+        )
+
+        tx_create = web3.eth.account.sign_transaction(
+            tx, account_from['private_key'])
+
+        tx_hash = web3.eth.send_raw_transaction(tx_create.rawTransaction)
+        tx_receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
+
+        print(tx_receipt)
+    except:
+        print("An exception occurred")
 
 
 def settle(market, index):
+    # Can be any account with funds
     account_from = {
-        'private_key': os.getenv('PRIVATE_KEY'),
-        'address': '0x155c21c846b68121ca59879B3CCB5194F5Ae115E',
+        'private_key': os.getenv('SETTLE_PRIVATE_KEY'),
+        'address': '0xF33b9A4efA380Df3B435f755DD2C2AF7fE53C2d1',
     }
 
     tx = market.functions.settle(index).buildTransaction(
@@ -100,15 +110,15 @@ def main():
 
     # settle each market
     for market_address in market_addresses:
-        market = load_market(market_address['address'])
+        market = load_market(market_address['address'], 'Usdt')
         count = market.functions.getCount().call()
 
         # settle each bet in reverse order
         for i in range(count - 1, 0, -1):
             bet = market.functions.getBetByIndex(i).call()
 
-            # check if bet is less than 24 hours old
-            if bet[2] > now - 60 * 60 * 24:
+            # check if bet is less than 2 hours old
+            if bet[2] > now - 60 * 60 * 2:
 
                 # check if bet is settled via the api
                 market_id = bet[5][0:11]
@@ -131,10 +141,8 @@ def main():
 
                         signature = response.json()['signature']
                         proposition_id = response.json()['winningPropositionId']
-                        tx_receipt = set_result(
+                        set_result(
                             oracle, market_id, proposition_id, signature)
-
-                        print(tx_receipt)
 
                     # If we have a result from the API and the oracle has already added the result
                     if response.status_code == 200 and result != b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00':
