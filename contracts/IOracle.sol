@@ -3,7 +3,7 @@ pragma solidity =0.8.15;
 
 import "./SignatureLib.sol";
 
-// Binary Oracle
+// Oracle
 interface IOracle {
     struct Scratched {
         bytes16 scratchedPropositionId;
