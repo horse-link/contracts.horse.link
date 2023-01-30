@@ -846,15 +846,8 @@ describe("Market", () => {
 				signature
 			);
 			const index = 0;
-			// await expect(market.settle(index)).to.be.revertedWith(
-			// 	"_settle: Payout date not reached"
-			// );
 
-			// await hre.network.provider.request({
-			// 	method: "evm_setNextBlockTimestamp",
-			// 	params: [end + 7200]
-			// });
-
+			// Scratched bets do not need to wait for the race to finsih
 			expect(await market.settle(index))
 				.to.emit(market, "Settled")
 				.withArgs(index, betPayout, SCRATCHED, bob.address);
