@@ -77,7 +77,7 @@ contract MarketOracle is IOracle {
 		emit ResultSet(marketId, winningPropositionId);
 	}
 
-	function setScractchedResult(
+	function setScratchedResult(
 		bytes16 marketId,
 		bytes16 scratchedPropositionId,
 		SignatureLib.Signature calldata signature
@@ -85,17 +85,17 @@ contract MarketOracle is IOracle {
 		bytes32 messageHash = keccak256(abi.encodePacked(marketId, scratchedPropositionId));
 		require(
 			isValidSignature(messageHash, signature),
-			"setScractchedResult: Invalid signature"
+			"setScratchedResult: Invalid signature"
 		);
 		require(
 			scratchedPropositionId != bytes16(0),
-			"setScractchedResult: Invalid propositionId"
+			"setScratchedResult: Invalid propositionId"
 		);
 
 		uint256 totalScratched = _results[marketId].scratchedPropositionIds.length;
 		for (uint256 i = 0; i < totalScratched ; i++) {
 			if (_results[marketId].scratchedPropositionIds[i] == scratchedPropositionId) {
-				revert("setScractchedResult: Result already set");
+				revert("setScratchedResult: Result already set");
 			}
 		}
 

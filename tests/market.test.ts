@@ -840,7 +840,7 @@ describe("Market", () => {
 			);
 			const oracleOwner = await oracle.getOwner();
 			expect(oracleOwner).to.equal(oracleSigner.address);
-			await oracle.setScractchedResult(
+			await oracle.setScratchedResult(
 				formatBytes16String(marketId),
 				formatBytes16String(propositionId),
 				signature

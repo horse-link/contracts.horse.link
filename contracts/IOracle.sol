@@ -23,7 +23,7 @@ interface IOracle {
         SignatureLib.Signature calldata signature
     ) external;
 
-	function setScractchedResult(
+	function setScratchedResult(
 		bytes16 marketId,
 		bytes16 scratchedPropositionId,
 		SignatureLib.Signature calldata signature
