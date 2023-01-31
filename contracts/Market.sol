@@ -26,6 +26,8 @@ struct Bet {
 contract Market is IMarket, Ownable, ERC721 {
 	using Strings for uint256;
 
+	string public constant baseURI = "https://horse.link/api/bets/";
+
 	uint8 internal immutable _margin;
 	IVault internal immutable _vault;
 	address internal immutable _self;
@@ -54,10 +56,6 @@ contract Market is IMarket, Ownable, ERC721 {
 	uint256 public immutable min;
 
 	mapping(address => bool) private _signers;
-
-	string public constant baseURI = "https://horse.link/api/bets/";
-
-	string _baseTokenURI;
 
 	constructor(
 		IVault vault,
