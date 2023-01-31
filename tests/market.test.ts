@@ -504,6 +504,7 @@ describe("Market", () => {
 		const latestBlock = await ethers.provider.getBlock(latestBlockNumber);
 		const end = latestBlock.timestamp + 10000;
 		const propositionId = makePropositionId("ABC", 1);
+		const winningPropositionId = makePropositionId("ABC", 2);
 		const marketId = makeMarketId(new Date(), "ABC", "1");
 
 		const nonce = "1";
@@ -545,15 +546,24 @@ describe("Market", () => {
 
 		const signature = await signSetResultMessage(
 			marketId,
-			propositionId,
+			winningPropositionId,
 			oracleSigner
 		);
 		await oracle.setResult(
 			formatBytes16String(marketId),
-			formatBytes16String(propositionId),
+			formatBytes16String(winningPropositionId),
 			signature
 		);
+		const vaultBalanceBeforeSettlement = await underlying.balanceOf(
+			vault.address
+		);
 		await market.connect(alice).settle(0);
+
+		// Vault should have received the wager plus the winnings
+		expect(
+			await underlying.balanceOf(vault.address),
+			"Vault didn't receive funds from the Market"
+		).to.be.gt(vaultBalanceBeforeSettlement);
 
 		// Whale sells all their shares, smiling
 		await vault
