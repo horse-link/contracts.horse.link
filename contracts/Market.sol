@@ -57,7 +57,7 @@ contract Market is IMarket, Ownable, ERC721 {
 
 	mapping(address => bool) private _signers;
 
-	string public constant baseURI = "https://horse.link/api/bet/";
+	string public constant baseURI = "https://horse.link/api/bets/";
 
 	string _baseTokenURI;
 
@@ -77,11 +77,6 @@ contract Market is IMarket, Ownable, ERC721 {
 		timeout = timeoutDays * 1 days;
 		min = 1 hours;
 	}
-
-	/*function tokenURI(uint256 _tokenId) public view override returns (string memory) {		
-		console.log("Address", address(this));
-		return string(abi.encodePacked(baseURI, address(this), "/", _tokenId.toString()));	
-    }*/
 
 	function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
         return string(abi.encodePacked(baseURI, Strings.toHexString(uint256(uint160(_self)), 20), "/", tokenId.toString()));
