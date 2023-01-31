@@ -198,7 +198,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		uint256 wager,
 		uint256 odds,
 		uint256 pool
-	) internal view virtual returns (uint256) {
+	) internal view returns (uint256) {
 		return OddsLib.getLinearAdjustedOdds(wager, odds, pool);
 	}
 
