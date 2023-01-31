@@ -934,10 +934,21 @@
   resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-4.8.0.tgz#6854c37df205dd2c056bdfa1b853f5d732109109"
   integrity sha512-AGuwhRRL+NaKx73WKRNzeCxOCOCxpaqF+kp8TJ89QzAipSwZy/NoflkWaL9bywXFRhIzXt8j38sfF7KBKCPWLw==
 
+
 "@openzeppelin/contracts@^4.8.0":
   version "4.8.1"
   resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-4.8.1.tgz#709cfc4bbb3ca9f4460d60101f15dac6b7a2d5e4"
   integrity sha512-xQ6eUZl+RDyb/FiZe1h+U7qr/f4p/SrTSQcTPH2bjur3C5DbuW/zFgCU/b1P/xcIaEqJep+9ju4xDRi3rmChdQ==
+
+"@openzeppelin/hardhat-upgrades@*":
+  version "1.22.1"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/hardhat-upgrades/-/hardhat-upgrades-1.22.1.tgz#93e2b3f870c57b00a1ae8a330a2cdd9c2d634eb8"
+  integrity sha512-MdoitCTLl4zwMU8MeE/bCj+7JMWBEvd38XqJkw36PkJrXlbv6FedDVCPoumMAhpmtymm0nTwTYYklYG+L6WiiQ==
+  dependencies:
+    "@openzeppelin/upgrades-core" "^1.20.0"
+    chalk "^4.1.0"
+    debug "^4.1.1"
+    proper-lockfile "^4.1.1"
 
 "@openzeppelin/hardhat-upgrades@^1.10.0":
   version "1.21.0"
@@ -5578,6 +5589,13 @@ hardhat-gas-reporter@^1.0.9:
     array-uniq "1.0.3"
     eth-gas-reporter "^0.2.25"
     sha1 "^1.1.1"
+
+hardhat-upgrades@^0.0.0:
+  version "0.0.0"
+  resolved "https://registry.yarnpkg.com/hardhat-upgrades/-/hardhat-upgrades-0.0.0.tgz#f3338e2236e6db06a3e24726435a87ac3cf84ccc"
+  integrity sha512-sUeUZyg+yNPWl4OSmaktvcebI6/KLfhTxW+TIwyynWTyGd50123c1liBp7FEJxnl/GFC2uPE+dbB5jHMVXBnpQ==
+  dependencies:
+    "@openzeppelin/hardhat-upgrades" "*"
 
 hardhat@^2.4.0:
   version "2.12.2"

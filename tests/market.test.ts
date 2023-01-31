@@ -747,6 +747,124 @@ describe("Market", () => {
 			expect(balance).to.equal(bobBalance.add(betPayout));
 		});
 
+		it("Should allow Bob to transfer a punt to Carol and for Carol to settle", async () => {
+			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
+			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
+			const currentTime = await time.latest();
+			// Assume race closes in 1 hour from now
+			const close = currentTime + 3600;
+
+			const latestBlockNumber = await ethers.provider.getBlockNumber();
+			const latestBlock = await ethers.provider.getBlock(latestBlockNumber);
+
+			const end = latestBlock.timestamp + 10000;
+
+			// Runner 1 for a Win
+			const nonce = "1";
+			const propositionId = makePropositionId("ABC", 1);
+			const marketId = makeMarketId(new Date(), "ABC", "1");
+
+			const betSignature = await signBackMessage(
+				nonce,
+				marketId,
+				propositionId,
+				odds,
+				close,
+				end,
+				owner
+			);
+
+			let count = await market.getCount();
+			expect(count, "There should be no bets").to.equal(0);
+
+			expect(
+				await market
+					.connect(bob)
+					.back(
+						formatBytes16String(nonce),
+						formatBytes16String(propositionId),
+						formatBytes16String(marketId),
+						wager,
+						odds,
+						close,
+						end,
+						betSignature
+					)
+			).to.emit(market, "Placed");
+
+			count = await market.getCount();
+			expect(count).to.equal(1, "There should be 1 bet");
+
+			const bet = await market.getBetByIndex(0);
+			const betAmount = bet[0];
+			const betPayout = bet[1];
+
+			expect(betAmount, "Bet amount should be same as wager").to.equal(wager);
+
+			const inPlayCount = await market.getInPlayCount();
+			expect(inPlayCount, "In play count should be 1").to.equal(1);
+
+			let exposure = await market.getTotalExposure();
+			expect(
+				exposure,
+				"Exposure should be equal to the payout less the wager"
+			).to.equal(betPayout.sub(wager));
+
+			let inPlay = await market.getTotalInPlay();
+			expect(inPlay).to.equal(ethers.utils.parseUnits("100", USDT_DECIMALS));
+
+			const carolBalance = await underlying.balanceOf(carol.address);
+			const nftBalance = await market.balanceOf(bob.address);
+			expect(nftBalance).to.equal(1, "Bob should have 1 NFT");
+
+			const signature = await signSetResultMessage(
+				marketId,
+				propositionId,
+				oracleSigner
+			);
+			const oracleOwner = await oracle.getOwner();
+			expect(oracleOwner).to.equal(oracleSigner.address);
+			await oracle.setResult(
+				formatBytes16String(marketId),
+				formatBytes16String(propositionId),
+				signature
+			);
+			const index = 0;
+
+			// Send NFT to Carol
+			await market.connect(bob).transferFrom(bob.address, carol.address, index);
+			const carolNftBalance = await market.balanceOf(carol.address);
+			expect(carolNftBalance).to.equal(1, "Carol should have 1 NFT");
+
+			await expect(market.settle(index)).to.be.revertedWith(
+				"_settle: Payout date not reached"
+			);
+
+			await hre.network.provider.request({
+				method: "evm_setNextBlockTimestamp",
+				params: [end + 7200]
+			});
+
+			expect(await market.connect(carol).settle(index))
+				.to.emit(market, "Settled")
+				.withArgs(index, betPayout, true, carol.address);
+
+			const newNftBalance = await market.balanceOf(carol.address);
+			expect(newNftBalance).to.equal(0, "Carol should have no NFTs now");
+
+			await expect(market.settle(index)).to.be.revertedWith(
+				"settle: Bet has already settled"
+			);
+			exposure = await market.getTotalExposure();
+			expect(exposure).to.equal(0);
+
+			inPlay = await market.getTotalInPlay();
+			expect(inPlay).to.equal(0);
+
+			const balance = await underlying.balanceOf(carol.address);
+			expect(balance).to.equal(carolBalance.add(betPayout));
+		});
+
 		it("Should payout wage after timeout has been reached", async () => {
 			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
 			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);

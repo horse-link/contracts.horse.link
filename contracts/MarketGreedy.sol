@@ -27,9 +27,9 @@ abstract contract MarketGreedy is Market {
 		}
 
 		if (result == true) {
-			// Send the payout to the bet owner
+			// Send the payout to the NFT owner
 			_totalCollateral -= _bets[index].payout - _bets[index].amount; 
-			IERC20(underlying).transfer(_bets[index].owner, _bets[index].payout);
+			IERC20(underlying).transfer(ownerOf(index), _bets[index].payout);
 		} else {
 			// Send the bet amount to the vault
 			IERC20(underlying).transfer(address(_vault), _bets[index].amount);	

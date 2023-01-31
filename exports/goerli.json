@@ -387,7 +387,7 @@
       ]
     },
     "DaiMarket": {
-      "address": "0xD9D2aC7354EE9f462BFC1b69764d38622D91A809",
+      "address": "0x5a8A9f98738C182bA180c47cDA213179075329Bd",
       "abi": [
         {
           "inputs": [
@@ -739,11 +739,6 @@
               "internalType": "bool",
               "name": "",
               "type": "bool"
-            },
-            {
-              "internalType": "address",
-              "name": "",
-              "type": "address"
             },
             {
               "internalType": "bytes16",
@@ -1288,7 +1283,7 @@
       ]
     },
     "DaiVault": {
-      "address": "0x8EA844A91Cb9b0dB08481b411E172f233a55041F",
+      "address": "0x147Eeb1892514e1b904c63518AdEA2709EE1640D",
       "abi": [
         {
           "inputs": [
@@ -2324,7 +2319,7 @@
       ]
     },
     "Registry": {
-      "address": "0x58cBf0A703a4b210E4e3561E42539De9f011Bb7A",
+      "address": "0xE4Aef0ba329ba4F24FC94Fe3Fd49e399F660e9a0",
       "abi": [
         {
           "inputs": [
@@ -2482,7 +2477,7 @@
       ]
     },
     "RegistryToken": {
-      "address": "0xd841498B8Df035C898D2990A346356146479fEE5",
+      "address": "0x9f4c2495d22b67B6F3d65B24f0Db222c4C844c76",
       "abi": [
         {
           "inputs": [
@@ -3296,7 +3291,7 @@
       ]
     },
     "UsdtMarket": {
-      "address": "0xF88C209cAb67648617aCCf421DE265c0e427f3f3",
+      "address": "0xB5EE5025c830333FAeC0C0EdC3D1c3BE2e85e331",
       "abi": [
         {
           "inputs": [
@@ -3648,11 +3643,6 @@
               "internalType": "bool",
               "name": "",
               "type": "bool"
-            },
-            {
-              "internalType": "address",
-              "name": "",
-              "type": "address"
             },
             {
               "internalType": "bytes16",
@@ -4197,7 +4187,7 @@
       ]
     },
     "UsdtVault": {
-      "address": "0x227E6554a78915F8CdB6c8aE2686407FD458d0a3",
+      "address": "0x740aBFeB154C212f90C9A72F62b2966eC2823b3d",
       "abi": [
         {
           "inputs": [

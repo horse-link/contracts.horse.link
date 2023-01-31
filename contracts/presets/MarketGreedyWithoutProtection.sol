@@ -19,7 +19,7 @@ contract MarketGreedyWithoutProtection is MarketGreedy {
 		uint256 wager,
 		uint256 odds,
 		uint256 pool
-	) internal view override returns (uint256) {
+	) internal pure override returns (uint256) {
 		return odds;
 	}
 

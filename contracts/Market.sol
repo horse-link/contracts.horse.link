@@ -20,7 +20,6 @@ struct Bet {
 	uint256 payout;
 	uint256 payoutDate;
 	bool settled;
-	address owner;
 }
 
 contract Market is IMarket, Ownable, ERC721 {
@@ -136,7 +135,6 @@ contract Market is IMarket, Ownable, ERC721 {
 			uint256,
 			uint256, // payoutDate
 			bool,
-			address,
 			bytes16, // marketId
 			bytes16 // propositionId
 		)
@@ -152,21 +150,12 @@ contract Market is IMarket, Ownable, ERC721 {
 			uint256,
 			uint256,
 			bool,
-			address,
 			bytes16,
 			bytes16
 		)
 	{
 		Bet memory bet = _bets[index];
-		return (
-			bet.amount,
-			bet.payout,
-			bet.payoutDate,
-			bet.settled,
-			bet.owner,
-			bet.marketId,
-			bet.propositionId
-		);
+		return (bet.amount, bet.payout, bet.payoutDate, bet.settled, bet.marketId, bet.propositionId);
 	}
 
 	function getOdds(
@@ -295,15 +284,7 @@ contract Market is IMarket, Ownable, ERC721 {
 
 		uint64 index = _getCount();
 		_bets.push(
-			Bet(
-				propositionId,
-				marketId,
-				wager,
-				payout,
-				end,
-				false,
-				_msgSender()
-			)
+			Bet(propositionId, marketId, wager, payout, end, false)
 		);
 		_marketBets[marketId].push(index);
 		_mint(_msgSender(), index);
@@ -344,12 +325,12 @@ contract Market is IMarket, Ownable, ERC721 {
 		_payout(index, result);		
 		_totalInPlay -= _bets[index].amount;
 		_inplayCount--;
+		emit Settled(index, _bets[index].payout, result, result ? ownerOf(index) : address(_vault));
 		_burn(index);
-		emit Settled(index, _bets[index].payout, result, result ? _bets[index].owner : address(_vault));
 	}
 
 	function _payout(uint256 index, bool result) internal virtual {
-		address recipient = result ? _bets[index].owner : address(_vault.asset());
+		address recipient = result ? ownerOf(index) : address(_vault.asset());
 		IERC20(_vault.asset()).transfer(recipient, _bets[index].payout);
 		_totalExposure -= _bets[index].payout - _bets[index].amount;
 	}
