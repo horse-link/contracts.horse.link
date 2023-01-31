@@ -704,6 +704,10 @@ describe("Market", () => {
 			const bobBalance = await underlying.balanceOf(bob.address);
 			const nftBalance = await market.balanceOf(bob.address);
 			expect(nftBalance).to.equal(1, "Bob should have 1 NFT");
+			const nftMetaDataURI = await market.tokenURI(0);
+			expect(nftMetaDataURI.toLowerCase()).to.equal(
+				`https://horse.link/api/bets/${market.address.toLowerCase()}/0`
+			);
 
 			const signature = await signSetResultMessage(
 				marketId,

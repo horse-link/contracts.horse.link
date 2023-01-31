@@ -5,6 +5,7 @@ pragma abicoder v2;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 import "./IVault.sol";
 import "./IMarket.sol";
@@ -23,6 +24,10 @@ struct Bet {
 }
 
 contract Market is IMarket, Ownable, ERC721 {
+	using Strings for uint256;
+
+	string public constant baseURI = "https://horse.link/api/bets/";
+
 	uint8 internal immutable _margin;
 	IVault internal immutable _vault;
 	address internal immutable _self;
@@ -69,14 +74,9 @@ contract Market is IMarket, Ownable, ERC721 {
 		min = 1 hours;
 	}
 
-	function tokenURI(uint256 tokenId)
-		public
-		pure
-		override
-		returns (string memory)
-	{
-		return string(abi.encodePacked("https://horse.link/api/bet/", tokenId));
-	}
+	function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
+        return string(abi.encodePacked(baseURI, Strings.toHexString(uint256(uint160(_self)), 20), "/", tokenId.toString()));
+    }
 
 	function getMargin() external view returns (uint8) {
 		return _margin;
