@@ -1,6 +1,6 @@
 import hre, { ethers, deployments } from "hardhat";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
-import { BigNumber, BigNumberish, BytesLike } from "ethers";
+import { BigNumber } from "ethers";
 import chai, { expect } from "chai";
 import {
 	Market,
@@ -11,20 +11,13 @@ import {
 } from "../build/typechain";
 import { solidity } from "ethereum-waffle";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { formatBytes16String, makeMarketId, makePropositionId } from "./utils";
-
-type Signature = {
-	v: BigNumberish;
-	r: string;
-	s: string;
-};
-
-// MarketId 11 chars
-// AAAAAABBBCC
-// A = date as days since epoch
-// B = location code
-// C = race number
-const MARKET_ID = "019123BNE01";
+import {
+	formatBytes16String,
+	makeMarketId,
+	makePropositionId,
+	signBackMessage,
+	signSetResultMessage
+} from "./utils";
 
 chai.use(solidity);
 
@@ -281,7 +274,6 @@ describe("Market", () => {
 		);
 
 		const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
-
 		const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
 		const currentTime = await time.latest();
 		// Assume race closes in 1 hour from now
@@ -912,7 +904,8 @@ describe("Market", () => {
 						close,
 						end,
 						betSignature
-					)
+					),
+				"Should emit a Placed event"
 			)
 				.to.emit(market, "Placed")
 				.withArgs(
@@ -929,7 +922,7 @@ describe("Market", () => {
 				params: [end + 31 * 24 * 60 * 60]
 			});
 
-			expect(await market.settle(index))
+			expect(await market.settle(index), "Should emit a Settled event")
 				.to.emit(market, "Settled")
 				.withArgs(index, 272727300, true, bob.address);
 		});
@@ -951,7 +944,6 @@ describe("Market", () => {
 			for (let i = 0; i < max; i++) {
 				const nonce = i.toString();
 				const propositionId = makePropositionId("ABC", i + 1);
-
 				const betSignature = await signBackMessage(
 					nonce,
 					marketId,
@@ -1066,105 +1058,3 @@ describe("Market", () => {
 		});
 	});
 });
-
-const signMessageAsString = async (
-	message: string,
-	signer: SignerWithAddress
-) => {
-	const sig = await signer.signMessage(ethers.utils.arrayify(message));
-	return sig;
-};
-
-const signMessage = async (
-	message: string,
-	signer: SignerWithAddress
-): Promise<Signature> => {
-	const sig = await signer.signMessage(ethers.utils.arrayify(message));
-	const { v, r, s } = ethers.utils.splitSignature(sig);
-	return { v, r, s };
-};
-
-const makeSetResultMessage = (
-	marketId: string,
-	propositionId: string
-): string => {
-	const b16MarketId = formatBytes16String(marketId);
-	const b16PropositionId = formatBytes16String(propositionId);
-	const message = ethers.utils.solidityKeccak256(
-		["bytes16", "bytes16"],
-		[b16MarketId, b16PropositionId]
-	);
-	return message;
-};
-
-const signSetResultMessage = async (
-	marketId: string,
-	propositionId: string,
-	signer: SignerWithAddress
-): Promise<Signature> => {
-	const settleMessage = makeSetResultMessage(marketId, propositionId);
-	return await signMessage(settleMessage, signer);
-};
-
-const signBackMessage = async (
-	nonce: string,
-	marketId: string,
-	propositionId: string,
-	odds: BigNumber,
-	close: number,
-	end: number,
-	signer: SignerWithAddress
-): Promise<Signature> => {
-	const message = ethers.utils.solidityKeccak256(
-		[
-			"bytes16", // nonce
-			"bytes16", // propositionId
-			"bytes16", // marketId
-			"uint256", // odds
-			"uint256", // close
-			"uint256" // end
-		],
-		[
-			formatBytes16String(nonce),
-			formatBytes16String(propositionId),
-			formatBytes16String(marketId),
-			odds,
-			close,
-			end
-		]
-	);
-	return await signMessage(message, signer);
-};
-
-const signBackMessageWithRisk = async (
-	nonce: string,
-	marketId: string,
-	propositionId: string,
-	odds: BigNumber,
-	close: number,
-	end: number,
-	risk: number,
-	signer: SignerWithAddress
-): Promise<Signature> => {
-	const message = ethers.utils.solidityKeccak256(
-		[
-			"bytes16", // nonce
-			"bytes16", // propositionId
-			"bytes16", // marketId
-			"uint256", // odds
-			"uint256", // close
-			"uint256", // end
-			"uint256" // risk
-		],
-		[
-			formatBytes16String(nonce),
-			formatBytes16String(propositionId),
-			formatBytes16String(marketId),
-			odds,
-			close,
-			end,
-			risk
-		]
-	);
-	return await signMessage(message, signer);
-};

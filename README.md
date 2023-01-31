@@ -200,11 +200,11 @@ sp = Sum of all wagers on that proposition
 
 The market contract implements the ERC721 standard to issue betslips as NFTs. Bets are settled by invoking the `settle` function along with the respective NFT token ID once the `MarketOracle.sol` result has been set. Should the Oracle not be updated within 30 days, the `settle` function will pay out the proposition regardless. This prevents the market operator not to unfairly withhold users assets.
 
-Markets can either be "Greedy" or "Not Greedy", but for v1.0 we assume Greedy Markets.
+Markets can either be "Collateralised" or "Non-collateralised", but for v1.0 we assume Non-collateralised Markets.
 
-#### Greedy Markets
+#### Non-collateralised Markets
 
-Greedy markets draw 100% of the lay collateral from the Vault. This is favourable for Vault owners, as they get maximum dividends for collateral they lend.
+Non-Collateralised markets draw 100% of the lay collateral from the Vault. This is favourable for Vault owners, as they get maximum dividends for collateral they lend.
 
 ```text
 Given calculated target odds are 5.0,
@@ -214,9 +214,9 @@ Then the true odds are 4.75
 And Vault lends 137.50 tokens to the Market
 ```
 
-#### Non Greedy Markets
+#### Collateralised Markets
 
-Markets that are non greedy use the collateral under management first, instead of borrowing assets from the connected Vault.
+Markets that are collateralised use the collateral under management first, instead of borrowing assets from the connected Vault.
 
 ```text
 Given calculated odds are 3:1,
