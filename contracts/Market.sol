@@ -5,7 +5,9 @@ pragma abicoder v2;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+
 
 import "./IVault.sol";
 import "./IMarket.sol";
@@ -25,6 +27,7 @@ struct Bet {
 
 contract Market is IMarket, Ownable, ERC721 {
 	using Strings for uint256;
+	using SafeERC20 for IERC20;
 
 	string public constant baseURI = "https://horse.link/api/bets/";
 
@@ -269,7 +272,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		address underlying = _vault.asset();
 
 		// Escrow the wager
-		IERC20(underlying).transferFrom(_msgSender(), _self, wager);
+		IERC20(underlying).safeTransferFrom(_msgSender(), _self, wager);
 
 		// Add to in play total for this marketId
 		_marketTotal[marketId] += wager;
@@ -331,15 +334,15 @@ contract Market is IMarket, Ownable, ERC721 {
 
 	function _payout(uint256 index, bool result) internal virtual {
 		address recipient = result ? ownerOf(index) : address(_vault.asset());
-		IERC20(_vault.asset()).transfer(recipient, _bets[index].payout);
 		_totalExposure -= _bets[index].payout - _bets[index].amount;
+		IERC20(_vault.asset()).safeTransfer(recipient, _bets[index].payout);	
 	}
 
 	// Allow the Vault to provide cover for this market
 	// Standard implementation is to request cover for each and every bet
 	function _obtainCollateral(bytes16 marketId, bytes16 propositionId, uint256 wager, uint256 payout) internal virtual returns (uint256) {
 		uint256 amount = payout - wager;
-		IERC20(_vault.asset()).transferFrom(
+		IERC20(_vault.asset()).safeTransferFrom(
 			address(_vault),
 			_self,
 			amount
