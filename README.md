@@ -328,3 +328,9 @@ Run the script:
 ```bash
 python scripts/settle.py
 ```
+
+Or via crontab:
+```txt
+# m h  dom mon dow   command
+*/15 * * * * ~/settle.sh
+```
