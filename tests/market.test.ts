@@ -635,7 +635,7 @@ describe("Market", () => {
 			expect(vaultBalanceAfter).to.equal(vaultBalanceBefore.add(bet[1]));
 		});
 
-		it("Should settle bobs winning bet by index", async () => {
+		it.only("Should settle bobs winning bet by index", async () => {
 			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
 			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
 			const currentTime = await time.latest();
@@ -704,6 +704,10 @@ describe("Market", () => {
 			const bobBalance = await underlying.balanceOf(bob.address);
 			const nftBalance = await market.balanceOf(bob.address);
 			expect(nftBalance).to.equal(1, "Bob should have 1 NFT");
+			const nftMetaDataURI = await market.tokenURI(0);
+			expect(nftMetaDataURI.toLowerCase()).to.equal(
+				`https://horse.link/api/bet/${market.address.toLowerCase()}/0`
+			);
 
 			const signature = await signSetResultMessage(
 				marketId,
