@@ -77,7 +77,7 @@ contract Vault is ERC4626Metadata, Ownable {
 
     // Total Assets = amount held by the vault, plus amount lent to the market and therefore locked
     function totalAssets() public view override returns (uint256) {
-        return IERC20(asset()).balanceOf(_self);
+        return IERC20(asset()).balanceOf(_self); // + IMarket(_market).getTotalExposure();
     }
 
     function totalAssetsLocked() external view returns (uint256) {
@@ -88,10 +88,7 @@ contract Vault is ERC4626Metadata, Ownable {
     function maxRedeem(address owner) public view override returns (uint256) {
         if (totalAssets() == 0) return 0;
 
-        // A fraction of the total assets is locked is locked for the owner, proportional to their holdings.
-        uint256 shareBalance = balanceOf(owner);
-        uint256 sharesLockedForOwner = shareBalance / totalAssets();
-        return shareBalance - sharesLockedForOwner;
+        return balanceOf(owner);
     }
 
     modifier onlyMarket() {

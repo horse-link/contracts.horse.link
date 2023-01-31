@@ -483,18 +483,24 @@ describe("Market", () => {
 		).to.be.revertedWith("back: Invalid date");
 	});
 
-	it("Should not allow a betting attack", async () => {
+	it.only("Should not allow a betting attack", async () => {
 		// Whale has some USDT but he wants more
 		const whaleOriginalBalance = await underlying.balanceOf(whale.address);
 
-		// Alice is an honest investor and deposits $20000 USDT
+		// Alice is an honest investor and deposits $2000 USDT
 		await vault
 			.connect(alice)
-			.deposit(ethers.utils.parseUnits("20000", USDT_DECIMALS), alice.address);
+			.deposit(ethers.utils.parseUnits("2000", USDT_DECIMALS), alice.address);
+
+		let aliceShares = await vault.balanceOf(alice.address);
+		console.log(`Alice has ${ethers.utils.formatUnits(aliceShares, USDT_DECIMALS)} shares`);
 
 		// Now Whale attacks
-		const wager = ethers.utils.parseUnits("9000", USDT_DECIMALS);
-		const odds = ethers.utils.parseUnits("2", ODDS_DECIMALS);
+		console.log(`Whale makes a bet but he doesn't care if he loses`);
+		let vaultOriginalBalance = await underlying.balanceOf(vault.address);
+		console.log(`Original vault balance: USDT ${ethers.utils.formatUnits(vaultOriginalBalance, USDT_DECIMALS)}`);
+		const wager = ethers.utils.parseUnits("3", USDT_DECIMALS);
+		const odds = ethers.utils.parseUnits("33", ODDS_DECIMALS);
 		const currentTime = await time.latest();
 		// Assume race closes in 1 hour from now
 		const close = currentTime + 3600;
@@ -504,6 +510,7 @@ describe("Market", () => {
 		const latestBlock = await ethers.provider.getBlock(latestBlockNumber);
 		const end = latestBlock.timestamp + 10000;
 		const propositionId = makePropositionId("ABC", 1);
+		const winningPropositionId = makePropositionId("ABC", 2);
 		const marketId = makeMarketId(new Date(), "ABC", "1");
 
 		const nonce = "1";
@@ -519,6 +526,7 @@ describe("Market", () => {
 		);
 
 		await underlying.connect(whale).approve(market.address, wager);
+		console.log(`Whale bets...`);
 		await market
 			.connect(whale)
 			.back(
@@ -531,11 +539,19 @@ describe("Market", () => {
 				end,
 				betSignature
 			);
-
-		// Whale now buys shares
+		console.log(`Whale bet ${ethers.utils.formatUnits(wager, USDT_DECIMALS)} USDT`);
+		console.log(`... odds of ${ethers.utils.formatUnits(odds, ODDS_DECIMALS)}`);
+		let vaultBalance = await underlying.balanceOf(vault.address);
+		console.log(`Vault balance now only: USDT ${ethers.utils.formatUnits(vaultBalance, USDT_DECIMALS)}`);
+		let vaultDiff = vaultOriginalBalance.sub(vaultBalance);
+		console.log(`Vault lost ${ethers.utils.formatUnits(vaultDiff, USDT_DECIMALS)} USDT`);
+		// Whale now gets shares by depositing a large amount of USDT
+		console.log(`Whale's share balance: ${ethers.utils.formatUnits(await vault.balanceOf(whale.address), USDT_DECIMALS)}`)
+		console.log(`Whale deposits 20000 USDT into the vault...`);
 		await vault
 			.connect(whale)
-			.deposit(ethers.utils.parseUnits("20000", USDT_DECIMALS), whale.address);
+			.deposit(ethers.utils.parseUnits("3000", USDT_DECIMALS), whale.address);
+		console.log(`Whale's share balance is now: ${ethers.utils.formatUnits(await vault.balanceOf(whale.address), USDT_DECIMALS)}`)
 
 		// Whale's bet loses
 		await hre.network.provider.request({
@@ -545,32 +561,50 @@ describe("Market", () => {
 
 		const signature = await signSetResultMessage(
 			marketId,
-			propositionId,
+			winningPropositionId,
 			oracleSigner
 		);
 		await oracle.setResult(
 			formatBytes16String(marketId),
-			formatBytes16String(propositionId),
+			formatBytes16String(winningPropositionId),
 			signature
 		);
-		await market.connect(alice).settle(0);
+		console.log(`Settling the whale's bet...`)
+		let vaultBalanceBeforeSettling = await underlying.balanceOf(vault.address);
+		await market.connect(whale).settle(0);
+
+		vaultBalance = await underlying.balanceOf(vault.address);
+		let vaultDiff2 = vaultBalance.sub(vaultBalanceBeforeSettling);
+		console.log(`Vault balance gone up by: USDT ${ethers.utils.formatUnits(vaultDiff2, USDT_DECIMALS)}`);
+		console.log(`...which is USDT ${ethers.utils.formatUnits(vaultBalance, USDT_DECIMALS)}`);
 
 		// Whale sells all their shares, smiling
+		let whaleShares = await vault.balanceOf(whale.address);
+		let whaleBalance = await underlying.balanceOf(whale.address);
+		console.log(
+			`Whale about to redeem ${ethers.utils.formatUnits(whaleShares, USDT_DECIMALS)} shares. USDT Balance now: ${ethers.utils.formatUnits(
+				whaleBalance,
+				USDT_DECIMALS
+			)}`
+		);
 		await vault
 			.connect(whale)
-			.redeem(
-				ethers.utils.parseUnits("1000", USDT_DECIMALS),
-				whale.address,
-				whale.address
-			);
+			.redeem(whaleShares, whale.address, whale.address);
 
 		// Did Whale profit from the attack?
-		const whaleBalance = await underlying.balanceOf(whale.address);
+		whaleBalance = await underlying.balanceOf(whale.address);
+		whaleShares = await vault.balanceOf(whale.address);
+		console.log(`Whale shares now: ${ethers.utils.formatUnits(whaleShares, USDT_DECIMALS)}`)
+		console.log(
+			`Whale USDT balance now: ${ethers.utils.formatUnits(
+				whaleBalance,
+				USDT_DECIMALS
+			)} USDT`
+		);
+		const profit = whaleBalance.sub(whaleOriginalBalance);
 		expect(
 			whaleBalance,
-			`Whale just made an easy ${whaleOriginalBalance
-				.sub(whaleBalance)
-				.toNumber()}`
+			`Whale just made an easy ${ethers.utils.formatUnits(profit, USDT_DECIMALS)} USDT profit`
 		).to.be.lt(whaleOriginalBalance);
 	});
 

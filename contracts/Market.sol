@@ -330,7 +330,7 @@ contract Market is IMarket, Ownable, ERC721 {
 	}
 
 	function _payout(uint256 index, bool result) internal virtual {
-		address recipient = result ? ownerOf(index) : address(_vault.asset());
+		address recipient = result ? ownerOf(index) : address(_vault);
 		IERC20(_vault.asset()).transfer(recipient, _bets[index].payout);
 		_totalExposure -= _bets[index].payout - _bets[index].amount;
 	}
