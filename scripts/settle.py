@@ -117,8 +117,8 @@ def main():
         for i in range(count - 1, 0, -1):
             bet = market.functions.getBetByIndex(i).call()
 
-            # check if bet is less than 2 hours old
-            if now > bet[2]:
+            # bet not ready for settlement
+            if bet[2] > now:
                 print(f"Bet {i} for market {market_address['address']} is not eligible for settlement")
                 continue
 
