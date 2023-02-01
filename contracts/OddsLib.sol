@@ -52,12 +52,11 @@ library OddsLib {
         return Math.max(1 * PRECISION, (adjustedPayout * PRECISION) / wager);
     }
 
-    // Margin of 100% means no margin. Margin < 100% means the book-maker will lose money on average. Margin > 100% means the book-maker will make money on average.
-    // Margin is represented with PRECISION, the same as odds
-    function discountAfterScratch(uint256 scratchOdds, uint256 oddsToDiscount, uint256 targetMargin) public view returns (uint256) {
-		// Given that the margin was originally targetMargin, calculate the new margin after the scratchOdds have been removed from the market
-		uint256 newMargin = targetMargin - PRECISION / scratchOdds;
-	}
+    // Assumiung that the market previously had targetMargin, then after some runners have been scratched, correct the odds of this runner to make up the margin again
+    function rebaseOddsWithScratch(uint256 odds, uint256 scratchedOdds, uint256 targetMargin) return (uint256) {
+        uint256 newMargin = targetMargin - PRECISION / scratchedOdds;
+        return changeMargin(odds, newMargin, targetMargin);
+    } 
 
     function changeMargin(uint256 odds, uint256 margin, uint256 targetMargin) public view returns (uint256) {
         return addMargin(removeMargin(odds, margin), targetMargin);
@@ -67,14 +66,10 @@ library OddsLib {
         return odds * margin / PRECISION;
     }
 
-    // return 1 / (1 / odd * margin);
     function addMargin(uint256 odds, uint256 margin) public view returns (uint256) {
-        // Use Math.mulDiv to avoid overflow
-        // @notice Calculates floor(x * y / denominator) with full precision. Throws if result overflows a uint256 or denominator == 0
-        //return Math.mulDiv(odds, PRECISION, margin, Math.Rounding.Down);
         return odds * PRECISION / margin;
     }
-  
+
     // Given an array of odds, return the margin
     function getMargin(uint256[] calldata odds) public view returns (uint256) {
         uint256 total = 0;
@@ -84,4 +79,7 @@ library OddsLib {
         }
         return total;
     }
-}
+
+
+
+};

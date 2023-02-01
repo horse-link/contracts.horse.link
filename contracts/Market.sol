@@ -21,9 +21,12 @@ struct Bet {
 	bytes16 marketId;
 	uint256 amount;
 	uint256 payout;
+	uint256 timestamp;
 	uint256 payoutDate;
 	bool settled;
 }
+
+uint256 constant MARGIN = 1500000;
 
 contract Market is IMarket, Ownable, ERC721 {
 	using Strings for uint256;
@@ -332,6 +335,27 @@ contract Market is IMarket, Ownable, ERC721 {
 		_burn(index);
 	}
 
+	function _applyScratchings(uint64 index) internal virtual {
+		// Get marketId of bet
+		bytes16 marketId = _bets[index].marketId;
+		// Ask the oracle for scratched runners on this market
+		bytes16[] memory scratched = IOracle(_oracle).getScratched(marketId);
+		// Get timestamp of bet
+		uint256 timestamp = _bets[index].
+		// Get all scratchings with a timestamp after this bet
+		bytes16[] memory scratchings = _oracle.getScratchings(marketId);
+		// Loop through scratchings
+		uint256 scratchedOdds = 0;
+		for (uint256 i = 0; i < scratchings.length; i++) {
+			// If the timestamp of the scratching is after the bet
+			if (scratchings[i].timestamp > timestamp) {
+				//Sum the odds
+				scratchedOdds += scratchings[i].odds;
+			}
+		}
+		OddsLib.rebaseOddsWithScratch(_bets[index].odds, scratchedOdds, MARGIN);
+	}
+
 	function _payout(uint256 index, bool result) internal virtual {
 		address recipient = result ? ownerOf(index) : address(_vault.asset());
 		_totalExposure -= _bets[index].payout - _bets[index].amount;
@@ -349,8 +373,6 @@ contract Market is IMarket, Ownable, ERC721 {
 		);
 		return amount;
 	}
-
-
 
 	function settleMarket(bytes16 marketId) external {
 		uint64[] memory bets = _marketBets[marketId];
