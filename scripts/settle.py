@@ -113,6 +113,9 @@ def main():
         market = load_market(market_address['address'], 'Usdt')
         count = market.functions.getCount().call()
 
+        # count must be less than 50
+        count = 50 if count > 50 else count
+
         # settle each bet in reverse order
         for i in range(count - 1, 0, -1):
             bet = market.functions.getBetByIndex(i).call()
