@@ -32,78 +32,80 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 		skipIfAlreadyDeployed: true
 	});
 
-	for (const tokenDetails of UnderlyingTokens) {
-		const vaultDeployment = await deployments.get(tokenDetails.vaultName);
-		let tokenAddress: string;
-		if (network.tags.production) {
-			tokenAddress = namedAccounts[tokenDetails.deploymentName];
-		} else {
-			const tokenDeployment = await deployments.get(
-				tokenDetails.deploymentName
-			);
-			tokenAddress = tokenDeployment.address;
-		}
-		const marketDeployment = await deploy(tokenDetails.marketName, {
-			contract: "Market",
-			from: deployer,
-			args: [vaultDeployment.address, 0, timeoutDays, oracle.address],
-			log: true,
-			autoMine: true,
-			skipIfAlreadyDeployed: false,
-			libraries: {
-				SignatureLib: signatureLib.address,
-				OddsLib: oddsLib.address
+	for (const collateralised of [true]) {
+		for (const tokenDetails of UnderlyingTokens) {
+			const vaultDeployment = await deployments.get(collateralised? tokenDetails.collateralisedVaultName : tokenDetails.vaultName);
+			let tokenAddress: string;
+			if (network.tags.production) {
+				tokenAddress = namedAccounts[tokenDetails.deploymentName];
+			} else {
+				const tokenDeployment = await deployments.get(
+					tokenDetails.deploymentName
+				);
+				tokenAddress = tokenDeployment.address;
 			}
-		});
-		if (marketDeployment?.newlyDeployed) {
-			await execute(
-				tokenDetails.vaultName,
-				{ from: deployer, log: true },
-				"setMarket",
-				marketDeployment.address,
-				ethers.constants.MaxUint256
-			);
-			await execute(
-				tokenDetails.marketName,
-				{ from: deployer, log: true },
-				"grantSigner",
-				namedAccounts.MarketSigner
-			);
-			if (!network.tags.testing) {
+			const marketDeployment = await deploy(collateralised ? tokenDetails.collateralisedMarketName : tokenDetails.marketName, {
+				contract: collateralised ? "MarketCollateralisedLinear" : "Market",
+				from: deployer,
+				args: [vaultDeployment.address, 0, timeoutDays, oracle.address],
+				log: true,
+				autoMine: true,
+				skipIfAlreadyDeployed: false,
+				libraries: {
+					SignatureLib: signatureLib.address,
+					OddsLib: oddsLib.address
+				}
+			});
+			if (marketDeployment?.newlyDeployed) {
 				await execute(
-					"Registry",
+					collateralised ? tokenDetails.collateralisedVaultName : tokenDetails.vaultName,
 					{ from: deployer, log: true },
-					"addMarket",
-					marketDeployment.address
+					"setMarket",
+					marketDeployment.address,
+					ethers.constants.MaxUint256
+				);
+				await execute(
+					collateralised? tokenDetails.collateralisedMarketName : tokenDetails.marketName,
+					{ from: deployer, log: true },
+					"grantSigner",
+					namedAccounts.MarketSigner
+				);
+				if (!network.tags.testing) {
+					await execute(
+						"Registry",
+						{ from: deployer, log: true },
+						"addMarket",
+						marketDeployment.address
+					);
+				}
+			}
+
+			const token: Token = await ethers.getContractAt("Token", tokenAddress);
+			if (!network.tags.production && !network.tags.testing) {
+				const token: Token = await ethers.getContractAt("Token", tokenAddress);
+
+				//Allow the Vault to spend the Deployer's tokens
+				const signer = await ethers.getSigner(deployer);
+				console.log(
+					`Approving Vault to spend tokens for deployer ${signer.address}`
+				);
+				const receipt = await token
+					.connect(signer)
+					.approve(vaultDeployment.address, ethers.constants.MaxUint256);
+				await receipt.wait();
+
+				const balance = await token.balanceOf(signer.address);
+				await execute(
+					tokenDetails.vaultName,
+					{
+						from: deployer,
+						log: true
+					},
+					"deposit",
+					balance.div(100000),
+					deployer
 				);
 			}
-		}
-
-		const token: Token = await ethers.getContractAt("Token", tokenAddress);
-		if (!network.tags.production && !network.tags.testing) {
-			const token: Token = await ethers.getContractAt("Token", tokenAddress);
-
-			//Allow the Vault to spend the Deployer's tokens
-			const signer = await ethers.getSigner(deployer);
-			console.log(
-				`Approving Vault to spend tokens for deployer ${signer.address}`
-			);
-			const receipt = await token
-				.connect(signer)
-				.approve(vaultDeployment.address, ethers.constants.MaxUint256);
-			await receipt.wait();
-
-			const balance = await token.balanceOf(signer.address);
-			await execute(
-				tokenDetails.vaultName,
-				{
-					from: deployer,
-					log: true
-				},
-				"deposit",
-				balance.div(100000),
-				deployer
-			);
 		}
 	}
 };
