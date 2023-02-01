@@ -193,5 +193,24 @@ describe.only("Odds", () => {
 			const numNewMargin = Number(ethers.utils.formatUnits(newMargin, 6));
 			expect(numNewMargin).to.be.closeTo(1.25, 0.01);
 		});
+
+		it(`Recalculate odds after several scratches`, async () => {
+			// Scratch the last 3 runners
+			const oddsWithoutScratch = bnBookieOdds.slice(0, bnBookieOdds.length - 3);
+			const currentMargin = await oddsLib.getMargin(oddsWithoutScratch);
+			const targetMargin = ethers.utils.parseUnits("1.25", 6);
+			const newOddsList = [];
+			for (const odds of oddsWithoutScratch) {
+				const newOdds = await oddsLib.changeMargin(
+					odds,
+					currentMargin,
+					targetMargin
+				);
+				newOddsList.push(newOdds);
+			}
+			const newMargin = await oddsLib.getMargin(newOddsList);
+			const numNewMargin = Number(ethers.utils.formatUnits(newMargin, 6));
+			expect(numNewMargin).to.be.closeTo(1.25, 0.01);
+		});
 	});
 });
