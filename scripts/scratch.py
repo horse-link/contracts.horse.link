@@ -18,7 +18,7 @@ bets_query = """
     id
     createdAt
     createdAtTx
-    marketAddress
+    marketId
   }
 }
 """
@@ -47,12 +47,13 @@ def main():
 
     bets = get_subgraph_bets_since(one_minute_ago)
 
-    market_addresses = set([bet["marketAddress"] for bet in bets])
+    market_ids = set([bet["marketId"] for bet in bets])
     # oracle = load_oracle()
 
+    #
     # update odds for each market
-    for market_address in market_addresses:
-        print("TODO: recalculate odds for market ", market_address)
+    for market_id in market_ids:
+        print("TODO: recalculate odds for market", market_id)
 
 
 if __name__ == "__main__":
