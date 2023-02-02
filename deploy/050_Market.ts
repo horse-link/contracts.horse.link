@@ -34,17 +34,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 	const collateralised = true;
 	for (const tokenDetails of UnderlyingTokens) {
-		const vaultName = collateralised
-			? tokenDetails.collateralisedVaultName
-			: tokenDetails.vaultName;
-		const marketName = collateralised
-			? tokenDetails.collateralisedMarketName
-			: tokenDetails.marketName;
-		const vaultDeployment = await deployments.get(
-			collateralised
-				? tokenDetails.collateralisedVaultName
-				: tokenDetails.vaultName
-		);
+		const vaultName = tokenDetails.vaultName;
+		const marketName = tokenDetails.marketName;
+		const vaultDeployment = await deployments.get(tokenDetails.vaultName);
 		let tokenAddress: string;
 		if (network.tags.production) {
 			tokenAddress = namedAccounts[tokenDetails.deploymentName];

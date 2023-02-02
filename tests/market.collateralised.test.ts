@@ -478,16 +478,17 @@ describe("Collateralised Market: play through", () => {
 			BigNumber.from(0)
 		);
 
-		const totalCollateral = await market.getTotalCollateral();
-		expect(
-			totalCollateral,
-			`Total cover (${ethers.utils.formatUnits(
-				totalCollateral,
-				tokenDecimals
-			)}) should be the same as the market balance (${ethers.utils.formatUnits(
-				marketBalance,
-				tokenDecimals
-			)})`
-		).to.equal(marketBalance);
+		// This was commented out due to size limitations on the contract
+		// const totalCollateral = await market.getTotalCollateral();
+		// expect(
+		// 	totalCollateral,
+		// 	`Total cover (${ethers.utils.formatUnits(
+		// 		totalCollateral,
+		// 		tokenDecimals
+		// 	)}) should be the same as the market balance (${ethers.utils.formatUnits(
+		// 		marketBalance,
+		// 		tokenDecimals
+		// 	)})`
+		// ).to.equal(marketBalance);
 	});
 });

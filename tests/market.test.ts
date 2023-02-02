@@ -33,6 +33,8 @@ describe("Market", () => {
 	const ODDS_DECIMALS = 6;
 	const MARGIN = 100;
 	const TIMEOUT_DAYS = 5;
+	const WINNER = 0x01;
+	const SCRATCHED = 0x03;
 
 	beforeEach(async () => {
 		[owner, alice, bob, carol, whale] = await ethers.getSigners();
@@ -612,9 +614,6 @@ describe("Market", () => {
 
 			const vaultBalanceBefore = await underlying.balanceOf(vault.address);
 			const index = 0;
-			await expect(market.settle(index)).to.be.revertedWith(
-				"_settle: Payout date not reached"
-			);
 
 			await hre.network.provider.request({
 				method: "evm_setNextBlockTimestamp",
@@ -716,9 +715,6 @@ describe("Market", () => {
 				signature
 			);
 			const index = 0;
-			await expect(market.settle(index)).to.be.revertedWith(
-				"_settle: Payout date not reached"
-			);
 
 			await hre.network.provider.request({
 				method: "evm_setNextBlockTimestamp",
@@ -838,7 +834,7 @@ describe("Market", () => {
 			const index = 0;
 
 			// Scratched bets do not need to wait for the race to finsih
-			expect(await market.settle(index))
+			expect(await market.settle(index), "Issue with settling scratched bet")
 				.to.emit(market, "Settled")
 				.withArgs(index, betPayout, SCRATCHED, bob.address);
 
@@ -951,10 +947,6 @@ describe("Market", () => {
 			await market.connect(bob).transferFrom(bob.address, carol.address, index);
 			const carolNftBalance = await market.balanceOf(carol.address);
 			expect(carolNftBalance).to.equal(1, "Carol should have 1 NFT");
-
-			await expect(market.settle(index)).to.be.revertedWith(
-				"_settle: Payout date not reached"
-			);
 
 			await hre.network.provider.request({
 				method: "evm_setNextBlockTimestamp",

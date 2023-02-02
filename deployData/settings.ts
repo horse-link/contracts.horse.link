@@ -5,8 +5,6 @@ export type TokenDeployDetails = {
 	deploymentName: string;
 	vaultName: string;
 	marketName: string;
-	collateralisedVaultName: string;
-	collateralisedMarketName: string;
 	mintAmount: string;
 };
 export const UnderlyingTokens: TokenDeployDetails[] = [
@@ -16,8 +14,6 @@ export const UnderlyingTokens: TokenDeployDetails[] = [
 		deploymentName: "Usdt",
 		vaultName: "UsdtVault",
 		marketName: "UsdtMarket",
-		collateralisedVaultName: "UsdtCollateraliserVault",
-		collateralisedMarketName: "UsdtCollateralisedMarket",
 		decimals: 6,
 		mintAmount: "1000000000"
 	},
@@ -27,8 +23,6 @@ export const UnderlyingTokens: TokenDeployDetails[] = [
 		deploymentName: "Dai",
 		vaultName: "DaiVault",
 		marketName: "DaiMarket",
-		collateralisedVaultName: "DaiCollateraliserVault",
-		collateralisedMarketName: "DaiCollateralisedMarket",
 		decimals: 18,
 		mintAmount: "1000000000"
 	}

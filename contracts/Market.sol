@@ -60,9 +60,9 @@ contract Market is IMarket, Ownable, ERC721 {
 	mapping(address => bool) private _signers;
 
 	// Race result constants
-    uint8 public constant WINNER = 0x01;
-    uint8 public constant LOSER = 0x02;
-    uint8 public constant SCRATCHED = 0x03;
+    uint8 internal constant WINNER = 0x01;
+    uint8 internal constant LOSER = 0x02;
+    uint8 internal constant SCRATCHED = 0x03;
 
 	constructor(
 		IVault vault,
@@ -319,22 +319,25 @@ contract Market is IMarket, Ownable, ERC721 {
 	}
 
 	function _settle(uint64 index) internal {
-		_bets[index].settled = true;
-
-		if (block.timestamp > _getExpiry(index)) {
-			_payout(index, WINNER);
-			return;
-		}
-
 		Bet memory bet = _bets[index];
-		uint8 result = IOracle(_oracle).checkResult(
-			bet.marketId,
-			bet.propositionId
-		);
-		_payout(index, result);
-		_totalInPlay -= _bets[index].amount;
-		_inplayCount--;
-		emit Settled(index, _bets[index].payout, result, result == WINNER ? ownerOf(index) : address(_vault));
+		_bets[index].settled = true;
+		uint8 result;
+		address recipient;
+		if (block.timestamp > _getExpiry(index)) {
+			result = WINNER;
+			recipient = ownerOf(index);
+			_payout(index, WINNER);
+		} else {
+			result = IOracle(_oracle).checkResult(
+				bet.marketId,
+				bet.propositionId
+			);
+			recipient = result != LOSER ? ownerOf(index) : address(_vault);
+			_payout(index, result);
+			_totalInPlay -= _bets[index].amount;
+			_inplayCount--;
+		}
+		emit Settled(index, _bets[index].payout, result, recipient);
 		_burn(index);
 	}
 
