@@ -35,7 +35,7 @@ export default {
 		hardhat: {
 			chainId: 1337,
 			saveDeployment: true,
-			allowUnlimitedContractSize: false,
+			allowUnlimitedContractSize: true,
 			tags: ["local", "testing"]
 		},
 		localhost: {
@@ -68,7 +68,7 @@ export default {
 				version: "0.8.15",
 				settings: {
 					optimizer: {
-						enabled: false,
+						enabled: true,
 						runs: 200
 					}
 				}

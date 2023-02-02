@@ -5,7 +5,7 @@ pragma abicoder v2;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+//import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
 
@@ -23,6 +23,7 @@ struct Bet {
 	uint256 payout;
 	uint256 timestamp;
 	uint256 payoutDate;
+	uint256 created;
 	bool settled;
 }
 
@@ -30,7 +31,7 @@ uint256 constant MARGIN = 1500000;
 
 contract Market is IMarket, Ownable, ERC721 {
 	using Strings for uint256;
-	using SafeERC20 for IERC20;
+	//using SafeERC20 for IERC20;
 
 	string public constant baseURI = "https://horse.link/api/bets/";
 
@@ -59,9 +60,13 @@ contract Market is IMarket, Ownable, ERC721 {
 
 	// Can claim after this period regardless
 	uint256 public immutable timeout;
-	uint256 public immutable min;
 
 	mapping(address => bool) private _signers;
+
+	// Race result constants
+    uint8 internal constant WINNER = 0x01;
+    uint8 internal constant LOSER = 0x02;
+    uint8 internal constant SCRATCHED = 0x03;
 
 	constructor(
 		IVault vault,
@@ -139,6 +144,7 @@ contract Market is IMarket, Ownable, ERC721 {
 			uint256,
 			uint256,
 			uint256, // payoutDate
+			uint256, // created
 			bool,
 			bytes16, // marketId
 			bytes16 // propositionId
@@ -154,13 +160,14 @@ contract Market is IMarket, Ownable, ERC721 {
 			uint256,
 			uint256,
 			uint256,
+			uint256,
 			bool,
 			bytes16,
 			bytes16
 		)
 	{
 		Bet memory bet = _bets[index];
-		return (bet.amount, bet.payout, bet.payoutDate, bet.settled, bet.marketId, bet.propositionId);
+		return (bet.amount, bet.payout, bet.payoutDate, bet.created, bet.settled, bet.marketId, bet.propositionId);
 	}
 
 	function getOdds(
@@ -266,15 +273,16 @@ contract Market is IMarket, Ownable, ERC721 {
 		);
 
 		// Do not allow a bet placed if we know the result
+		// Note: Now that we are checking the close time, this is not strictly necessary
 		require(
-			IOracle(_oracle).checkResult(marketId, propositionId) == false,
+			IOracle(_oracle).checkResult(marketId, propositionId) == 0x02,
 			"back: Oracle result already set for this market"
 		);
 
 		address underlying = _vault.asset();
 
 		// Escrow the wager
-		IERC20(underlying).safeTransferFrom(_msgSender(), _self, wager);
+		IERC20(underlying).transferFrom(_msgSender(), _self, wager);
 
 		// Add to in play total for this marketId
 		_marketTotal[marketId] += wager;
@@ -289,7 +297,7 @@ contract Market is IMarket, Ownable, ERC721 {
 
 		uint64 index = _getCount();
 		_bets.push(
-			Bet(propositionId, marketId, wager, payout, end, false)
+			Bet(propositionId, marketId, wager, payout, end, block.timestamp, false)
 		);
 		_marketBets[marketId].push(index);
 		_mint(_msgSender(), index);
@@ -309,28 +317,33 @@ contract Market is IMarket, Ownable, ERC721 {
 	function settle(uint64 index) external {
 		Bet memory bet = _bets[index];
 		require(bet.settled == false, "settle: Bet has already settled");
-		require(
+		/*require(
 			_bets[index].payoutDate < block.timestamp,
 			"_settle: Payout date not reached"
-		);
+		);*/
 		_settle(index);
 	}
 
 	function _settle(uint64 index) internal {
-		_bets[index].settled = true;
 		Bet memory bet = _bets[index];
-		bool result = IOracle(_oracle).checkResult(
-			bet.marketId,
-			bet.propositionId
-		);
-
-		if (block.timestamp > _getExpiry(index)) {		
-			result = true;
+		_bets[index].settled = true;
+		uint8 result;
+		address recipient;
+		if (block.timestamp > _getExpiry(index)) {
+			result = WINNER;
+			recipient = ownerOf(index);
+			_payout(index, WINNER);
+		} else {
+			result = IOracle(_oracle).checkResult(
+				bet.marketId,
+				bet.propositionId
+			);
+			recipient = result != LOSER ? ownerOf(index) : address(_vault);
+			_payout(index, result);
+			_totalInPlay -= _bets[index].amount;
+			_inplayCount--;
 		}
-		_payout(index, result);		
-		_totalInPlay -= _bets[index].amount;
-		_inplayCount--;
-		emit Settled(index, _bets[index].payout, result, result ? ownerOf(index) : address(_vault));
+		emit Settled(index, _bets[index].payout, result, recipient);
 		_burn(index);
 	}
 
@@ -338,14 +351,13 @@ contract Market is IMarket, Ownable, ERC721 {
 		// Get marketId of bet
 		bytes16 marketId = _bets[index].marketId;
 		// Ask the oracle for scratched runners on this market
-		bytes16[] memory scratched = IOracle(_oracle).getScratched(marketId);
+		Result memory result = IOracle(_oracle).getResult(marketId);
 		// Get timestamp of bet
 		uint256 timestamp = _bets[index].timestamp;
 		// Get all scratchings with a timestamp after this bet
-		bytes16[] memory scratchings = _oracle.getScratchings(marketId);
 		// Loop through scratchings
 		uint256 scratchedOdds = 0;
-		for (uint256 i = 0; i < scratchings.length; i++) {
+		for (uint256 i = 0; i < result.scratched.length; i++) {
 			// If the timestamp of the scratching is after the bet
 			if (scratchings[i].timestamp > timestamp) {
 				//Sum the odds
@@ -357,17 +369,26 @@ contract Market is IMarket, Ownable, ERC721 {
 		uint256 result = OddsLib.rebaseOddsWithScratch(odds, scratchedOdds, MARGIN);
 	}
 
-	function _payout(uint256 index, bool result) internal virtual {
-		address recipient = result ? ownerOf(index) : address(_vault.asset());
+
+	function _payout(uint256 index, uint8 result) internal virtual {
+		if (result == SCRATCHED) {
+			uint256 lay = _bets[index].payout - _bets[index].amount;
+			// Transfer the bet amount to the owner of the NFT
+			IERC20(_vault.asset()).transfer(ownerOf(index), _bets[index].amount);
+			// Transfer the lay back to the vault
+			IERC20(_vault.asset()).transfer(address(_vault), lay);
+		} else {
+			address recipient = result == WINNER ? ownerOf(index) : address(_vault);
+			IERC20(_vault.asset()).transfer(recipient, _bets[index].payout);
+		}
 		_totalExposure -= _bets[index].payout - _bets[index].amount;
-		IERC20(_vault.asset()).safeTransfer(recipient, _bets[index].payout);	
 	}
 
 	// Allow the Vault to provide cover for this market
 	// Standard implementation is to request cover for each and every bet
 	function _obtainCollateral(bytes16 marketId, bytes16 propositionId, uint256 wager, uint256 payout) internal virtual returns (uint256) {
 		uint256 amount = payout - wager;
-		IERC20(_vault.asset()).safeTransferFrom(
+		IERC20(_vault.asset()).transferFrom(
 			address(_vault),
 			_self,
 			amount
@@ -428,7 +449,7 @@ contract Market is IMarket, Ownable, ERC721 {
 	event Settled(
 		uint256 index,
 		uint256 payout,
-		bool result,
+		uint8 result,
 		address indexed recipient
 	);
 }

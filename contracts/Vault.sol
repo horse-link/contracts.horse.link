@@ -15,7 +15,6 @@ contract Vault is ERC4626Metadata, Ownable {
 
     // These will change to allow multiple markets
     address private _market;
-    uint8 private immutable _decimals;
     address private _self;
 
     constructor(IERC20Metadata asset_)
@@ -30,14 +29,13 @@ contract Vault is ERC4626Metadata, Ownable {
             address(asset_) != address(0),
             "Underlying address is invalid"
         );
-        _decimals = IERC20Metadata(asset_).decimals();
         _self = address(this);
     }
 
     // Override decimals to be the same as the underlying asset
-    function decimals() public view override returns (uint8) {
+    /*function decimals() public view override returns (uint8) {
         return _decimals;
-    }
+    }*/
 
     function setMarket(address market, uint256 max) public onlyOwner {
         require(_market == address(0), "setMarket: Market already set");
