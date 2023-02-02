@@ -21,7 +21,6 @@ struct Bet {
 	bytes16 marketId;
 	uint256 amount;
 	uint256 payout;
-	uint256 timestamp;
 	uint256 payoutDate;
 	uint256 created;
 	bool settled;
@@ -339,6 +338,9 @@ contract Market is IMarket, Ownable, ERC721 {
 				bet.propositionId
 			);
 			recipient = result != LOSER ? ownerOf(index) : address(_vault);
+			if (result == WINNER) {
+				_applyScratchings(index);
+			}
 			_payout(index, result);
 			_totalInPlay -= _bets[index].amount;
 			_inplayCount--;
@@ -347,28 +349,33 @@ contract Market is IMarket, Ownable, ERC721 {
 		_burn(index);
 	}
 
-	function _applyScratchings(uint64 index) returns (uint256) internal virtual {
+	function _applyScratchings(uint64 index) internal virtual returns (uint256) {
 		// Get marketId of bet
 		bytes16 marketId = _bets[index].marketId;
 		// Ask the oracle for scratched runners on this market
-		Result memory result = IOracle(_oracle).getResult(marketId);
-		// Get timestamp of bet
-		uint256 timestamp = _bets[index].timestamp;
+		IOracle.Result memory result = IOracle(_oracle).getResult(marketId);
+
 		// Get all scratchings with a timestamp after this bet
 		// Loop through scratchings
 		uint256 scratchedOdds = 0;
+		uint256 betCreated = _bets[index].created;
 		for (uint256 i = 0; i < result.scratched.length; i++) {
 			// If the timestamp of the scratching is after the bet
-			if (scratchings[i].timestamp > timestamp) {
+			if (result.scratched[i].timestamp > betCreated) {
 				//Sum the odds
-				scratchedOdds += scratchings[i].odds;
+				scratchedOdds += result.scratched[i].odds;
 			}
 		}
 		// Calculate the odds of the bet
-		uint256 odds = _bets[index].payout / _bets[index].amount;
-		uint256 result = OddsLib.rebaseOddsWithScratch(odds, scratchedOdds, MARGIN);
-	}
+		uint256 originalOdds = _bets[index].payout / _bets[index].amount;
+		if (scratchedOdds > 0) {
+			uint256 newOdds = OddsLib.rebaseOddsWithScratch(originalOdds, scratchedOdds, MARGIN);
+			// Calculate the new payout
+			_bets[index].payout = _bets[index].amount * newOdds;
+		}
 
+		return _bets[index].payout;
+	}
 
 	function _payout(uint256 index, uint8 result) internal virtual {
 		if (result == SCRATCHED) {

@@ -93,16 +93,17 @@ describe("Collateralised Market: play through", () => {
 		vault = await new Vault__factory(owner).deploy(underlying.address);
 		await vault.deployed();
 
-		const SignatureLib = await ethers.getContractFactory("SignatureLib");
-		const signatureLib = await SignatureLib.deploy();
-		await signatureLib.deployed();
+		//const SignatureLib = await ethers.getContractFactory("SignatureLib");
+		//const signatureLib = await SignatureLib.deploy();
+		//await signatureLib.deployed();
 
 		const marketFactory = await ethers.getContractFactory(
 			"MarketCollateralisedWithoutProtection",
 			{
 				signer: owner,
 				libraries: {
-					SignatureLib: signatureLib.address
+					SignatureLib: fixture.SignatureLib.address,
+					OddsLib: fixture.OddsLib.address
 				}
 			}
 		);
@@ -378,7 +379,8 @@ describe("Collateralised Market: play through", () => {
 			signature
 		);
 
-		// Alice won the bet
+		// Bob won the bet
+		const initialAliceBalance = await underlying.balanceOf(alice.address);
 		const initialBobBalance = await underlying.balanceOf(bob.address);
 		await market.connect(bob).settle(0);
 
@@ -389,9 +391,17 @@ describe("Collateralised Market: play through", () => {
 			"Total In Play should have gone down by the wager amount"
 		).to.equal(ethers.utils.parseUnits(bet1.toString(), tokenDecimals));
 
+		// His balance should have gone up by the potential winnings
 		const bobBalance = await underlying.balanceOf(bob.address);
 		const bobDelta = bobBalance.sub(initialBobBalance);
 		expect(bobDelta, "Bob should have won the bet").to.equal(
+			BigNumber.from(bet1).mul(
+				ethers.utils.parseUnits(bet1Odds.toString(), ODDS_DECIMALS)
+			)
+		);
+
+		const bet = await market.getBetByIndex(0);
+		expect(bet[1], "Bet struct payout should equal the actual payout").to.equal(
 			BigNumber.from(bet1).mul(
 				ethers.utils.parseUnits(bet1Odds.toString(), ODDS_DECIMALS)
 			)

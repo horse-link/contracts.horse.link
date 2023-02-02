@@ -66,7 +66,7 @@ const marginTestData = {
 	fairOdds: [4, 4, 4, 8, 8]
 };
 
-describe.only("Odds", () => {
+describe("Odds", () => {
 	beforeEach(async () => {
 		[owner] = await ethers.getSigners();
 		const fixture = await deployments.fixture(["market"]);
@@ -118,7 +118,7 @@ describe.only("Odds", () => {
 		}
 	});
 
-	describe.only("Margin", () => {
+	describe("Margin", () => {
 		let bnBookieOdds: BigNumber[];
 		let bnFairOdds: BigNumber[];
 
