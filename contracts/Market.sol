@@ -331,14 +331,10 @@ contract Market is IMarket, Ownable, ERC721 {
 			bet.marketId,
 			bet.propositionId
 		);
-		if (result == SCRATCHED) {
-			_scratch(index);
-		} else {
-			_payout(index, result);
-		}
+		_payout(index, result);
 		_totalInPlay -= _bets[index].amount;
 		_inplayCount--;
-		emit Settled(index, _bets[index].payout, result, result ? ownerOf(index) : address(_vault));
+		emit Settled(index, _bets[index].payout, result, result == WINNER ? ownerOf(index) : address(_vault));
 		_burn(index);
 	}
 
