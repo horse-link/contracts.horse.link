@@ -32,8 +32,19 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 		skipIfAlreadyDeployed: true
 	});
 
+	const collateralised = true;
 	for (const tokenDetails of UnderlyingTokens) {
-		const vaultDeployment = await deployments.get(tokenDetails.vaultName);
+		const vaultName = collateralised
+			? tokenDetails.collateralisedVaultName
+			: tokenDetails.vaultName;
+		const marketName = collateralised
+			? tokenDetails.collateralisedMarketName
+			: tokenDetails.marketName;
+		const vaultDeployment = await deployments.get(
+			collateralised
+				? tokenDetails.collateralisedVaultName
+				: tokenDetails.vaultName
+		);
 		let tokenAddress: string;
 		if (network.tags.production) {
 			tokenAddress = namedAccounts[tokenDetails.deploymentName];
@@ -43,8 +54,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 			);
 			tokenAddress = tokenDeployment.address;
 		}
-		const marketDeployment = await deploy(tokenDetails.marketName, {
-			contract: "Market",
+		const marketDeployment = await deploy(marketName, {
+			contract: collateralised ? "MarketCollateralisedLinear" : "Market",
 			from: deployer,
 			args: [vaultDeployment.address, 0, timeoutDays, oracle.address],
 			log: true,
@@ -57,14 +68,14 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 		});
 		if (marketDeployment?.newlyDeployed) {
 			await execute(
-				tokenDetails.vaultName,
+				vaultName,
 				{ from: deployer, log: true },
 				"setMarket",
 				marketDeployment.address,
 				ethers.constants.MaxUint256
 			);
 			await execute(
-				tokenDetails.marketName,
+				marketName,
 				{ from: deployer, log: true },
 				"grantSigner",
 				namedAccounts.MarketSigner
@@ -95,7 +106,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 			const balance = await token.balanceOf(signer.address);
 			await execute(
-				tokenDetails.vaultName,
+				vaultName,
 				{
 					from: deployer,
 					log: true

@@ -5,7 +5,9 @@ pragma abicoder v2;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+//import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+
 
 import "./IVault.sol";
 import "./IMarket.sol";
@@ -25,6 +27,7 @@ struct Bet {
 
 contract Market is IMarket, Ownable, ERC721 {
 	using Strings for uint256;
+	//using SafeERC20 for IERC20;
 
 	string public constant baseURI = "https://horse.link/api/bets/";
 
@@ -53,7 +56,6 @@ contract Market is IMarket, Ownable, ERC721 {
 
 	// Can claim after this period regardless
 	uint256 public immutable timeout;
-	uint256 public immutable min;
 
 	mapping(address => bool) private _signers;
 
@@ -71,7 +73,6 @@ contract Market is IMarket, Ownable, ERC721 {
 		_signers[owner()] = true;
 
 		timeout = timeoutDays * 1 days;
-		min = 1 hours;
 	}
 
 	function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
@@ -304,10 +305,10 @@ contract Market is IMarket, Ownable, ERC721 {
 	function settle(uint64 index) external {
 		Bet memory bet = _bets[index];
 		require(bet.settled == false, "settle: Bet has already settled");
-		require(
+		/*require(
 			_bets[index].payoutDate < block.timestamp,
 			"_settle: Payout date not reached"
-		);
+		);*/
 		_settle(index);
 	}
 
@@ -331,8 +332,8 @@ contract Market is IMarket, Ownable, ERC721 {
 
 	function _payout(uint256 index, bool result) internal virtual {
 		address recipient = result ? ownerOf(index) : address(_vault.asset());
-		IERC20(_vault.asset()).transfer(recipient, _bets[index].payout);
 		_totalExposure -= _bets[index].payout - _bets[index].amount;
+		IERC20(_vault.asset()).transfer(recipient, _bets[index].payout);	
 	}
 
 	// Allow the Vault to provide cover for this market
