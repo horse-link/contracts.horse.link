@@ -22,6 +22,7 @@ struct Bet {
 	uint256 amount;
 	uint256 payout;
 	uint256 payoutDate;
+	uint256 created;
 	bool settled;
 }
 
@@ -140,6 +141,7 @@ contract Market is IMarket, Ownable, ERC721 {
 			uint256,
 			uint256,
 			uint256, // payoutDate
+			uint256, // created
 			bool,
 			bytes16, // marketId
 			bytes16 // propositionId
@@ -155,13 +157,14 @@ contract Market is IMarket, Ownable, ERC721 {
 			uint256,
 			uint256,
 			uint256,
+			uint256,
 			bool,
 			bytes16,
 			bytes16
 		)
 	{
 		Bet memory bet = _bets[index];
-		return (bet.amount, bet.payout, bet.payoutDate, bet.settled, bet.marketId, bet.propositionId);
+		return (bet.amount, bet.payout, bet.payoutDate, bet.created, bet.settled, bet.marketId, bet.propositionId);
 	}
 
 	function getOdds(
@@ -291,7 +294,7 @@ contract Market is IMarket, Ownable, ERC721 {
 
 		uint64 index = _getCount();
 		_bets.push(
-			Bet(propositionId, marketId, wager, payout, end, false)
+			Bet(propositionId, marketId, wager, payout, end, block.timestamp, false)
 		);
 		_marketBets[marketId].push(index);
 		_mint(_msgSender(), index);
