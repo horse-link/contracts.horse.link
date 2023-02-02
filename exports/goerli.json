@@ -387,7 +387,7 @@
       ]
     },
     "MarketOracle": {
-      "address": "0xD9401cBBda40e55cA67aFF8686bBa3eaAa384012",
+      "address": "0x1EDE02b30490448e6250f331f78B1F4416C56460",
       "abi": [
         {
           "inputs": [],
@@ -414,6 +414,64 @@
           "type": "event"
         },
         {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "bytes16",
+              "name": "marketId",
+              "type": "bytes16"
+            },
+            {
+              "indexed": true,
+              "internalType": "bytes16",
+              "name": "propositionId",
+              "type": "bytes16"
+            }
+          ],
+          "name": "ScratchedSet",
+          "type": "event"
+        },
+        {
+          "inputs": [],
+          "name": "LOSER",
+          "outputs": [
+            {
+              "internalType": "uint8",
+              "name": "",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "SCRATCHED",
+          "outputs": [
+            {
+              "internalType": "uint8",
+              "name": "",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "WINNER",
+          "outputs": [
+            {
+              "internalType": "uint8",
+              "name": "",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
           "inputs": [
             {
               "internalType": "bytes16",
@@ -429,9 +487,9 @@
           "name": "checkResult",
           "outputs": [
             {
-              "internalType": "bool",
+              "internalType": "uint8",
               "name": "",
-              "type": "bool"
+              "type": "uint8"
             }
           ],
           "stateMutability": "view",
@@ -461,9 +519,43 @@
           "name": "getResult",
           "outputs": [
             {
-              "internalType": "bytes16",
+              "components": [
+                {
+                  "internalType": "bytes16",
+                  "name": "winningPropositionId",
+                  "type": "bytes16"
+                },
+                {
+                  "components": [
+                    {
+                      "internalType": "bytes16",
+                      "name": "scratchedPropositionId",
+                      "type": "bytes16"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "timestamp",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "odds",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "totalOdds",
+                      "type": "uint256"
+                    }
+                  ],
+                  "internalType": "struct IOracle.Scratched[]",
+                  "name": "scratched",
+                  "type": "tuple[]"
+                }
+              ],
+              "internalType": "struct IOracle.Result",
               "name": "",
-              "type": "bytes16"
+              "type": "tuple"
             }
           ],
           "stateMutability": "view",
@@ -478,7 +570,7 @@
             },
             {
               "internalType": "bytes16",
-              "name": "propositionId",
+              "name": "winningPropositionId",
               "type": "bytes16"
             },
             {
@@ -505,6 +597,56 @@
             }
           ],
           "name": "setResult",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes16",
+              "name": "marketId",
+              "type": "bytes16"
+            },
+            {
+              "internalType": "bytes16",
+              "name": "scratchedPropositionId",
+              "type": "bytes16"
+            },
+            {
+              "internalType": "uint256",
+              "name": "odds",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "totalOdds",
+              "type": "uint256"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "uint8",
+                  "name": "v",
+                  "type": "uint8"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "r",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "s",
+                  "type": "bytes32"
+                }
+              ],
+              "internalType": "struct SignatureLib.Signature",
+              "name": "signature",
+              "type": "tuple"
+            }
+          ],
+          "name": "setScratchedResult",
           "outputs": [],
           "stateMutability": "nonpayable",
           "type": "function"
@@ -588,7 +730,7 @@
       ]
     },
     "RegistryToken": {
-      "address": "0x9f4c2495d22b67B6F3d65B24f0Db222c4C844c76",
+      "address": "0xBD1996DC1aBEF6c126EC8C170B65F1079027248E",
       "abi": [
         {
           "inputs": [
@@ -1402,7 +1544,7 @@
       ]
     },
     "Registry": {
-      "address": "0x56f2f0e4fE425b0aF79242306d6C97d4b3b61FD4",
+      "address": "0xf84adeB48EF89cDd69F30dD5D17163fEF9bca488",
       "abi": [
         {
           "inputs": [
@@ -1559,8 +1701,8 @@
         }
       ]
     },
-    "UsdtCollateraliserVault": {
-      "address": "0xe6Cc16Dcd3642857E28E9069aa998f712a11c367",
+    "UsdtVault": {
+      "address": "0x58ce18A271e2aBb80252A6E5D1BDf2EAD579Cfc0",
       "abi": [
         {
           "inputs": [
@@ -2394,8 +2536,8 @@
         }
       ]
     },
-    "DaiCollateraliserVault": {
-      "address": "0x6EA769bf3b5e12D5177E58BE24c690B6ceD0A6Bf",
+    "DaiVault": {
+      "address": "0x5B1406c8a4f5045C909f68057d69b25ACC3652C0",
       "abi": [
         {
           "inputs": [
@@ -3229,8 +3371,8 @@
         }
       ]
     },
-    "UsdtCollateralisedMarket": {
-      "address": "0xE701392E4DD3095e242Ee10ac54bE9e685fBc42c",
+    "UsdtMarket": {
+      "address": "0x714165C6ECF3d50e2Be09d072C4B1b42c15C1a1d",
       "abi": [
         {
           "inputs": [
@@ -3387,9 +3529,9 @@
             },
             {
               "indexed": false,
-              "internalType": "bool",
+              "internalType": "uint8",
               "name": "result",
-              "type": "bool"
+              "type": "uint8"
             },
             {
               "indexed": true,
@@ -3576,6 +3718,11 @@
           ],
           "name": "getBetByIndex",
           "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            },
             {
               "internalType": "uint256",
               "name": "",
@@ -4151,8 +4298,8 @@
         }
       ]
     },
-    "DaiCollateralisedMarket": {
-      "address": "0x374406957D7a9A2C33EfEED925B20a6875D99b5D",
+    "DaiMarket": {
+      "address": "0x082EF0125D6CE259bf71625Ed2Ef443EF3C60508",
       "abi": [
         {
           "inputs": [
@@ -4309,9 +4456,9 @@
             },
             {
               "indexed": false,
-              "internalType": "bool",
+              "internalType": "uint8",
               "name": "result",
-              "type": "bool"
+              "type": "uint8"
             },
             {
               "indexed": true,
@@ -4498,6 +4645,11 @@
           ],
           "name": "getBetByIndex",
           "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            },
             {
               "internalType": "uint256",
               "name": "",
