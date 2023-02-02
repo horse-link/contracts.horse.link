@@ -14,38 +14,41 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	const namedAccounts = await getNamedAccounts();
 	const deployer = namedAccounts.deployer;
 
-	for (const collateralised of [true]) {
-		for (const tokenDetails of UnderlyingTokens) {
-			let tokenAddress: string;
-			if (network.tags.production) {
-				tokenAddress = namedAccounts[tokenDetails.deploymentName];
-			} else {
-				const tokenDeployment = await deployments.get(
-					tokenDetails.deploymentName
-				);
-				tokenAddress = tokenDeployment.address;
-			}
-			const deployResult = await deploy(collateralised ? tokenDetails.collateralisedVaultName : tokenDetails.vaultName, {
+	const collateralised = true;
+	for (const tokenDetails of UnderlyingTokens) {
+		let tokenAddress: string;
+		if (network.tags.production) {
+			tokenAddress = namedAccounts[tokenDetails.deploymentName];
+		} else {
+			const tokenDeployment = await deployments.get(
+				tokenDetails.deploymentName
+			);
+			tokenAddress = tokenDeployment.address;
+		}
+		const deployResult = await deploy(
+			collateralised
+				? tokenDetails.collateralisedVaultName
+				: tokenDetails.vaultName,
+			{
 				contract: "VaultTimeLock",
 				from: deployer,
 				args: [tokenAddress, process.env.VAULT_LOCK_TIME],
 				log: true,
 				autoMine: true, // speed up deployment on local network (ganache, hardhat), no effect on live networks,
 				skipIfAlreadyDeployed: false
-			});
-	
-			if (deployResult.newlyDeployed && !network.tags.testing) {
-				// Add vaultTimeLock to registry
-				await execute(
-					"Registry",
-					{ from: deployer, log: true },
-					"addVault",
-					deployResult.address
-				);
 			}
+		);
+
+		if (deployResult.newlyDeployed && !network.tags.testing) {
+			// Add vaultTimeLock to registry
+			await execute(
+				"Registry",
+				{ from: deployer, log: true },
+				"addVault",
+				deployResult.address
+			);
 		}
 	}
-	
 };
 export default func;
 func.tags = ["vault"];

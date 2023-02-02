@@ -70,9 +70,9 @@ abstract contract MarketCollateralised is Market {
 		return result;
 	}
 
-	function getTotalCollateral() external view returns (uint256) {
+	/*function getTotalCollateral() external view returns (uint256) {
 		return _totalCollateral;
-	}
+	}*/
 
 	// Return any unused collateral to the Vault
 	function refundCollateral() external onlyOwner {
