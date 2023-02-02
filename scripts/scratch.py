@@ -57,5 +57,5 @@ def main():
 
 
 if __name__ == "__main__":
-    print("Starting scratch script")
+    print(f"Starting {__file__} script at {time()}")
     main()
