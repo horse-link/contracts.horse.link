@@ -14,6 +14,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	const namedAccounts = await getNamedAccounts();
 	const deployer = namedAccounts.deployer;
 
+	const collateralised = true;
 	for (const tokenDetails of UnderlyingTokens) {
 		let tokenAddress: string;
 		if (network.tags.production) {
@@ -24,14 +25,19 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 			);
 			tokenAddress = tokenDeployment.address;
 		}
-		const deployResult = await deploy(tokenDetails.vaultName, {
-			contract: "VaultTimeLock",
-			from: deployer,
-			args: [tokenAddress, process.env.VAULT_LOCK_TIME],
-			log: true,
-			autoMine: true, // speed up deployment on local network (ganache, hardhat), no effect on live networks,
-			skipIfAlreadyDeployed: false
-		});
+		const deployResult = await deploy(
+			collateralised
+				? tokenDetails.collateralisedVaultName
+				: tokenDetails.vaultName,
+			{
+				contract: "VaultTimeLock",
+				from: deployer,
+				args: [tokenAddress, process.env.VAULT_LOCK_TIME],
+				log: true,
+				autoMine: true, // speed up deployment on local network (ganache, hardhat), no effect on live networks,
+				skipIfAlreadyDeployed: false
+			}
+		);
 
 		if (deployResult.newlyDeployed && !network.tags.testing) {
 			// Add vaultTimeLock to registry

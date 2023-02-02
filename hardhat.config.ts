@@ -35,6 +35,7 @@ export default {
 		hardhat: {
 			chainId: 1337,
 			saveDeployment: true,
+			allowUnlimitedContractSize: false,
 			tags: ["local", "testing"]
 		},
 		localhost: {

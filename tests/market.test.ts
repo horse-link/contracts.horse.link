@@ -1,6 +1,6 @@
 import hre, { ethers, deployments } from "hardhat";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
-import { BigNumber, BigNumberish, BytesLike } from "ethers";
+import { BigNumber } from "ethers";
 import chai, { expect } from "chai";
 import {
 	Market,
@@ -12,24 +12,6 @@ import {
 import { solidity } from "ethereum-waffle";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { formatBytes16String, makeMarketId, makePropositionId } from "./utils";
-
-type Signature = {
-	v: BigNumberish;
-	r: string;
-	s: string;
-};
-
-// Race result constants
-const WINNER = 0x01;
-const LOSER = 0x02;
-const SCRATCHED = 0x03;
-
-// MarketId 11 chars
-// AAAAAABBBCC
-// A = date as days since epoch
-// B = location code
-// C = race number
-const MARKET_ID = "019123BNE01";
 
 chai.use(solidity);
 
@@ -286,7 +268,6 @@ describe("Market", () => {
 		);
 
 		const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
-
 		const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
 		const currentTime = await time.latest();
 		// Assume race closes in 1 hour from now
@@ -717,6 +698,10 @@ describe("Market", () => {
 			const bobBalance = await underlying.balanceOf(bob.address);
 			const nftBalance = await market.balanceOf(bob.address);
 			expect(nftBalance).to.equal(1, "Bob should have 1 NFT");
+			const nftMetaDataURI = await market.tokenURI(0);
+			expect(nftMetaDataURI.toLowerCase()).to.equal(
+				`https://horse.link/api/bets/${market.address.toLowerCase()}/0`
+			);
 
 			const signature = await signSetResultMessage(
 				marketId,
@@ -1035,7 +1020,8 @@ describe("Market", () => {
 						close,
 						end,
 						betSignature
-					)
+					),
+				"Should emit a Placed event"
 			)
 				.to.emit(market, "Placed")
 				.withArgs(
@@ -1052,7 +1038,7 @@ describe("Market", () => {
 				params: [end + 31 * 24 * 60 * 60]
 			});
 
-			expect(await market.settle(index))
+			expect(await market.settle(index), "Should emit a Settled event")
 				.to.emit(market, "Settled")
 				.withArgs(index, 272727300, WINNER, bob.address);
 		});
@@ -1074,7 +1060,6 @@ describe("Market", () => {
 			for (let i = 0; i < max; i++) {
 				const nonce = i.toString();
 				const propositionId = makePropositionId("ABC", i + 1);
-
 				const betSignature = await signBackMessage(
 					nonce,
 					marketId,

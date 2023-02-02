@@ -183,6 +183,13 @@ The total assets in the Vault is now 235.49 DAI giving a performance of: 235.49 
 
 Market contracts define the logic in which they calculate the odds per event or market. Our protocol offers two types of market contracts, where the odds slippage calculation is either on a linear decay or a non-linear decay. The linear decay market `Market.sol` is a simple market that calculates the odds based on the total assets in the Vault and the total exposure of the Vault. The non-linear decay market `MarketCurved.sol` is more complex and is more expensive to calculate the odds, but offers smoother odds to its caller.
 
+
+Non collateralised markets draw 100% of the lay collateral from the Vault.
+```text
+o = O * O * w / (v + w)
+```
+
+Collateralised markets use the lay collateral in the total liquidity available to calculate the odds.
 ```text
 o = O - O * (w / (v + (sm - sp)))
 ```
@@ -190,9 +197,9 @@ o = O - O * (w / (v + (sm - sp)))
 where
 
 ```text
-o = Offered odds
-O = Market fixed odds
-v = Vault total assets
+o = Actual odds
+O = Offered odds
+v = Vault liquidity
 w = Wager amount
 sm = Sum of all wagers on that market
 sp = Sum of all wagers on that proposition
@@ -200,11 +207,11 @@ sp = Sum of all wagers on that proposition
 
 The market contract implements the ERC721 standard to issue betslips as NFTs. Bets are settled by invoking the `settle` function along with the respective NFT token ID once the `MarketOracle.sol` result has been set. Should the Oracle not be updated within 30 days, the `settle` function will pay out the proposition regardless. This prevents the market operator not to unfairly withhold users assets.
 
-Markets can either be "Greedy" or "Not Greedy", but for v1.0 we assume Greedy Markets.
+Markets can either be "Collateralised" or "Non-collateralised", but for v1.0 we assume Non-collateralised Markets.
 
-#### Greedy Markets
+#### Non-collateralised Markets
 
-Greedy markets draw 100% of the lay collateral from the Vault. This is favourable for Vault owners, as they get maximum dividends for collateral they lend.
+Non-Collateralised markets draw 100% of the lay collateral from the Vault. This is favourable for Vault owners, as they get maximum dividends for collateral they lend.
 
 ```text
 Given calculated target odds are 5.0,
@@ -214,9 +221,9 @@ Then the true odds are 4.75
 And Vault lends 137.50 tokens to the Market
 ```
 
-#### Non Greedy Markets
+#### Collateralised Markets
 
-Markets that are non greedy use the collateral under management first, instead of borrowing assets from the connected Vault.
+Markets that are collateralised use the collateral under management first, instead of borrowing assets from the connected Vault.
 
 ```text
 Given calculated odds are 3:1,
@@ -327,4 +334,10 @@ Run the script:
 
 ```bash
 python scripts/settle.py
+```
+
+Or via crontab:
+```txt
+# m h  dom mon dow   command
+*/15 * * * * ~/settle.sh
 ```
