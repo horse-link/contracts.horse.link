@@ -183,6 +183,13 @@ The total assets in the Vault is now 235.49 DAI giving a performance of: 235.49 
 
 Market contracts define the logic in which they calculate the odds per event or market. Our protocol offers two types of market contracts, where the odds slippage calculation is either on a linear decay or a non-linear decay. The linear decay market `Market.sol` is a simple market that calculates the odds based on the total assets in the Vault and the total exposure of the Vault. The non-linear decay market `MarketCurved.sol` is more complex and is more expensive to calculate the odds, but offers smoother odds to its caller.
 
+
+Non collateralised markets draw 100% of the lay collateral from the Vault.
+```text
+o = O * O * w / (v + w)
+```
+
+Collateralised markets use the lay collateral in the total liquidity available to calculate the odds.
 ```text
 o = O - O * (w / (v + (sm - sp)))
 ```
@@ -190,9 +197,9 @@ o = O - O * (w / (v + (sm - sp)))
 where
 
 ```text
-o = Offered odds
-O = Market fixed odds
-v = Vault total assets
+o = Actual odds
+O = Offered odds
+v = Vault liquidity
 w = Wager amount
 sm = Sum of all wagers on that market
 sp = Sum of all wagers on that proposition
