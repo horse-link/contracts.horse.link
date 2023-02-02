@@ -52,8 +52,8 @@ library OddsLib {
         return Math.max(1 * PRECISION, (adjustedPayout * PRECISION) / wager);
     }
 
-    // Assumiung that the market previously had targetMargin, then after some runners have been scratched, correct the odds of this runner to make up the margin again
-    function rebaseOddsWithScratch(uint256 odds, uint256 scratchedOdds, uint256 targetMargin) return (uint256) {
+    // Assuming that the market previously had targetMargin, then after some runners have been scratched, correct the odds of this runner to make up the margin again
+    function rebaseOddsWithScratch(uint256 odds, uint256 scratchedOdds, uint256 targetMargin) returns (uint256) {
         uint256 newMargin = targetMargin - PRECISION / scratchedOdds;
         return changeMargin(odds, newMargin, targetMargin);
     } 
@@ -79,7 +79,4 @@ library OddsLib {
         }
         return total;
     }
-
-
-
-};
+}

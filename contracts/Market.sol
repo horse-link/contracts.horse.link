@@ -77,7 +77,6 @@ contract Market is IMarket, Ownable, ERC721 {
 		_signers[owner()] = true;
 
 		timeout = timeoutDays * 1 days;
-		min = 1 hours;
 	}
 
 	function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
@@ -335,13 +334,13 @@ contract Market is IMarket, Ownable, ERC721 {
 		_burn(index);
 	}
 
-	function _applyScratchings(uint64 index) internal virtual {
+	function _applyScratchings(uint64 index) returns (uint256) internal virtual {
 		// Get marketId of bet
 		bytes16 marketId = _bets[index].marketId;
 		// Ask the oracle for scratched runners on this market
 		bytes16[] memory scratched = IOracle(_oracle).getScratched(marketId);
 		// Get timestamp of bet
-		uint256 timestamp = _bets[index].
+		uint256 timestamp = _bets[index].timestamp;
 		// Get all scratchings with a timestamp after this bet
 		bytes16[] memory scratchings = _oracle.getScratchings(marketId);
 		// Loop through scratchings
@@ -353,7 +352,9 @@ contract Market is IMarket, Ownable, ERC721 {
 				scratchedOdds += scratchings[i].odds;
 			}
 		}
-		OddsLib.rebaseOddsWithScratch(_bets[index].odds, scratchedOdds, MARGIN);
+		// Calculate the odds of the bet
+		uint256 odds = _bets[index].payout / _bets[index].amount;
+		uint256 result = OddsLib.rebaseOddsWithScratch(odds, scratchedOdds, MARGIN);
 	}
 
 	function _payout(uint256 index, bool result) internal virtual {
