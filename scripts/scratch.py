@@ -12,6 +12,7 @@ load_dotenv()
 node = os.getenv('GOERLI_URL')
 web3 = Web3(Web3.HTTPProvider(node))
 
+
 def get_oracle():
     response = requests.get('https://horse.link/api/config')
     data = response.json()
@@ -66,12 +67,13 @@ def hydrate_market_id(market_id):
     print(f">{market_string}<")
  
     # Parse the market string
+    id = market_string[0:11]
     date = int(market_string[0:6])
     location = market_string[6:9]
     race = int(market_string[9:11])
     # Return a dictionary with the hydrated market data
     result = {
-        "id": str(market_string),
+        "id": str(id),
         "date": date,
         "location": location,
         "race": race
@@ -106,11 +108,13 @@ def get_subgraph_bets_since(createdAt_gt):
 
 def main():
     print("Main");
+  
     try:
       with open("state.json", "r") as state_file:
         state = json.load(state_file)
     except FileNotFoundError:
       state = {"last_run": 0, "watch_list": [], "processed_items": []}
+    oracle = load_oracle()
     print("Loaded")
     print(f"Watch list contains {len(state['watch_list'])} races")
 
@@ -137,25 +141,12 @@ def main():
       race = hydrated_market["race"]
       id = hydrated_market["id"]
       print(f"Processing race {location} {race}")
-      #market_url = f"https://horse.link/api/runners/{location}/{race}/win"
       market_result_url = "https://horse.link/api/bets/sign/" + id
-      market_result_url2 = "https://horse.link/api/bets/sign/019390SOU08"
-      print(f">{market_result_url}<")
-      print(f">{market_result_url2}<")
-      # Lengths the same?
-      if (len(market_result_url) != len(market_result_url2)):
-        print("NOT EQUAL LENGTH")
-        print(f"Length 1 is {len(market_result_url)}")
-        print(f"Length 2 is {len(market_result_url2)}")
-      if (market_result_url == market_result_url2):
-        print("EQUAL")
-      else:
-        print("NOT EQUAL")
+
       market_response = requests.get(market_result_url)
-      print(market_response)
-      print(market_response.text)
+
       # if 404,
-      #if market_response.status_code != 200:
+      # if market_response.status_code != 200:
       #  # remove from watch list
       #  print(f"Removing {market_id} from watch list")
       #  state["watch_list"].remove(market_id)
@@ -163,19 +154,22 @@ def main():
 
       market_data = json.loads(market_response.text)
       print(market_data)
-      if not market_data["marketResultAdded"]:
-        print(f"Market result for {location} {race} not added yet")
-        continue
 
-      # Iterate through runners looking for scratches
-      print(market_data)
-      runners = market_data.get("scratched");
+      runners = market_data.get("scratchedRunners")
+      if runners is None:
+        print("No scratched runners")
+        continue
+      print(f"Found {len(runners)} scratched runners")
       for runner in runners:
-        print(f"Processing scratched runner {runner['name']}")
-        proposition_id = runner["proposition_id"]
+        print("Processing scratched runner")
+        proposition_id = runner["b16propositionId"]
         # If not already processed,
         if proposition_id not in processed_items:
           # Send this proposition to Oracle contract
+          print(f"Sending proposition {proposition_id} to Oracle contract")
+          set_scratch(oracle, proposition_id, market_id, runner["odds"], runner["signature"])
+          print("Sent.")
+
           # Add to processed_items
           processed_items.append(proposition_id)
 
