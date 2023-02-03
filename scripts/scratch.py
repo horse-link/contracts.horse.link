@@ -4,7 +4,7 @@ import time
 import json
 import os
 import requests
-import math
+import sys
 
 
 load_dotenv()
@@ -26,7 +26,7 @@ def load_oracle():
     contract = web3.eth.contract(address=address, abi=abi)
     return contract
 
-def set_scratch(oracle, marketId, propositionId, odds, signature) -> None:
+def set_scratch(oracle, marketId, propositionId, odds, totalOdds, signature) -> None:
     try:
         # Can be any account with funds
         account_from = {
@@ -34,12 +34,23 @@ def set_scratch(oracle, marketId, propositionId, odds, signature) -> None:
             'address': '0xF33b9A4efA380Df3B435f755DD2C2AF7fE53C2d1',
         }
 
+        print(account_from)
+
         signature_tuple = [signature['v'], signature['r'], signature['s']]
 
-        encoded=propositionId.encode('utf-8')
-        proposition_id=bytearray(encoded)
+        print(signature_tuple)
 
-        tx = oracle.functions.setScratchedResult(marketId, proposition_id, odds, 0, signature_tuple).buildTransaction(
+        encodedProposition = propositionId.encode('utf-8')
+        proposition_id = bytearray(encodedProposition)
+
+        encodedMarket = marketId.encode('utf-8')
+        market_id = bytearray(encodedMarket)
+
+        print(market_id)
+        print(proposition_id)
+        print(odds)
+
+        tx = oracle.functions.setScratchedResult(market_id, proposition_id, odds, totalOdds, signature_tuple).buildTransaction(
             {
                 'from': account_from['address'],
                 'nonce': web3.eth.get_transaction_count(account_from['address']),
@@ -55,6 +66,8 @@ def set_scratch(oracle, marketId, propositionId, odds, signature) -> None:
         print(tx_receipt)
     except:
         print("An exception occurred")
+        #output the error
+        print(sys.exc_info()[0])
 
 def hydrate_market_id(market_id):
     # Remove the '0x' prefix
@@ -64,7 +77,6 @@ def hydrate_market_id(market_id):
     binary = bytes.fromhex(market_id)
     # Decode binary as ASCII
     market_string = binary.decode("ascii")
-    print(f">{market_string}<")
  
     # Parse the market string
     id = market_string[0:11]
@@ -107,7 +119,7 @@ def get_subgraph_bets_since(createdAt_gt):
 
 
 def main():
-    print("Main");
+    print("Main")
   
     try:
       with open("state.json", "r") as state_file:
@@ -135,31 +147,24 @@ def main():
     # For each market in the watch list, fetch the race details
     processed_items = [] # array of propositions that have already been sent to the Oracle contract
     for market_id in state.get("watch_list", []):
-      # hydrate
+      # hydrate market ID
       hydrated_market = hydrate_market_id(market_id)
       location = hydrated_market["location"]
       race = hydrated_market["race"]
       id = hydrated_market["id"]
+
       print(f"Processing race {location} {race}")
       market_result_url = "https://horse.link/api/bets/sign/" + id
-
       market_response = requests.get(market_result_url)
-
-      # if 404,
-      # if market_response.status_code != 200:
-      #  # remove from watch list
-      #  print(f"Removing {market_id} from watch list")
-      #  state["watch_list"].remove(market_id)
-      #  continue
-
       market_data = json.loads(market_response.text)
-      print(market_data)
-
+      
+      # Process scratched runners
       runners = market_data.get("scratchedRunners")
       if runners is None:
         print("No scratched runners")
         continue
       print(f"Found {len(runners)} scratched runners")
+
       for runner in runners:
         print("Processing scratched runner")
         proposition_id = runner["b16propositionId"]
@@ -167,7 +172,7 @@ def main():
         if proposition_id not in processed_items:
           # Send this proposition to Oracle contract
           print(f"Sending proposition {proposition_id} to Oracle contract")
-          set_scratch(oracle, proposition_id, market_id, runner["odds"], runner["signature"])
+          set_scratch(oracle, proposition_id, market_id, runner["odds"], runner["totalOdds"], runner["signature"])
           print("Sent.")
 
           # Add to processed_items
@@ -177,6 +182,7 @@ def main():
         state["watch_list"].remove(market_id)
 
       state["last_run"] = this_run
+
     print("Saving state")
     with open("state.json", "w") as state_file:
       json.dump(state, state_file)
