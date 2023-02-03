@@ -36,21 +36,24 @@ def set_scratch(oracle, marketId, propositionId, odds, totalOdds, signature) -> 
 
         print(account_from)
 
+        # Convert the signature to a tuple
         signature_tuple = [signature['v'], signature['r'], signature['s']]
-
-        print(signature_tuple)
-
         encodedProposition = propositionId.encode('utf-8')
         proposition_id = bytearray(encodedProposition)
-
         encodedMarket = marketId.encode('utf-8')
         market_id = bytearray(encodedMarket)
+
+        # remove the first 2 characters of the market_id and proposition_id
+        market_id = market_id[2:]
+        proposition_id = proposition_id[2:]
 
         print(market_id)
         print(proposition_id)
         print(odds)
+        print(f"Length of market_id: {len(market_id)}")
+        print(f"Length of proposition_id: {len(proposition_id)}")
 
-        tx = oracle.functions.setScratchedResult(market_id, proposition_id, odds, totalOdds, signature_tuple).buildTransaction(
+        tx = oracle.functions.setScratchedResult(market_id, proposition_id, str(odds), str(totalOdds), signature_tuple).buildTransaction(
             {
                 'from': account_from['address'],
                 'nonce': web3.eth.get_transaction_count(account_from['address']),
@@ -67,7 +70,7 @@ def set_scratch(oracle, marketId, propositionId, odds, totalOdds, signature) -> 
     except:
         print("An exception occurred")
         #output the error
-        print(sys.exc_info()[0])
+        print(sys.exc_info())
 
 def hydrate_market_id(market_id):
     # Remove the '0x' prefix
@@ -158,6 +161,7 @@ def main():
       market_response = requests.get(market_result_url)
       market_data = json.loads(market_response.text)
       
+      
       # Process scratched runners
       runners = market_data.get("scratchedRunners")
       if runners is None:
@@ -166,13 +170,19 @@ def main():
       print(f"Found {len(runners)} scratched runners")
 
       for runner in runners:
+
         print("Processing scratched runner")
+        print(market_data)
         proposition_id = runner["b16propositionId"]
         # If not already processed,
         if proposition_id not in processed_items:
           # Send this proposition to Oracle contract
           print(f"Sending proposition {proposition_id} to Oracle contract")
-          set_scratch(oracle, proposition_id, market_id, runner["odds"], runner["totalOdds"], runner["signature"])
+          odds = runner["odds"] * 1000000
+          totalOdds = int(runner["totalOdds"])
+          signature = runner["signature"]
+          print(f"set_scratch(oracle, {proposition_id}, {market_id}, {odds}, {totalOdds}, {signature}")
+          set_scratch(oracle, proposition_id, market_id, odds, totalOdds, signature)
           print("Sent.")
 
           # Add to processed_items
