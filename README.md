@@ -339,5 +339,5 @@ python scripts/settle.py
 Or via crontab:
 ```txt
 # m h  dom mon dow   command
-*/15 * * * * ~/settle.sh
+* * * * * /usr/bin/python3 -u /root/contracts.horse.link/scripts/scratch.py >> $HOME/logs/scratch.log 2>&1
 ```
