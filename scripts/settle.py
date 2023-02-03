@@ -114,7 +114,8 @@ def main():
         count = market.functions.getCount().call()
 
         # count must be less than 50
-        count = 50 if count > 50 else count
+        if count > 50:
+            count = count - 50
 
         # settle each bet in reverse order
         for i in range(count - 1, 0, -1):
@@ -131,7 +132,7 @@ def main():
             print(f"Market ID: {mid}")
 
             # check if bet is settled
-            if bet[3] == True:
+            if bet[4] == True:
                 print(
                     f"Bet {i} for market {market_address['address']} already settled")
                 continue
