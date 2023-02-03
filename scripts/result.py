@@ -35,6 +35,31 @@ def get_subgraph_bets_since(createdAt_gt):
     return data["bets"]
 
 
+def hydrate_market_id(market_id):
+    # Remove the '0x' prefix
+    market_id = market_id[2:]
+    
+    # Convert hexadecimal to binary
+    binary = bytes.fromhex(market_id)
+    # Decode binary as ASCII
+    market_string = binary.decode("ascii")
+    print(f">{market_string}<")
+ 
+    # Parse the market string
+    id = market_string[0:11]
+    date = int(market_string[0:6])
+    location = market_string[6:9]
+    race = int(market_string[9:11])
+    # Return a dictionary with the hydrated market data
+    result = {
+        "id": str(id),
+        "date": date,
+        "location": location,
+        "race": race
+    }
+    return result
+
+
 def get_oracle():
     response = requests.get('https://horse.link/api/config')
     data = response.json()
@@ -111,15 +136,24 @@ def main():
 
     for bet in bets:
         # check if bet is settled via the api
-        market_id = bet['marketId'] # bet[5][0:11]
-        mid = market_id.decode('ASCII')
-        print(f"Market ID: {mid}")
+        market_id = bet['marketId'] # [0:11] # bet[5][0:11]
+        # mid = market_id.decode('ASCII')
+        # print(f"Market ID: {mid}")
 
         # check if result has been added to the oracle
-        result = get_result(oracle, market_id)
+        result = get_result(oracle, bet['marketId'])
+
+
+
+
+        # hydrate
+        hydrated_market = hydrate_market_id(market_id)
+        # location = hydrated_market["location"]
+        # race = hydrated_market["race"]
+        id = hydrated_market["id"]
 
         # call api to get result
-        response = requests.get(f'https://horse.link/api/markets/result/{mid}')
+        response = requests.get(f'https://horse.link/api/markets/result/{id}')
 
         # If we have a result from the API and the oracle has not already added the result
         if response.status_code == 200 and result == b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00':
