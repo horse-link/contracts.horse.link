@@ -1,11 +1,11 @@
 #!python3
-import math
 from web3 import Web3
 from dotenv import load_dotenv
 from datetime import datetime
 import json
 import os
 import requests
+import math
 
 load_dotenv()
 
@@ -15,7 +15,7 @@ web3 = Web3(Web3.HTTPProvider(node))
 # https://thegraph.com/hosted-service/subgraph/horse-link/hl-protocol-goerli
 bets_query = """
 {
-  bets(where: {createdAt_gt: %(createdAt_gt)s},orderBy:createdAt) {
+  bets(where: {createdAt_gt: %(createdAt_gt)s, settled: false},orderBy:createdAt) {
     id
     createdAt
     createdAtTx
@@ -33,12 +33,6 @@ def get_subgraph_bets_since(createdAt_gt):
     )
     data = json.loads(response.text)["data"]
     return data["bets"]
-
-
-def get_markets():
-    response = requests.get('https://horse.link/api/config')
-    data = response.json()
-    return data['markets']
 
 
 def get_oracle():
@@ -66,7 +60,7 @@ def load_oracle():
     return contract
 
 
-def get_result(oracle, marketId):
+def get_result(oracle: str, marketId):
     result = oracle.functions.getResult(marketId).call()
     return result
 
@@ -102,87 +96,40 @@ def set_result(oracle, marketId, propositionId, signature) -> None:
         print("An exception occurred")
 
 
-def settle(market, index):
-    # Can be any account with funds
-    account_from = {
-        'private_key': os.getenv('SETTLE_PRIVATE_KEY'),
-        'address': '0xF33b9A4efA380Df3B435f755DD2C2AF7fE53C2d1',
-    }
-
-    tx = market.functions.settle(index).buildTransaction(
-        {
-            'from': account_from['address'],
-            'nonce': web3.eth.get_transaction_count(account_from['address']),
-        }
-    )
-
-    tx_create = web3.eth.account.sign_transaction(
-        tx, account_from['private_key'])
-
-    tx_hash = web3.eth.send_raw_transaction(tx_create.rawTransaction)
-    tx_receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
-
-    return tx_receipt
-
 
 def main():
     # fetch registry contract address from the api
-    market_addresses = get_markets()
     oracle = load_oracle()
     now = datetime.now().timestamp()
     print(f"Current Time: {now}")
 
     # Now less 2 hours
     close_time = math.floor(now) - 7200 
-    print(f"WIP: using close time of {close_time} to guarantee results")
+    print(f"Using close time of {close_time}")
 
     bets = get_subgraph_bets_since(close_time)
 
     for bet in bets:
-        market = load_market(bet['marketAddress'], 'Usdt')
-        count = market.functions.getCount().call()
+        # check if bet is settled via the api
+        market_id = bet['marketId'] # bet[5][0:11]
+        mid = market_id.decode('ASCII')
+        print(f"Market ID: {mid}")
 
+        # check if result has been added to the oracle
+        result = get_result(oracle, market_id)
 
-        # settle each bet in reverse order
-        for i in range(count - 1, 0, -1):
-            bet = market.functions.getBetByIndex(i).call()
+        # call api to get result
+        response = requests.get(f'https://horse.link/api/markets/result/{mid}')
 
-            # check if bet is settled via the api
-            market_id = bet[5][0:11]
-            mid = market_id.decode('ASCII')
-            print(f"Market ID: {mid}")
+        # If we have a result from the API and the oracle has not already added the result
+        if response.status_code == 200 and result == b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00':
+            # set result on oracle
+            print(f"Adding result for bet {bet[id]} to the oracle")
 
-            # check if bet is settled
-            if bet[4] == True:
-                print(
-                    f"Bet {i} for market {bet['marketAddress']} already settled")
-                continue
-
-            # check if result has been added to the oracle
-            result = get_result(oracle, market_id)
-
-            # call api to get result
-            response = requests.get(f'https://horse.link/api/markets/result/{mid}')
-
-            # If we have a result from the API and the oracle has not already added the result
-            if response.status_code == 200 and result == b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00':
-                # set result on oracle
-                print(f"Adding result for bet {i} to the oracle")
-
-                signature = response.json()['signature']
-                proposition_id = response.json()['winningPropositionId']
-                set_result(
-                    oracle, market_id, proposition_id, signature)
-
-            # If we have a result from the API and the oracle has already added the result
-            if response.status_code == 200 and result != b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00':
-                print(f"Settling bet {i} for market {market_address['address']}")
-
-                tx_receipt = settle(market, i)
-                print(tx_receipt)
-            else:
-                print(
-                    f"Bet {i} for market {market_address['address']} already settled or result not added")
+            signature = response.json()['signature']
+            proposition_id = response.json()['winningPropositionId']
+            set_result(
+                oracle, market_id, proposition_id, signature)
 
 
 if __name__ == '__main__':
