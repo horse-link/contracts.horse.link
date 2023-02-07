@@ -34,26 +34,27 @@ def set_scratch(oracle, marketId, propositionId, odds, totalOdds, signature) -> 
             'address': '0xF33b9A4efA380Df3B435f755DD2C2AF7fE53C2d1',
         }
 
-        print(account_from)
+        print(signature)
 
         # Convert the signature to a tuple
         signature_tuple = [signature['v'], signature['r'], signature['s']]
+        print("***** Signature tuple: ", signature_tuple)
+
         encodedProposition = propositionId.encode('utf-8')
         proposition_id = bytearray(encodedProposition)
         encodedMarket = marketId.encode('utf-8')
+        
         market_id = bytearray(encodedMarket)
 
         # remove the first 2 characters of the market_id and proposition_id
-        market_id = market_id[2:]
-        proposition_id = proposition_id[2:]
+        #market_id = market_id[2:]
+        #proposition_id = proposition_id[2:]
 
         print(market_id)
         print(proposition_id)
         print(odds)
-        print(f"Length of market_id: {len(market_id)}")
-        print(f"Length of proposition_id: {len(proposition_id)}")
-
-        tx = oracle.functions.setScratchedResult(market_id, proposition_id, str(odds), str(totalOdds), signature_tuple).buildTransaction(
+        
+        tx = oracle.functions.setScratchedResult(market_id, proposition_id, int(odds), int(totalOdds), signature_tuple).buildTransaction(
             {
                 'from': account_from['address'],
                 'nonce': web3.eth.get_transaction_count(account_from['address']),
@@ -103,7 +104,7 @@ def get_subgraph_bets_since(createdAt_gt):
     # From https://thegraph.com/hosted-service/subgraph/horse-link/hl-protocol-goerli
     bets_query = """
     {
-      bets(where: {createdAt_gt: %(createdAt_gt)s},orderBy:createdAt) {
+      bets(where: {createdAt_gt: %(createdAt_gt)s},orderBy:createdAt, first: 1000) {
         id
         createdAt
         createdAtTx
@@ -158,6 +159,7 @@ def main():
 
       print(f"Processing race {location} {race}")
       market_result_url = "https://horse.link/api/bets/sign/" + id
+      print(market_result_url)
       market_response = requests.get(market_result_url)
       market_data = json.loads(market_response.text)
       
