@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
-    "target": "es2018",
+    "target": "ESNext",
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "module": "CommonJS",
     "esModuleInterop": true,
     "noImplicitAny": false,
@@ -9,12 +10,17 @@
     "noUnusedParameters": false,
     "moduleResolution": "node",
     "resolveJsonModule": true,
+    "skipLibCheck": true,
     "strict": true,
-    "types": [
-      "node",
-      "mocha"
-    ]
+    "types": ["node", "mocha"]
   },
-  "include": ["scripts", "./build", "./tests", "./deployData", "./deploy"],
+  "include": [
+    "scripts",
+    "./build",
+    "./tests",
+    "./deployData",
+    "./deploy",
+    "./serverless-functions"
+  ],
   "files": ["./hardhat.config.ts"]
 }

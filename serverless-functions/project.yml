@@ -1,0 +1,24 @@
+parameters: {}
+environment: {}
+packages:
+    - name: contracts
+      shared: false
+      environment: {}
+      parameters: {}
+      annotations: {}
+      functions:
+        - name: settle
+          binary: false
+          main: ""
+          runtime: python:3.9
+          web: true
+            #          triggers:
+            #            - name: trigger-sample
+            #              sourceType: scheduler
+            #              sourceDetails:
+            #                cron: "* * * * *"
+          webSecure: false # true?
+          parameters: {}
+          environment: {}
+          annotations: {}
+          limits: {}
