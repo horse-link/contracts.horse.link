@@ -2,39 +2,43 @@ import fs from "fs";
 import path from "path";
 import rlp from "rlp";
 import keccak from "keccak";
+import { toUtf8String } from "ethers/lib/utils";
 const configPath = path.resolve(__dirname, "../contracts.json");
 import { ethers } from "ethers";
 import { LedgerSigner } from "@ethersproject/hardware-wallets";
+import axios from "axios";
+
+export type Seconds = number;
 
 export const getContractAddressFromNonce = async (
-  signer,
-  nonce
+	signer,
+	nonce
 ): Promise<string> => {
-  const rlpEncoded = rlp.encode([signer.address.toString(), nonce]);
-  const longContractAddress = keccak("keccak256")
-    .update(rlpEncoded)
-    .digest("hex");
-  return longContractAddress.substring(24);
+	const rlpEncoded = rlp.encode([signer.address.toString(), nonce]);
+	const longContractAddress = keccak("keccak256")
+		.update(rlpEncoded)
+		.digest("hex");
+	return longContractAddress.substring(24);
 };
 
 export const updateContractConfig = (network, newConfig): boolean => {
-  const config = JSON.parse(fs.readFileSync(configPath).toString());
-  config[network] = newConfig;
-  fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-  return true;
+	const config = JSON.parse(fs.readFileSync(configPath).toString());
+	config[network] = newConfig;
+	fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+	return true;
 };
 
 const getDerivationPathForIndex = (i: number) => `44'/60'/0'/0/${i}`;
 
 export const getLedgerSigner = (index: number, provider: any): LedgerSigner => {
-  const signer = new LedgerSigner(
-    provider,
-    null,
-    getDerivationPathForIndex(index)
-  );
-  // Fix signing for EIP-1559 while ethers.js isn't fixed.
-  signer.signTransaction = ledgerSignTransaction;
-  return signer;
+	const signer = new LedgerSigner(
+		provider,
+		null,
+		getDerivationPathForIndex(index)
+	);
+	// Fix signing for EIP-1559 while ethers.js isn't fixed.
+	signer.signTransaction = ledgerSignTransaction;
+	return signer;
 };
 
 /*
@@ -43,46 +47,80 @@ export const getLedgerSigner = (index: number, provider: any): LedgerSigner => {
  * dependencies to the correct version.
  */
 export async function ledgerSignTransaction(
-  transaction: ethers.providers.TransactionRequest
+	transaction: ethers.providers.TransactionRequest
 ): Promise<string> {
-  const tx = await ethers.utils.resolveProperties(transaction);
-  const baseTx: ethers.utils.UnsignedTransaction = {
-    chainId: tx.chainId || undefined,
-    data: tx.data || undefined,
-    gasLimit: tx.gasLimit || undefined,
-    gasPrice: tx.gasPrice || undefined,
-    nonce: tx.nonce ? ethers.BigNumber.from(tx.nonce).toNumber() : undefined,
-    to: tx.to || undefined,
-    value: tx.value || undefined
-  };
+	const tx = await ethers.utils.resolveProperties(transaction);
+	const baseTx: ethers.utils.UnsignedTransaction = {
+		chainId: tx.chainId || undefined,
+		data: tx.data || undefined,
+		gasLimit: tx.gasLimit || undefined,
+		gasPrice: tx.gasPrice || undefined,
+		nonce: tx.nonce ? ethers.BigNumber.from(tx.nonce).toNumber() : undefined,
+		to: tx.to || undefined,
+		value: tx.value || undefined
+	};
 
-  // The following three properties are not added to the baseTx above
-  // like the other properties only because this results in failure on
-  // the hardhat local network.
-  if (tx.maxFeePerGas) baseTx.maxFeePerGas = tx.maxFeePerGas;
-  if (tx.maxPriorityFeePerGas)
-    baseTx.maxPriorityFeePerGas = tx.maxPriorityFeePerGas;
-  if (tx.type) baseTx.type = tx.type;
+	// The following three properties are not added to the baseTx above
+	// like the other properties only because this results in failure on
+	// the hardhat local network.
+	if (tx.maxFeePerGas) baseTx.maxFeePerGas = tx.maxFeePerGas;
+	if (tx.maxPriorityFeePerGas)
+		baseTx.maxPriorityFeePerGas = tx.maxPriorityFeePerGas;
+	if (tx.type) baseTx.type = tx.type;
 
-  const unsignedTx = ethers.utils.serializeTransaction(baseTx).substring(2);
-  // @ts-ignore
-  const sig = await this._retry((eth) =>
-    // @ts-ignore
-    eth.signTransaction(this.path, unsignedTx)
-  );
+	const unsignedTx = ethers.utils.serializeTransaction(baseTx).substring(2);
+	// @ts-ignore
+	const sig = await this._retry((eth) =>
+		// @ts-ignore
+		eth.signTransaction(this.path, unsignedTx)
+	);
 
-  return ethers.utils.serializeTransaction(baseTx, {
-    v: ethers.BigNumber.from("0x" + sig.v).toNumber(),
-    r: "0x" + sig.r,
-    s: "0x" + sig.s
-  });
+	return ethers.utils.serializeTransaction(baseTx, {
+		v: ethers.BigNumber.from("0x" + sig.v).toNumber(),
+		r: "0x" + sig.r,
+		s: "0x" + sig.s
+	});
 }
 
 export const getGasPriceFromEnv = (): ethers.BigNumber => {
-  const gasPrice = ethers.BigNumber.from(
-    process.env.DEPLOY_GAS_PRICE_WEI.toString()
-  );
-  if (!ethers.BigNumber.isBigNumber(gasPrice))
-    throw new Error("Could not fetch gas price from DEPLOY_GAS_PRICE_WEI env");
-  return gasPrice;
+	const gasPrice = ethers.BigNumber.from(
+		process.env.DEPLOY_GAS_PRICE_WEI.toString()
+	);
+	if (!ethers.BigNumber.isBigNumber(gasPrice))
+		throw new Error("Could not fetch gas price from DEPLOY_GAS_PRICE_WEI env");
+	return gasPrice;
 };
+
+export async function getSubgraphBetsSince(
+	createdAtGt: Seconds
+): Promise<any[]> {
+	const timeString = Math.floor(createdAtGt);
+	const betsQuery = `
+        {
+            bets(where: {createdAt_gt: "${timeString}"}, orderBy: createdAt, first: 1000) {
+                id
+                createdAt
+                createdAtTx
+                marketId
+            }
+        }
+    `;
+
+	const response = await axios(
+		"https://api.thegraph.com/subgraphs/name/horse-link/hl-protocol-goerli",
+		{
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			},
+			data: JSON.stringify({
+				query: betsQuery
+			})
+		}
+	);
+	return response.data.data.bets;
+}
+
+export function bytes16HexToString(hex: string): string {
+	return toUtf8String(hex).replace(/\0.*/, "");
+}
