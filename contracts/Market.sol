@@ -11,6 +11,7 @@ import "./IMarket.sol";
 import "./IOracle.sol";
 import "./SignatureLib.sol";
 import "./OddsLib.sol";
+import "hardhat/console.sol";
 
 // Put these in the ERC721 contract
 struct Bet {
@@ -242,6 +243,7 @@ contract Market is IMarket, Ownable, ERC721 {
 
 		// add underlying to the market
 		uint256 payout = _getPayout(propositionId, marketId, wager, odds);
+		console.log("back: payout", payout);
 		assert(payout > 0);
 
 		return _back(propositionId, marketId, wager, close, end, payout);
@@ -278,7 +280,7 @@ contract Market is IMarket, Ownable, ERC721 {
 
 		// If the payout for this proposition will be greater than the current max payout for the market)
 
-		uint256 newPotentialPayout = payout - wager;
+		uint256 newPotentialPayout = payout;// - wager;
         _potentialPayout[propositionId] += newPotentialPayout;
         _totalExposure += _obtainCollateral(marketId, propositionId, wager, payout);
 

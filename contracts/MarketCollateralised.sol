@@ -2,12 +2,14 @@
 pragma solidity =0.8.15;
 pragma abicoder v2;
 import "./Market.sol";
+import "hardhat/console.sol";
 
 abstract contract MarketCollateralised is Market {
     // MarketID => amount of collateral taken for this market
 	mapping(bytes16 => uint256) private _marketCollateral;
 	uint256 internal _totalCollateral;
 	mapping(bytes16 => bytes16) internal _mostExpensivePropositionId;
+	mapping(uint256 => uint256) internal _betExposure;
 
     function getMarketCollateral(bytes16 marketId) external view returns (uint256) {
 		return _marketCollateral[marketId];
@@ -21,10 +23,10 @@ abstract contract MarketCollateralised is Market {
 		address underlying = _vault.asset();
 
 		//If paying out the most expensive proposition,
-		if (_isMostExpensiveProposition(_bets[index].propositionId, _bets[index].marketId) == true) {
+		//if (_isMostExpensiveProposition(_bets[index].propositionId, _bets[index].marketId) == true) {
 			// Deduct from total exposure
-			_totalExposure -= (_bets[index].payout - _bets[index].amount);
-		}
+			_totalExposure -= _betExposure[index];// (_bets[index].payout - _bets[index].amount);
+		//}
 
 		if (result == true) {
 			// Send the payout to the NFT owner
@@ -45,13 +47,16 @@ abstract contract MarketCollateralised is Market {
 	// Return the new exposure amount
 	function _obtainCollateral(bytes16 marketId, bytes16 propositionId, uint256 wager, uint256 payout) internal override returns (uint256) {
 		uint256 result;
-		if (_potentialPayout[propositionId] > _marketCollateral[marketId]) {
+		uint256 existingCollateral = _marketCollateral[marketId] + _marketTotal[marketId];
+		if (_potentialPayout[propositionId] > existingCollateral) {
 			// Get any additional collateral we need for this market
 			_mostExpensivePropositionId[marketId] = propositionId;
-			uint256 amountRequired =_potentialPayout[propositionId] - _marketCollateral[marketId];
+			console.log("Existing Collateral: %s", existingCollateral);
+			console.log("Potential Payout: %s", _potentialPayout[propositionId]);
+			uint256 amountRequired = _potentialPayout[propositionId] - existingCollateral;
             uint256 internallyAvailableCollateral = _totalCollateral - _totalExposure;
             uint256 internalCollateralToUse = Math.min(amountRequired, internallyAvailableCollateral);
-                    
+            console.log("Internal Collateral to use: %s", internalCollateralToUse);      
             if (internalCollateralToUse < amountRequired) {
                 // We need to get more collateral from the Vault 
                 uint256 amountToTransfer = amountRequired - internalCollateralToUse;     
@@ -67,6 +72,8 @@ abstract contract MarketCollateralised is Market {
 			}
             _marketCollateral[marketId] += amountRequired;     
 		}
+		
+		_betExposure[_bets.length] = result;
 		return result;
 	}
 
