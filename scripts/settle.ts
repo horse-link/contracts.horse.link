@@ -92,7 +92,15 @@ export async function main() {
 		const hydratedMarket = hydrateMarketId(id);
 		const response = await axiom.get(hydratedMarket.id);
 		// TODO
-		console.log(response);
+		// # check if result has been added to the oracle
+		// result = get_result(oracle, id)
+
+		// # If we have a result from the API and the oracle has not already added the result
+		// if response.status_code == 200 and result != b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00':
+		//     print(f"Settling bet {bet[id]} for market {bet['marketAddress']}")
+
+		//     tx_receipt = settle(market, i)
+		//     print(tx_receipt)
 	});
 }
 
