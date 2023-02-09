@@ -17,6 +17,7 @@ interface IMarket {
 			uint256,
 			uint256,
 			uint256,
+			uint256,
 			bool,
 			bytes16,
 			bytes16

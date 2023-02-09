@@ -11,13 +11,7 @@ import {
 } from "../build/typechain";
 import { solidity } from "ethereum-waffle";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import {
-	formatBytes16String,
-	makeMarketId,
-	makePropositionId,
-	signBackMessage,
-	signSetResultMessage
-} from "./utils";
+import { formatBytes16String, makeMarketId, makePropositionId } from "./utils";
 
 chai.use(solidity);
 
@@ -39,6 +33,8 @@ describe("Market", () => {
 	const ODDS_DECIMALS = 6;
 	const MARGIN = 100;
 	const TIMEOUT_DAYS = 5;
+	const WINNER = 0x01;
+	const SCRATCHED = 0x03;
 
 	beforeEach(async () => {
 		[owner, alice, bob, carol, whale] = await ethers.getSigners();
@@ -628,9 +624,6 @@ describe("Market", () => {
 
 			const vaultBalanceBefore = await underlying.balanceOf(vault.address);
 			const index = 0;
-			await expect(market.settle(index)).to.be.revertedWith(
-				"_settle: Payout date not reached"
-			);
 
 			await hre.network.provider.request({
 				method: "evm_setNextBlockTimestamp",
@@ -714,6 +707,10 @@ describe("Market", () => {
 			const bobBalance = await underlying.balanceOf(bob.address);
 			const nftBalance = await market.balanceOf(bob.address);
 			expect(nftBalance).to.equal(1, "Bob should have 1 NFT");
+			const nftMetaDataURI = await market.tokenURI(0);
+			expect(nftMetaDataURI.toLowerCase()).to.equal(
+				`https://horse.link/api/bets/${market.address.toLowerCase()}/0`
+			);
 
 			const signature = await signSetResultMessage(
 				marketId,
@@ -728,9 +725,6 @@ describe("Market", () => {
 				signature
 			);
 			const index = 0;
-			await expect(market.settle(index)).to.be.revertedWith(
-				"_settle: Payout date not reached"
-			);
 
 			await hre.network.provider.request({
 				method: "evm_setNextBlockTimestamp",
@@ -739,7 +733,7 @@ describe("Market", () => {
 
 			expect(await market.settle(index))
 				.to.emit(market, "Settled")
-				.withArgs(index, betPayout, true, bob.address);
+				.withArgs(index, betPayout, WINNER, bob.address);
 
 			const newNftBalance = await market.balanceOf(bob.address);
 			expect(newNftBalance).to.equal(0, "Bob should have no NFTs now");
@@ -755,6 +749,124 @@ describe("Market", () => {
 
 			const balance = await underlying.balanceOf(bob.address);
 			expect(balance).to.equal(bobBalance.add(betPayout));
+		});
+
+		it("Should settle bobs scratched bet by index", async () => {
+			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
+			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
+			const totalOdds = odds.mul(5);
+			const currentTime = await time.latest();
+			const bobBalance = await underlying.balanceOf(bob.address);
+			const vaultBalance = await underlying.balanceOf(vault.address);
+			const marketBalance = await underlying.balanceOf(market.address);
+			// Assume race closes in 1 hour from now
+			const close = currentTime + 3600;
+
+			const latestBlockNumber = await ethers.provider.getBlockNumber();
+			const latestBlock = await ethers.provider.getBlock(latestBlockNumber);
+
+			const end = latestBlock.timestamp + 10000;
+
+			// Runner 1 for a Win
+			const nonce = "1";
+			const propositionId = makePropositionId("ABC", 1);
+			const marketId = makeMarketId(new Date(), "ABC", "1");
+
+			const betSignature = await signBackMessage(
+				nonce,
+				marketId,
+				propositionId,
+				odds,
+				close,
+				end,
+				owner
+			);
+
+			let count = await market.getCount();
+			expect(count, "There should be no bets").to.equal(0);
+
+			expect(
+				await market
+					.connect(bob)
+					.back(
+						formatBytes16String(nonce),
+						formatBytes16String(propositionId),
+						formatBytes16String(marketId),
+						wager,
+						odds,
+						close,
+						end,
+						betSignature
+					)
+			).to.emit(market, "Placed");
+
+			count = await market.getCount();
+			expect(count).to.equal(1, "There should be 1 bet");
+
+			const bet = await market.getBetByIndex(0);
+			const betAmount = bet[0];
+			const betPayout = bet[1];
+
+			expect(betAmount, "Bet amount should be same as wager").to.equal(wager);
+
+			const inPlayCount = await market.getInPlayCount();
+			expect(inPlayCount, "In play count should be 1").to.equal(1);
+
+			let exposure = await market.getTotalExposure();
+			expect(
+				exposure,
+				"Exposure should be equal to the payout less the wager"
+			).to.equal(betPayout.sub(wager));
+
+			let inPlay = await market.getTotalInPlay();
+			expect(inPlay).to.equal(ethers.utils.parseUnits("100", USDT_DECIMALS));
+
+			const nftBalance = await market.balanceOf(bob.address);
+			expect(nftBalance).to.equal(1, "Bob should have 1 NFT");
+
+			// This signature is for a scratched result/propositionId
+			const signature = await signSetScratchedMessage(
+				marketId,
+				propositionId,
+				odds,
+				totalOdds,
+				oracleSigner
+			);
+			const oracleOwner = await oracle.getOwner();
+			expect(oracleOwner).to.equal(oracleSigner.address);
+			await oracle.setScratchedResult(
+				formatBytes16String(marketId),
+				formatBytes16String(propositionId),
+				odds,
+				totalOdds,
+				signature
+			);
+			const index = 0;
+
+			// Scratched bets do not need to wait for the race to finsih
+			expect(await market.settle(index), "Issue with settling scratched bet")
+				.to.emit(market, "Settled")
+				.withArgs(index, betPayout, SCRATCHED, bob.address);
+
+			const newNftBalance = await market.balanceOf(bob.address);
+			expect(newNftBalance).to.equal(0, "Bob should have no NFTs now");
+
+			await expect(market.settle(index)).to.be.revertedWith(
+				"settle: Bet has already settled"
+			);
+			exposure = await market.getTotalExposure();
+			expect(exposure).to.equal(0);
+
+			inPlay = await market.getTotalInPlay();
+			expect(inPlay).to.equal(0);
+
+			// Everything should be as it was before
+			const balance = await underlying.balanceOf(bob.address);
+			const endVaultBalance = await underlying.balanceOf(vault.address);
+			const endMarketBalance = await underlying.balanceOf(market.address);
+			expect(balance).to.equal(bobBalance);
+			expect(vaultBalance).to.equal(endVaultBalance);
+			expect(marketBalance).to.equal(endMarketBalance);
 		});
 
 		it("Should allow Bob to transfer a punt to Carol and for Carol to settle", async () => {
@@ -846,10 +958,6 @@ describe("Market", () => {
 			const carolNftBalance = await market.balanceOf(carol.address);
 			expect(carolNftBalance).to.equal(1, "Carol should have 1 NFT");
 
-			await expect(market.settle(index)).to.be.revertedWith(
-				"_settle: Payout date not reached"
-			);
-
 			await hre.network.provider.request({
 				method: "evm_setNextBlockTimestamp",
 				params: [end + 7200]
@@ -857,7 +965,7 @@ describe("Market", () => {
 
 			expect(await market.connect(carol).settle(index))
 				.to.emit(market, "Settled")
-				.withArgs(index, betPayout, true, carol.address);
+				.withArgs(index, betPayout, WINNER, carol.address);
 
 			const newNftBalance = await market.balanceOf(carol.address);
 			expect(newNftBalance).to.equal(0, "Carol should have no NFTs now");
@@ -934,7 +1042,7 @@ describe("Market", () => {
 
 			expect(await market.settle(index), "Should emit a Settled event")
 				.to.emit(market, "Settled")
-				.withArgs(index, 272727300, true, bob.address);
+				.withArgs(index, 272727300, WINNER, bob.address);
 		});
 
 		it("Should settle multiple bets on a market", async () => {
@@ -1068,3 +1176,136 @@ describe("Market", () => {
 		});
 	});
 });
+
+const signMessageAsString = async (
+	message: string,
+	signer: SignerWithAddress
+) => {
+	const sig = await signer.signMessage(ethers.utils.arrayify(message));
+	return sig;
+};
+
+const signMessage = async (
+	message: string,
+	signer: SignerWithAddress
+): Promise<Signature> => {
+	const sig = await signer.signMessage(ethers.utils.arrayify(message));
+	const { v, r, s } = ethers.utils.splitSignature(sig);
+	return { v, r, s };
+};
+
+const makeSetResultMessage = (
+	marketId: string,
+	propositionId: string
+): string => {
+	const b16MarketId = formatBytes16String(marketId);
+	const b16PropositionId = formatBytes16String(propositionId);
+	const message = ethers.utils.solidityKeccak256(
+		["bytes16", "bytes16"],
+		[b16MarketId, b16PropositionId]
+	);
+	return message;
+};
+
+const makeSetScratchMessage = (
+	marketId: string,
+	propositionId: string,
+	odds: BigNumber,
+	totalOdds: BigNumber
+): string => {
+	const b16MarketId = formatBytes16String(marketId);
+	const b16PropositionId = formatBytes16String(propositionId);
+	const message = ethers.utils.solidityKeccak256(
+		["bytes16", "bytes16", "uint256", "uint256"],
+		[b16MarketId, b16PropositionId, odds, totalOdds]
+	);
+	return message;
+};
+
+const signSetResultMessage = async (
+	marketId: string,
+	propositionId: string,
+	signer: SignerWithAddress
+): Promise<Signature> => {
+	const settleMessage = makeSetResultMessage(marketId, propositionId);
+	return await signMessage(settleMessage, signer);
+};
+
+const signSetScratchedMessage = async (
+	marketId: string,
+	propositionId: string,
+	odds: BigNumber,
+	totalOdds: BigNumber,
+	signer: SignerWithAddress
+): Promise<Signature> => {
+	const settleMessage = makeSetScratchMessage(
+		marketId,
+		propositionId,
+		odds,
+		totalOdds
+	);
+	return await signMessage(settleMessage, signer);
+};
+
+const signBackMessage = async (
+	nonce: string,
+	marketId: string,
+	propositionId: string,
+	odds: BigNumber,
+	close: number,
+	end: number,
+	signer: SignerWithAddress
+): Promise<Signature> => {
+	const message = ethers.utils.solidityKeccak256(
+		[
+			"bytes16", // nonce
+			"bytes16", // propositionId
+			"bytes16", // marketId
+			"uint256", // odds
+			"uint256", // close
+			"uint256" // end
+		],
+		[
+			formatBytes16String(nonce),
+			formatBytes16String(propositionId),
+			formatBytes16String(marketId),
+			odds,
+			close,
+			end
+		]
+	);
+	return await signMessage(message, signer);
+};
+
+const signBackMessageWithRisk = async (
+	nonce: string,
+	marketId: string,
+	propositionId: string,
+	odds: BigNumber,
+	close: number,
+	end: number,
+	risk: number,
+	signer: SignerWithAddress
+): Promise<Signature> => {
+	const message = ethers.utils.solidityKeccak256(
+		[
+			"bytes16", // nonce
+			"bytes16", // propositionId
+			"bytes16", // marketId
+			"uint256", // odds
+			"uint256", // close
+			"uint256", // end
+			"uint256" // risk
+		],
+		[
+			formatBytes16String(nonce),
+			formatBytes16String(propositionId),
+			formatBytes16String(marketId),
+			odds,
+			close,
+			end,
+			risk
+		]
+	);
+	return await signMessage(message, signer);
+};

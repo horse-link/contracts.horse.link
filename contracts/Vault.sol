@@ -6,14 +6,15 @@ import "@openzeppelin/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol"
 import "@openzeppelin/contracts/interfaces/IERC20Metadata.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract Vault is ERC4626Metadata, Ownable {
 
     using Math for uint256;
+    using SafeERC20 for IERC20;
 
     // These will change to allow multiple markets
     address private _market;
-    uint8 private immutable _decimals;
     address private _self;
 
     constructor(IERC20Metadata asset_)
@@ -28,14 +29,13 @@ contract Vault is ERC4626Metadata, Ownable {
             address(asset_) != address(0),
             "Underlying address is invalid"
         );
-        _decimals = IERC20Metadata(asset_).decimals();
         _self = address(this);
     }
 
     // Override decimals to be the same as the underlying asset
-    function decimals() public view override returns (uint8) {
+    /*function decimals() public view override returns (uint8) {
         return _decimals;
-    }
+    }*/
 
     function setMarket(address market, uint256 max) public onlyOwner {
         require(_market == address(0), "setMarket: Market already set");
