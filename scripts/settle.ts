@@ -1,9 +1,8 @@
-import { BigNumber, BigNumberish, ethers } from "ethers";
+import { BigNumber, BigNumberish, Contract, ethers } from "ethers";
 import * as dotenv from "dotenv";
 import axios from "axios";
 import * as fs from "fs";
 import { getSubgraphBetsSince, Seconds, bytes16HexToString } from "./utils";
-import { int } from "hardhat/internal/core/params/argumentTypes";
 
 export type Signature = {
 	v: BigNumberish;
@@ -24,7 +23,27 @@ export type RaceDetails = {
 	number: string;
 };
 
+export type BetDetails = {
+	id: string;
+	createdAt: string;
+	createdAtTx: string;
+	marketId: string;
+	marketAddress: string;
+};
+
 export type Milliseconds = number;
+export type Bytes16 = string;
+export type DataHexString = string;
+
+// [
+// 	'0x00000000000000000000000000000000',
+// 	[],
+// 	winningPropositionId: '0x00000000000000000000000000000000',
+// 	scratched: []
+//   ]
+// that's result[0],result[1], result.winningPropositionId, result.scratched
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type OracleResult = Array<any>;
 
 // load .env into process.env
 dotenv.config();
@@ -44,13 +63,18 @@ export async function loadOracle(): Promise<ethers.Contract> {
 		"https://raw.githubusercontent.com/horse-link/contracts.horse.link/main/deployments/goerli/MarketOracle.json"
 	);
 	const data = response.data;
+	console.log("address,data.abi,provider", address, data.abi, provider);
 	return new ethers.Contract(address, data.abi, provider).connect(
 		new ethers.Wallet(process.env.SETTLE_PRIVATE_KEY, provider)
 	);
 }
 
-export function hydrateMarketId(marketId: string): MarketDetails {
-	const id = bytes16HexToString(marketId);
+export function hydrateMarketId(
+	marketId: DataHexString | string
+): MarketDetails {
+	const id: string = ethers.utils.isHexString(marketId)
+		? bytes16HexToString(marketId)
+		: marketId;
 	//Convert daysSinceEpoch to date
 	const date = parseInt(id.slice(0, 6));
 	const location = id.slice(6, 9);
@@ -74,6 +98,18 @@ export function hydratePropositionId(propositionId: string): RaceDetails {
 	};
 }
 
+export async function getResult(
+	oracle: Contract,
+	marketId
+): Promise<DataHexString | BigNumber | number> {
+	// # id as byte array
+	// const encoded = marketId.encode("utf-8")
+	// id = bytearray(encoded)
+
+	const result = await oracle.getResult(marketId);
+	return result;
+}
+
 export async function main() {
 	const oracle = await loadOracle();
 	const now: Milliseconds = Date.now();
@@ -83,17 +119,46 @@ export async function main() {
 	const closeTime: Seconds = Math.floor(now / 1000) - 2 * 60 * 60;
 	console.log(`"Using close time of ${closeTime}"`);
 
-	const bets = await getSubgraphBetsSince(closeTime);
+	const bets: BetDetails[] = await getSubgraphBetsSince(closeTime);
 
 	console.log("saving bets to bets.json");
 	fs.writeFileSync("bets.json", JSON.stringify(bets));
 
-	bets.forEach(({ id, marketAddress }) => {
-		const hydratedMarket = hydrateMarketId(id);
-		const response = await axiom.get(hydratedMarket.id);
-		// TODO
+	// 	+        market_id = bet['marketId'] # bet[5][0:11]
+	// +        mid = market_id.decode('ASCII')
+	// +        print(f"Market ID: {mid}")
+	// +
+	// +        # check if result has been added to the oracle
+	// +        result = get_result(oracle, market_id)
+	// +
+	// +        # call api to get result
+	// +        response = requests.get(f'https://horse.link/api/markets/result/{mid}')
+	// +
+	// +        # race = hydrated_market["race"]
+	// +        id = hydrated_market["id"]
+	// +
+	// +        # call api to get result
+	// +        response = requests.get(f'https://horse.link/api/markets/result/{id}')
+
+	for (const bet of bets) {
+		const market = hydrateMarketId(bet.marketId);
+		// const response = await axios.get(market.id);
+
+		console.log("market", market);
+		console.log("bet", bet);
+		// Call api to get result
+		const marketResultResponse = await axios.get(
+			`https://alpha.horse.link/api/markets/result/${bet.marketAddress}`
+		);
+		console.log("marketResultResponse", marketResultResponse);
+
 		// # check if result has been added to the oracle
-		// result = get_result(oracle, id)
+
+		const result = getResult(oracle, bet.marketId);
+		console.log("result", result);
+		console.log(
+			`Settling bet ${bet.id} for market ${bet.marketId}(${market.id})`
+		);
 
 		// # If we have a result from the API and the oracle has not already added the result
 		// if response.status_code == 200 and result != b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00':
@@ -101,7 +166,7 @@ export async function main() {
 
 		//     tx_receipt = settle(market, i)
 		//     print(tx_receipt)
-	});
+	}
 }
 
 export function formatBytes16String(text: string): string {

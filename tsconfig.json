@@ -10,10 +10,9 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "strict": true,
-    "types": [
-      "node",
-      "mocha"
-    ]
+    "types": ["node", "mocha"],
+    "skipLibCheck": true,
+    "sourceMap": true
   },
   "include": ["scripts", "./build", "./tests", "./deployData", "./deploy"],
   "files": ["./hardhat.config.ts"]
