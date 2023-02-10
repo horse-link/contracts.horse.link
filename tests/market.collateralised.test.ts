@@ -227,10 +227,6 @@ describe("Collateralised Market: play through", function () {
 
 	it("Bet 1: Should get cover from the vault for a new bet", async () => {
 		const bet = Bets.One;
-
-		let marketCollateral = await market.getMarketCollateral(
-			formatBytes16String(bet.market.marketId)
-		);
 		const wager = ethers.utils.parseUnits(bet.amount.toString(), USDT_DECIMALS);
 		const odds = ethers.utils.parseUnits(bet.odds.toString(), ODDS_DECIMALS);
 		const potentialWinnings = wager
