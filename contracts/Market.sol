@@ -284,10 +284,9 @@ contract Market is IMarket, Ownable, ERC721 {
 		_inplayCount++;
 
 		// If the payout for this proposition will be greater than the current max payout for the market)
-
 		uint256 newPotentialPayout = payout;
-        _potentialPayout[propositionId] += newPotentialPayout;
-        _totalExposure += _obtainCollateral(marketId, propositionId, wager, payout);
+		_potentialPayout[propositionId] += newPotentialPayout;
+		_totalExposure += _obtainCollateral(marketId, propositionId, wager, payout);
 
 		uint64 index = _getCount();
 		_bets.push(

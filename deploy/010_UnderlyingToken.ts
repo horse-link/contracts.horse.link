@@ -60,7 +60,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	}
 };
 export default func;
-func.tags = ["underlying", "token"];
+func.tags = ["underlying"];
 func.skip = async (hre: HardhatRuntimeEnvironment) => {
 	return hre.network.tags.production;
 };
