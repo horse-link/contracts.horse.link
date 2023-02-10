@@ -5,16 +5,13 @@ pragma abicoder v2;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-//import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
-
 
 import "./IVault.sol";
 import "./IMarket.sol";
 import "./IOracle.sol";
 import "./SignatureLib.sol";
 import "./OddsLib.sol";
-import "hardhat/console.sol";
 
 // Put these in the ERC721 contract
 struct Bet {
@@ -29,7 +26,6 @@ struct Bet {
 
 contract Market is IMarket, Ownable, ERC721 {
 	using Strings for uint256;
-	//using SafeERC20 for IERC20;
 
 	string public constant baseURI = "https://horse.link/api/bets/";
 
@@ -252,7 +248,6 @@ contract Market is IMarket, Ownable, ERC721 {
 
 		// add underlying to the market
 		uint256 payout = _getPayout(propositionId, marketId, wager, odds);
-		console.log("back: payout", payout);
 		assert(payout > 0);
 
 		return _back(propositionId, marketId, wager, close, end, payout);
