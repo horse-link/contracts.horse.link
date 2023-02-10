@@ -4,6 +4,7 @@ import axios from "axios";
 import * as fs from "fs";
 import { getSubgraphBetsSince, Seconds, bytes16HexToString } from "./utils";
 
+const hexZero: Bytes16 = "0x00000000000000000000000000000000";
 export type Signature = {
 	v: BigNumberish;
 	r: string;
@@ -69,6 +70,17 @@ export async function loadOracle(): Promise<ethers.Contract> {
 	);
 }
 
+export async function loadMarket(address: string): Promise<ethers.Contract> {
+	// All the markets are the same, so we'll just the Usdt for now
+	const response = await axios.get(
+		`https://raw.githubusercontent.com/horse-link/contracts.horse.link/main/deployments/goerli/UsdtMarket.json`
+	);
+	const data = response?.data;
+	return new ethers.Contract(address, data.abi, provider).connect(
+		new ethers.Wallet(process.env.SETTLE_PRIVATE_KEY, provider)
+	);
+}
+
 export function hydrateMarketId(
 	marketId: DataHexString | string
 ): MarketDetails {
@@ -124,41 +136,57 @@ export async function main() {
 	console.log("saving bets to bets.json");
 	fs.writeFileSync("bets.json", JSON.stringify(bets));
 
-	// 	+        market_id = bet['marketId'] # bet[5][0:11]
-	// +        mid = market_id.decode('ASCII')
-	// +        print(f"Market ID: {mid}")
-	// +
-	// +        # check if result has been added to the oracle
-	// +        result = get_result(oracle, market_id)
-	// +
-	// +        # call api to get result
-	// +        response = requests.get(f'https://horse.link/api/markets/result/{mid}')
-	// +
-	// +        # race = hydrated_market["race"]
-	// +        id = hydrated_market["id"]
-	// +
-	// +        # call api to get result
-	// +        response = requests.get(f'https://horse.link/api/markets/result/{id}')
-
+	// Process up to 50 most recent, starting with most recent
 	for (const bet of bets) {
 		const market = hydrateMarketId(bet.marketId);
 		// const response = await axios.get(market.id);
 
-		console.log("market", market);
-		console.log("bet", bet);
-		// Call api to get result
-		const marketResultResponse = await axios.get(
-			`https://alpha.horse.link/api/markets/result/${bet.marketAddress}`
-		);
-		console.log("marketResultResponse", marketResultResponse);
+		// TODO: cache me
+		const marketContract = await loadMarket(bet.marketAddress);
 
-		// # check if result has been added to the oracle
+		let marketResultResponse;
+		// Get race result
+		try {
+			marketResultResponse = await axios.get(
+				`https://alpha.horse.link/api/markets/result/${market.id}?sign=true`
+			);
+			if (marketResultResponse.status !== 200) {
+				console.log(
+					`request failure for market ${market.id}:`,
+					marketResultResponse
+				);
+				continue;
+			}
+		} catch (e) {
+			console.log(`request failure for market ${market.id}:`, e);
+			continue;
+		}
+		// TODO .catch() the promise
 
-		const result = getResult(oracle, bet.marketId);
-		console.log("result", result);
-		console.log(
-			`Settling bet ${bet.id} for market ${bet.marketId}(${market.id})`
-		);
+		const result = await oracle.getResult(bet.marketId);
+
+		if (result.winningPropositionId === hexZero) {
+			// if the oracle doesn't know about it, tell it about it.
+			const receipt = await oracle.setResult(
+				bet.marketId,
+				marketResultResponse.data.winningPropositionId,
+				marketResultResponse.data.signature
+			);
+			console.log("receipt", receipt);
+			console.log(`adding result for market ${bet.marketId}`, receipt.hash);
+
+			// we won't wait for it to be mined here,
+			// we'll just process it on the next run
+		} else {
+			// There is a result so we can settle
+
+			const index = bet.id.split("_")[2];
+			const txReceipt = await marketContract.settle(index);
+			console.log(`settled bet ${bet.id}(${index}), receipt`, txReceipt.hash);
+			console.log("txReceipt", txReceipt);
+		}
+
+		// now that the oracle knows about the race, settle the bet.
 
 		// # If we have a result from the API and the oracle has not already added the result
 		// if response.status_code == 200 and result != b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00':

@@ -4,7 +4,6 @@ import chai, { expect } from "chai";
 import {
 	MarketCollateralisedWithoutProtection,
 	MarketOracle,
-	MarketWithoutProtection,
 	Token,
 	Vault,
 	Vault__factory

@@ -102,6 +102,7 @@ export async function getSubgraphBetsSince(
                 createdAt
                 createdAtTx
                 marketId
+                marketAddress
             }
         }
     `;
