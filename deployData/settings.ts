@@ -7,6 +7,7 @@ export type TokenDeployDetails = {
 	marketName: string;
 	mintAmount: string;
 };
+
 export const UnderlyingTokens: TokenDeployDetails[] = [
 	{
 		name: "Mock USDT",
@@ -23,6 +24,15 @@ export const UnderlyingTokens: TokenDeployDetails[] = [
 		deploymentName: "Dai",
 		vaultName: "DaiVault",
 		marketName: "DaiMarket",
+		decimals: 18,
+		mintAmount: "1000000000"
+	},
+	{
+		name: "Mock HorseLink",
+		symbol: "HL",
+		deploymentName: "HorseLink",
+		vaultName: "HorseLinkVault",
+		marketName: "HorseLinkMarket",
 		decimals: 18,
 		mintAmount: "1000000000"
 	}
