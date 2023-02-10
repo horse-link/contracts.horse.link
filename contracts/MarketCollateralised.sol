@@ -2,7 +2,6 @@
 pragma solidity =0.8.15;
 pragma abicoder v2;
 import "./Market.sol";
-import "hardhat/console.sol";
 
 abstract contract MarketCollateralised is Market {
     // MarketID => amount of collateral taken for this market
@@ -52,12 +51,9 @@ abstract contract MarketCollateralised is Market {
 		if (_potentialPayout[propositionId] > existingCollateral) {
 			// Get any additional collateral we need for this market
 			_mostExpensivePropositionId[marketId] = propositionId;
-			console.log("Existing Collateral: %s", existingCollateral);
-			console.log("Potential Payout: %s", _potentialPayout[propositionId]);
 			uint256 amountRequired = _potentialPayout[propositionId] - existingCollateral;
             uint256 internallyAvailableCollateral = _totalCollateral - _totalExposure;
             uint256 internalCollateralToUse = Math.min(amountRequired, internallyAvailableCollateral);
-            console.log("Internal Collateral to use: %s", internalCollateralToUse);      
             if (internalCollateralToUse < amountRequired) {
                 // We need to get more collateral from the Vault 
                 uint256 amountToTransfer = amountRequired - internalCollateralToUse;     

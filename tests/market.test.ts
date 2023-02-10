@@ -352,9 +352,8 @@ describe("Market", () => {
 
 	it("Should allow Carol a $200 punt at 2:1", async () => {
 		let balance = await underlying.balanceOf(bob.address);
-		expect(balance, "Carol balance should be correct").to.equal(
-			ethers.utils.parseUnits("1000", USDT_DECIMALS),
-			"Should have $1,000 USDT"
+		expect(balance, "Should have $1,000 USDT").to.equal(
+			ethers.utils.parseUnits("1000", USDT_DECIMALS)
 		);
 
 		const wager = ethers.utils.parseUnits("200", USDT_DECIMALS);
