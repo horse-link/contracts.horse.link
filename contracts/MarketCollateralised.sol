@@ -22,7 +22,7 @@ abstract contract MarketCollateralised is Market {
 		address underlying = _vault.asset();
 
 		// Deduct from total exposure
-		_totalExposure -= _betExposure[index];// (_bets[index].payout - _bets[index].amount);
+		_totalExposure -= _betExposure[index];
 	
 		if (result == SCRATCHED) {
 			// Transfer the bet amount to the owner of the NFT
