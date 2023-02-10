@@ -3,7 +3,6 @@ import { parseUnits } from "ethers/lib/utils";
 import "hardhat-deploy";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { factory } from "typescript";
 import { UnderlyingTokens, TestAccounts } from "../deployData/settings";
 
 /*
@@ -61,7 +60,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	}
 };
 export default func;
-func.tags = ["underlying"];
+func.tags = ["underlying", "token"];
 func.skip = async (hre: HardhatRuntimeEnvironment) => {
 	return hre.network.tags.production;
 };

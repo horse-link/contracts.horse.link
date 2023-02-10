@@ -15,26 +15,27 @@ abstract contract MarketCollateralised is Market {
 		return _marketCollateral[marketId];
 	}
 
-	function _payout(uint256 index, bool result) internal override {
+	function _payout(uint256 index, uint8 result) internal override {
 		require(
 			_bets[index].payoutDate < block.timestamp,
 			"_payout: Payout date not reached"
 		);
 		address underlying = _vault.asset();
 
-		//If paying out the most expensive proposition,
-		//if (_isMostExpensiveProposition(_bets[index].propositionId, _bets[index].marketId) == true) {
-			// Deduct from total exposure
-			_totalExposure -= _betExposure[index];// (_bets[index].payout - _bets[index].amount);
-		//}
-
-		if (result == true) {
+		// Deduct from total exposure
+		_totalExposure -= _betExposure[index];// (_bets[index].payout - _bets[index].amount);
+	
+		if (result == SCRATCHED) {
+			// Transfer the bet amount to the owner of the NFT
+			IERC20(_vault.asset()).transfer(ownerOf(index), _bets[index].amount);
+		} else if (result == WINNER) {
 			// Send the payout to the NFT owner
-			_totalCollateral -= _bets[index].payout - _bets[index].amount; 
+			_totalCollateral -= _bets[index].payout - _bets[index].amount;
 			IERC20(underlying).transfer(ownerOf(index), _bets[index].payout);
 		} else {
+			// Else, the bet was a loser
 			// Send the bet amount to the vault
-			IERC20(underlying).transfer(address(_vault), _bets[index].amount);	
+			IERC20(underlying).transfer(address(_vault), _bets[index].amount);
 		}
 	}
 
@@ -77,9 +78,9 @@ abstract contract MarketCollateralised is Market {
 		return result;
 	}
 
-	function getTotalCollateral() external view returns (uint256) {
+	/*function getTotalCollateral() external view returns (uint256) {
 		return _totalCollateral;
-	}
+	}*/
 
 	// Return any unused collateral to the Vault
 	function refundCollateral() external onlyOwner {

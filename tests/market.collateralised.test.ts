@@ -19,29 +19,28 @@ import {
 	signSetResultMessage
 } from "./utils";
 
-
 chai.use(solidity);
 
 type TestRunner = {
 	runnerNumber: number;
 	name: string;
 	propositionId: string;
-}
+};
 type TestBet = {
 	market: TestMarket;
 	runner: TestRunner;
 	amount: number;
 	odds: number;
 	bettor: SignerWithAddress;
-}
+};
 type TestMarket = {
 	name: string;
 	marketId: string;
 	runners: TestRunner[];
-}
+};
 const END = 1000000000000;
 
-describe.only("Collateralised Market: play through", function () {
+describe("Collateralised Market: play through", function () {
 	let underlying: Token;
 	let tokenDecimals: number;
 	let vault: Vault;
@@ -66,37 +65,37 @@ describe.only("Collateralised Market: play through", function () {
 			marketId: makeMarketId(new Date(), "BLUE", "1"),
 			runners: []
 		}
-	}
+	};
 	Markets.RedRacetrack.runners = [
 		{
 			runnerNumber: 1,
 			name: "Red 1",
-			propositionId: makePropositionId(Markets.RedRacetrack.marketId, 1),
+			propositionId: makePropositionId(Markets.RedRacetrack.marketId, 1)
 		},
 		{
 			runnerNumber: 2,
 			name: "Red 2",
-			propositionId: makePropositionId(Markets.RedRacetrack.marketId, 2),
+			propositionId: makePropositionId(Markets.RedRacetrack.marketId, 2)
 		},
 		{
 			runnerNumber: 3,
 			name: "Red 3",
-			propositionId: makePropositionId(Markets.RedRacetrack.marketId, 3),
+			propositionId: makePropositionId(Markets.RedRacetrack.marketId, 3)
 		}
 	];
 	Markets.BlueDogs.runners = [
 		{
 			runnerNumber: 1,
 			name: "Blue 1",
-			propositionId: makePropositionId(Markets.BlueDogs.marketId, 1),		
+			propositionId: makePropositionId(Markets.BlueDogs.marketId, 1)
 		},
 		{
 			runnerNumber: 2,
 			name: "Blue 2",
-			propositionId: makePropositionId(Markets.BlueDogs.marketId, 2),	
+			propositionId: makePropositionId(Markets.BlueDogs.marketId, 2)
 		}
 	];
-	let Bets: {[key: string]: TestBet};
+	let Bets: { [key: string]: TestBet };
 
 	let bet1Cover: BigNumber;
 	let bet3Cover: BigNumber;
@@ -108,10 +107,9 @@ describe.only("Collateralised Market: play through", function () {
 	before(async () => {
 		[owner, alice, bob, carol] = await ethers.getSigners();
 
-
 		oracleSigner = owner;
 		const fixture = await deployments.fixture([
-			"token",
+			"underlying",
 			"registry",
 			"vault",
 			"market",
@@ -130,37 +128,36 @@ describe.only("Collateralised Market: play through", function () {
 
 		tokenDecimals = await underlying.decimals();
 
-		Bets =
-		{
+		Bets = {
 			One: {
 				market: Markets.RedRacetrack,
 				runner: Markets.RedRacetrack.runners[0],
 				amount: 1,
 				odds: 5,
-				bettor: alice,
+				bettor: alice
 			},
 			Two: {
 				market: Markets.RedRacetrack,
 				runner: Markets.RedRacetrack.runners[1],
 				amount: 1,
 				odds: 4,
-				bettor: bob,
+				bettor: bob
 			},
 			Three: {
 				market: Markets.BlueDogs,
 				runner: Markets.BlueDogs.runners[0],
 				amount: 1,
 				odds: 5,
-				bettor: bob,
+				bettor: bob
 			},
 			Four: {
 				market: Markets.RedRacetrack,
 				runner: Markets.RedRacetrack.runners[2],
 				amount: 1,
 				odds: 10,
-				bettor: bob,
+				bettor: bob
 			}
-		}
+		};
 
 		await underlying.mint(
 			owner.address,
@@ -228,22 +225,30 @@ describe.only("Collateralised Market: play through", function () {
 			);
 	});
 
-	it.only("Bet 1: Should get cover from the vault for a new bet", async () => {
-		let bet = Bets.One;
-	
-		let marketCollateral = await market.getMarketCollateral(formatBytes16String(bet.market.marketId));
+	it("Bet 1: Should get cover from the vault for a new bet", async () => {
+		const bet = Bets.One;
+
+		let marketCollateral = await market.getMarketCollateral(
+			formatBytes16String(bet.market.marketId)
+		);
 		const wager = ethers.utils.parseUnits(bet.amount.toString(), USDT_DECIMALS);
 		const odds = ethers.utils.parseUnits(bet.odds.toString(), ODDS_DECIMALS);
 		const potentialWinnings = wager
 			.mul(odds)
 			.div(ethers.utils.parseUnits("1", ODDS_DECIMALS));
 
-		const originalStats = await getMarketStats(bet.market.marketId, market, underlying, vault);
-		let newStats = await makeBet(underlying, market, vault, bet, owner);
-
-		expect(newStats.marketTotal, "Market total should be the bet amount").to.equal(
-			ethers.utils.parseUnits(bet.amount.toString(), USDT_DECIMALS)
+		const originalStats = await getMarketStats(
+			bet.market.marketId,
+			market,
+			underlying,
+			vault
 		);
+		const newStats = await makeBet(underlying, market, vault, bet, owner);
+
+		expect(
+			newStats.marketTotal,
+			"Market total should be the bet amount"
+		).to.equal(ethers.utils.parseUnits(bet.amount.toString(), USDT_DECIMALS));
 
 		expect(newStats.inPlay, "In play should be the bet amount").to.equal(
 			ethers.utils.parseUnits(bet.amount.toString(), tokenDecimals)
@@ -265,20 +270,33 @@ describe.only("Collateralised Market: play through", function () {
 		).to.equal(originalStats.exposure.add(bet1Cover));
 
 		const tokenOwner = await market.ownerOf(0);
-		expect(tokenOwner, "Bob should have a bet NFT").to.equal(bet.bettor.address);
+		expect(tokenOwner, "Bob should have a bet NFT").to.equal(
+			bet.bettor.address
+		);
 
-		marketCollateral = await market.getMarketCollateral(formatBytes16String(bet.market.marketId));
-		console.log(`End of Bet 1: Market collateral: ${ethers.utils.formatUnits(marketCollateral, tokenDecimals)} tokens`);
-
+		marketCollateral = await market.getMarketCollateral(
+			formatBytes16String(bet.market.marketId)
+		);
+		console.log(
+			`End of Bet 1: Market collateral: ${ethers.utils.formatUnits(
+				marketCollateral,
+				tokenDecimals
+			)} tokens`
+		);
 	});
 
-	it.only("Bet 2: Should not get any new cover for a lesser bet on a different proposition in the same market", async () => {
-		let bet = Bets.Two;
+	it("Bet 2: Should not get any new cover for a lesser bet on a different proposition in the same market", async () => {
+		const bet = Bets.Two;
 
 		const wager = ethers.utils.parseUnits(bet.amount.toString(), USDT_DECIMALS);
-		const originalStats = await getMarketStats(bet.market.marketId, market, underlying, vault);
-		let newStats = await makeBet(underlying, market, vault, bet, owner);
-		
+		const originalStats = await getMarketStats(
+			bet.market.marketId,
+			market,
+			underlying,
+			vault
+		);
+		const newStats = await makeBet(underlying, market, vault, bet, owner);
+
 		//Expect the total wagers to have gone up by the wager amount
 		expect(
 			newStats.marketTotal,
@@ -289,26 +307,38 @@ describe.only("Collateralised Market: play through", function () {
 			originalStats.inPlay.add(wager)
 		);
 
-		expect(newStats.vaultBalance, "Vault should not have covered the bet").to.equal(
-			originalStats.vaultBalance
-		);
+		expect(
+			newStats.vaultBalance,
+			"Vault should not have covered the bet"
+		).to.equal(originalStats.vaultBalance);
 		const tokenOwner = await market.ownerOf(1);
 		expect(tokenOwner, "Bob should have a bet NFT").to.equal(bob.address);
 
-		const marketCollateral = await market.getMarketCollateral(formatBytes16String(bet.market.marketId));
-		console.log(`End of Bet 2: Market collateral: ${ethers.utils.formatUnits(marketCollateral, tokenDecimals)} tokens`);
-
+		const marketCollateral = await market.getMarketCollateral(
+			formatBytes16String(bet.market.marketId)
+		);
+		console.log(
+			`End of Bet 2: Market collateral: ${ethers.utils.formatUnits(
+				marketCollateral,
+				tokenDecimals
+			)} tokens`
+		);
 	});
 
-	it.only("Bet 3: Should get cover for a new bet on a different market", async () => {
-		let bet = Bets.Three;
+	it("Bet 3: Should get cover for a new bet on a different market", async () => {
+		const bet = Bets.Three;
 
 		const wager = ethers.utils.parseUnits(bet.amount.toString(), USDT_DECIMALS);
 		const potentialWinnings = wager
 			.mul(ethers.utils.parseUnits(bet.odds.toString(), ODDS_DECIMALS))
 			.div(ethers.utils.parseUnits("1", ODDS_DECIMALS));
-		const originalStats = await getMarketStats(bet.market.marketId, market, underlying, vault);
-		let newStats = await makeBet(underlying, market, vault, bet, owner);
+		const originalStats = await getMarketStats(
+			bet.market.marketId,
+			market,
+			underlying,
+			vault
+		);
+		const newStats = await makeBet(underlying, market, vault, bet, owner);
 
 		//Expect the total wagers to have gone up by the wager amount
 		expect(
@@ -316,7 +346,6 @@ describe.only("Collateralised Market: play through", function () {
 			"Total wagers should have gone up by the wager amount"
 		).to.equal(originalStats.marketTotal.add(wager));
 
-	
 		expect(newStats.inPlay, "In play has gone up by the bet amount").to.equal(
 			originalStats.inPlay.add(wager)
 		);
@@ -335,18 +364,25 @@ describe.only("Collateralised Market: play through", function () {
 		expect(tokenOwner, "Bob should have a bet NFT").to.equal(bob.address);
 	});
 
-	it.only("Bet 4: Should get delta cover for a new most-expensive bet", async () => {
+	it("Bet 4: Should get delta cover for a new most-expensive bet", async () => {
 		const bet = Bets.Four;
 
 		const wager = ethers.utils.parseUnits(bet.amount.toString(), USDT_DECIMALS);
 		const potentialWinnings = wager
 			.mul(ethers.utils.parseUnits(bet.odds.toString(), ODDS_DECIMALS))
 			.div(ethers.utils.parseUnits("1", ODDS_DECIMALS));
-		const originalStats = await getMarketStats(bet.market.marketId, market, underlying, vault);
-		const marketCollateral = await market.getMarketCollateral(formatBytes16String(bet.market.marketId));
+		const originalStats = await getMarketStats(
+			bet.market.marketId,
+			market,
+			underlying,
+			vault
+		);
+		const marketCollateral = await market.getMarketCollateral(
+			formatBytes16String(bet.market.marketId)
+		);
 
-		let newStats = await makeBet(underlying, market, vault, bet, owner);
-	
+		const newStats = await makeBet(underlying, market, vault, bet, owner);
+
 		//Expect the total wagers to have gone up by the wager amount
 		expect(
 			newStats.marketTotal,
@@ -357,34 +393,63 @@ describe.only("Collateralised Market: play through", function () {
 		expect(newInPlay, "In play has gone up by the bet amount").to.equal(
 			originalStats.inPlay.add(wager)
 		);
-		
+
 		// Shortfall is the difference between the potential payout of the new bet (less the market total) and the amount of collateral in the market
-		const potentialWinningsTokens = ethers.utils.formatUnits(potentialWinnings, tokenDecimals);
-		console.log(`Potential winnings: $${potentialWinningsTokens} tokens`);
-		console.log(`Market total: $${ethers.utils.formatUnits(newStats.marketTotal, tokenDecimals)} tokens`);
-		console.log(`Market collateral: $${ethers.utils.formatUnits(marketCollateral, tokenDecimals)} tokens`);
-		console.log(`Market total + collateral: $${ethers.utils.formatUnits(newStats.marketTotal.add(marketCollateral), tokenDecimals)} tokens`)
-		const shortfall = (potentialWinnings.sub(newStats.marketTotal.add(marketCollateral)));
-		console.log(`Shortfall: $${ethers.utils.formatUnits(shortfall, tokenDecimals)} tokens`);
-		expect(newStats.vaultBalance, "Vault should have covered the shortfall").to.equal(
-			originalStats.vaultBalance.sub(shortfall)
+		const potentialWinningsTokens = ethers.utils.formatUnits(
+			potentialWinnings,
+			tokenDecimals
 		);
+		console.log(`Potential winnings: $${potentialWinningsTokens} tokens`);
+		console.log(
+			`Market total: $${ethers.utils.formatUnits(
+				newStats.marketTotal,
+				tokenDecimals
+			)} tokens`
+		);
+		console.log(
+			`Market collateral: $${ethers.utils.formatUnits(
+				marketCollateral,
+				tokenDecimals
+			)} tokens`
+		);
+		console.log(
+			`Market total + collateral: $${ethers.utils.formatUnits(
+				newStats.marketTotal.add(marketCollateral),
+				tokenDecimals
+			)} tokens`
+		);
+		const shortfall = potentialWinnings.sub(
+			newStats.marketTotal.add(marketCollateral)
+		);
+		console.log(
+			`Shortfall: $${ethers.utils.formatUnits(shortfall, tokenDecimals)} tokens`
+		);
+		expect(
+			newStats.vaultBalance,
+			"Vault should have covered the shortfall"
+		).to.equal(originalStats.vaultBalance.sub(shortfall));
 		const tokenOwner = await market.ownerOf(1);
 		expect(tokenOwner, "Bob should have a bet NFT").to.equal(bob.address);
 	});
-		
 
-	it.only("Fast forward", async () => {
+	it("Fast forward", async () => {
 		await hre.network.provider.request({
 			method: "evm_setNextBlockTimestamp",
 			params: [END + 7200]
 		});
 	});
 
-	it.only("Bet 1: Should settle won bet", async () => {
+	it("Bet 1: Should settle won bet", async () => {
 		const bet = Bets.One;
-		const originalStats = await getMarketStats(bet.market.marketId, market, underlying, vault);
-		const originalBettorBalance = await underlying.balanceOf(bet.bettor.address);
+		const originalStats = await getMarketStats(
+			bet.market.marketId,
+			market,
+			underlying,
+			vault
+		);
+		const originalBettorBalance = await underlying.balanceOf(
+			bet.bettor.address
+		);
 		// Set result to make bet a winner
 		const signature = await signSetResultMessage(
 			bet.market.marketId,
@@ -396,11 +461,16 @@ describe.only("Collateralised Market: play through", function () {
 			formatBytes16String(bet.runner.propositionId),
 			signature
 		);
-	
+
 		// Settle won bet
 		await market.connect(bet.bettor).settle(0);
-		
-		const newStats = await getMarketStats(bet.market.marketId, market, underlying, vault);
+
+		const newStats = await getMarketStats(
+			bet.market.marketId,
+			market,
+			underlying,
+			vault
+		);
 		const inPlayDelta = originalStats.inPlay.sub(newStats.inPlay);
 		expect(
 			inPlayDelta,
@@ -414,18 +484,29 @@ describe.only("Collateralised Market: play through", function () {
 				ethers.utils.parseUnits(bet.odds.toString(), ODDS_DECIMALS)
 			)
 		);
-
 	});
 
-	it.only("Should settle the second bet, lost", async () => {
+	it("Should settle the second bet, lost", async () => {
 		const bet = Bets.Two;
-		const originalStats = await getMarketStats(bet.market.marketId, market, underlying, vault);
-		const originalBettorBalance = await underlying.balanceOf(bet.bettor.address);
+		const originalStats = await getMarketStats(
+			bet.market.marketId,
+			market,
+			underlying,
+			vault
+		);
+		const originalBettorBalance = await underlying.balanceOf(
+			bet.bettor.address
+		);
 
 		// Lost the bet
 		await market.connect(bet.bettor).settle(1);
 
-		const newStats = await getMarketStats(bet.market.marketId, market, underlying, vault);
+		const newStats = await getMarketStats(
+			bet.market.marketId,
+			market,
+			underlying,
+			vault
+		);
 
 		const inPlayDelta = originalStats.inPlay.sub(newStats.inPlay);
 		expect(
@@ -444,11 +525,17 @@ describe.only("Collateralised Market: play through", function () {
 		);
 	});
 
-	it.only("Should settle the third bet, lost", async () => {
-
+	it("Should settle the third bet, lost", async () => {
 		const bet = Bets.Three;
-		const originalStats = await getMarketStats(bet.market.marketId, market, underlying, vault);
-		const originalBettorBalance = await underlying.balanceOf(bet.bettor.address);
+		const originalStats = await getMarketStats(
+			bet.market.marketId,
+			market,
+			underlying,
+			vault
+		);
+		const originalBettorBalance = await underlying.balanceOf(
+			bet.bettor.address
+		);
 		// Set result to make bet a winner
 		const winningProposition = bet.market.runners[1].propositionId;
 
@@ -462,11 +549,16 @@ describe.only("Collateralised Market: play through", function () {
 			formatBytes16String(winningProposition), //Another runner
 			signature
 		);
-	
+
 		// Settle lost bet
 		await market.connect(bet.bettor).settle(2);
 
-		const newStats = await getMarketStats(bet.market.marketId, market, underlying, vault);
+		const newStats = await getMarketStats(
+			bet.market.marketId,
+			market,
+			underlying,
+			vault
+		);
 
 		const inPlayDelta = originalStats.inPlay.sub(newStats.inPlay);
 		expect(
@@ -478,30 +570,38 @@ describe.only("Collateralised Market: play through", function () {
 		const bettorDelta = newBettorBalance.sub(originalBettorBalance);
 		expect(bettorDelta, "Bettor balance should not have changed").to.equal(0);
 
-
 		expect(
 			newStats.exposure,
 			"Total Exposure should have gone down by the covered amount"
 		).to.equal(originalStats.exposure.sub(bet3Cover));
-
 	});
-	
-	it.only("Should settle the fourth bet, lost", async () => {
 
+	it("Should settle the fourth bet, lost", async () => {
 		const bet = Bets.Four;
-		const originalStats = await getMarketStats(bet.market.marketId, market, underlying, vault);
-		const originalBettorBalance = await underlying.balanceOf(bet.bettor.address);
+		const originalStats = await getMarketStats(
+			bet.market.marketId,
+			market,
+			underlying,
+			vault
+		);
+		const originalBettorBalance = await underlying.balanceOf(
+			bet.bettor.address
+		);
 
 		// Settle lost bet
 		await market.connect(bet.bettor).settle(3);
-		const newStats = await getMarketStats(bet.market.marketId, market, underlying, vault);
-	
+		const newStats = await getMarketStats(
+			bet.market.marketId,
+			market,
+			underlying,
+			vault
+		);
+
 		const inPlayDelta = originalStats.inPlay.sub(newStats.inPlay);
 		expect(
 			inPlayDelta,
 			"Total In Play should have gone down by the wager amount"
 		).to.equal(ethers.utils.parseUnits(bet.amount.toString(), tokenDecimals));
-;
 		const newBettorBalance = await underlying.balanceOf(bet.bettor.address);
 		const bettorDelta = newBettorBalance.sub(originalBettorBalance);
 		expect(bettorDelta, "Bettor should have lost the bet").to.equal(0);
@@ -517,17 +617,18 @@ describe.only("Collateralised Market: play through", function () {
 			BigNumber.from(0)
 		);
 
-		const totalCollateral = await market.getTotalCollateral();
-		expect(
-			totalCollateral,
-			`Total cover (${ethers.utils.formatUnits(
-				totalCollateral,
-				tokenDecimals
-			)}) should be the same as the market balance (${ethers.utils.formatUnits(
-				marketBalance,
-				tokenDecimals
-			)})`
-		).to.equal(marketBalance);
+		// This was commented out due to size limitations on the contract
+		// const totalCollateral = await market.getTotalCollateral();
+		// expect(
+		// 	totalCollateral,
+		// 	`Total cover (${ethers.utils.formatUnits(
+		// 		totalCollateral,
+		// 		tokenDecimals
+		// 	)}) should be the same as the market balance (${ethers.utils.formatUnits(
+		// 		marketBalance,
+		// 		tokenDecimals
+		// 	)})`
+		// ).to.equal(marketBalance);
 	});
 });
 
@@ -536,18 +637,24 @@ type MarketStats = {
 	exposure: BigNumber;
 	inPlay: BigNumber;
 	vaultBalance: BigNumber;
-}
+};
 
-async function makeBet(token: Token, marketContract: Market, vault: Vault, bet: TestBet, owner: SignerWithAddress): Promise<MarketStats> {
+async function makeBet(
+	token: Token,
+	marketContract: Market,
+	vault: Vault,
+	bet: TestBet,
+	owner: SignerWithAddress
+): Promise<MarketStats> {
 	const tokenDecimals = await token.decimals();
 	await token
-	.connect(bet.bettor)
-	.approve(
-		marketContract.address,
-		ethers.utils.parseUnits(bet.amount.toString(), tokenDecimals)
-	);
+		.connect(bet.bettor)
+		.approve(
+			marketContract.address,
+			ethers.utils.parseUnits(bet.amount.toString(), tokenDecimals)
+		);
 
-	const nonce = "1"
+	const nonce = "1";
 	const close = END;
 	const end = END;
 	const wager = ethers.utils.parseUnits(bet.amount.toString(), tokenDecimals);
@@ -558,8 +665,8 @@ async function makeBet(token: Token, marketContract: Market, vault: Vault, bet: 
 
 	const signature = await signBackMessage(
 		nonce,
-		bet.market.marketId,	
-		bet.runner.propositionId,	
+		bet.market.marketId,
+		bet.runner.propositionId,
 		odds,
 		close,
 		end,
@@ -581,8 +688,15 @@ async function makeBet(token: Token, marketContract: Market, vault: Vault, bet: 
 	return getMarketStats(bet.market.marketId, marketContract, token, vault);
 }
 
-async function getMarketStats(marketId: string, market: Market, token: Token, vault: Vault): Promise<MarketStats> {
-	const marketTotal = await market.getMarketTotal(formatBytes16String(marketId));
+async function getMarketStats(
+	marketId: string,
+	market: Market,
+	token: Token,
+	vault: Vault
+): Promise<MarketStats> {
+	const marketTotal = await market.getMarketTotal(
+		formatBytes16String(marketId)
+	);
 	const exposure = await market.getTotalExposure();
 	const inPlay = await market.getTotalInPlay();
 	const vaultBalance = await token.balanceOf(vault.address);
@@ -591,7 +705,5 @@ async function getMarketStats(marketId: string, market: Market, token: Token, va
 		exposure,
 		inPlay,
 		vaultBalance
-	}
+	};
 }
-
-
