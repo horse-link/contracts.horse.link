@@ -285,7 +285,7 @@ contract Market is IMarket, Ownable, ERC721 {
 
 		// If the payout for this proposition will be greater than the current max payout for the market)
 
-		uint256 newPotentialPayout = payout;// - wager;
+		uint256 newPotentialPayout = payout;
         _potentialPayout[propositionId] += newPotentialPayout;
         _totalExposure += _obtainCollateral(marketId, propositionId, wager, payout);
 
