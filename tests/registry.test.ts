@@ -23,7 +23,12 @@ describe("Registry", () => {
 	let nonTokenHolders: SignerWithAddress;
 
 	beforeEach(async () => {
-		const fixture = await deployments.fixture(["registry", "vault", "market"]);
+		const fixture = await deployments.fixture([
+			"registry",
+			"vault",
+			"market",
+			"underlying"
+		]);
 		[owner, nonTokenHolders] = await ethers.getSigners();
 
 		registry = (await ethers.getContractAt(
