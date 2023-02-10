@@ -2,7 +2,7 @@
 import { BigNumber, BigNumberish, ethers } from "ethers";
 import { concat, hexlify, toUtf8Bytes } from "ethers/lib/utils";
 
-type Signature = {
+export type Signature = {
 	v: BigNumberish;
 	r: string;
 	s: string;
@@ -116,6 +116,37 @@ const makeSetResultMessage = (
 		[b16MarketId, b16PropositionId]
 	);
 	return message;
+};
+
+export const makeSetScratchMessage = (
+	marketId: string,
+	propositionId: string,
+	odds: BigNumber,
+	totalOdds: BigNumber
+): string => {
+	const b16MarketId = formatBytes16String(marketId);
+	const b16PropositionId = formatBytes16String(propositionId);
+	const message = ethers.utils.solidityKeccak256(
+		["bytes16", "bytes16", "uint256", "uint256"],
+		[b16MarketId, b16PropositionId, odds, totalOdds]
+	);
+	return message;
+};
+
+export const signSetScratchedMessage = async (
+	marketId: string,
+	propositionId: string,
+	odds: BigNumber,
+	totalOdds: BigNumber,
+	signer: SignerWithAddress
+): Promise<Signature> => {
+	const settleMessage = makeSetScratchMessage(
+		marketId,
+		propositionId,
+		odds,
+		totalOdds
+	);
+	return await signMessage(settleMessage, signer);
 };
 
 const signMessageAsString = async (
