@@ -1,0 +1,16 @@
+name: do
+on:
+  pull_request:
+    types:
+      - closed
+jobs:
+  create_artifact:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DO_TOKEN }}
+      - run: doctl app create-deployment --force-rebuild 7b2f22fd-0bdf-48e8-8886-09a457319ba0
