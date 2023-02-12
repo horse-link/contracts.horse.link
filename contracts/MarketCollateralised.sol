@@ -55,11 +55,15 @@ abstract contract MarketCollateralised is Market {
 	// Overidden to make this "collateralised" - it will hold on to the collateral amounts for future bets
 	// If the payout for this proposition will be greater than the amount of collateral set aside for the market
 	// Return the new exposure amount
+	// wager and payout are not required in this implement because the calculation is based on:
+	// 1. The amount of collateral already set aside for the market
+	// 2. The size of the most expensive proposition in the market
+	// 3. The potential payout of this proposition (which already includes the current wager)
 	function _obtainCollateral(
 		bytes16 marketId,
 		bytes16 propositionId,
-		uint256 wager,
-		uint256 payout
+		uint256 /*wager*/,
+		uint256 /*payout*/
 	) internal override returns (uint256) {
 		uint256 result;
 		uint256 existingCollateral = _marketCollateral[marketId] +
