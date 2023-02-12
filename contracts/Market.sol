@@ -176,11 +176,12 @@ contract Market is IMarket, Ownable, ERC721 {
 	// Given decimal ("European") odds expressed as the amount one wins for ever unit wagered.
 	// This number represents the to total payout rather than the profit, i.e it includes the return of ther stake.
 	// Hence, these odds will never go below 1, which represents even money.
+	// marketId is not used in this implementation because the odds for every proposition are calculated based on the total pool
 	function _getOdds(
 		uint256 wager,
 		uint256 odds,
 		bytes16 propositionId,
-		bytes16 marketId
+		bytes16 /*marketId*/
 	) internal view returns (uint256) {
 		if (wager <= 1 || odds <= 1) return 1;
 

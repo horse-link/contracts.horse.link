@@ -16,9 +16,9 @@ contract MarketCollateralisedWithoutProtection is MarketCollateralised {
     }
 
     function _getAdjustedOdds(
-		uint256 wager,
+		uint256 /*wager*/,
 		uint256 odds,
-		uint256 pool
+		uint256 /*pool*/
 	) internal pure override returns (uint256) {
 		return odds;
 	}
