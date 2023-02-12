@@ -270,7 +270,7 @@ describe("Collateralised Market: play through", function () {
 			bet.bettor.address
 		);
 
-		marketCollateral = await market.getMarketCollateral(
+		const marketCollateral = await market.getMarketCollateral(
 			formatBytes16String(bet.market.marketId)
 		);
 		console.log(

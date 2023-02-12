@@ -75,6 +75,7 @@ abstract contract MarketCollateralised is Market {
 				amountRequired,
 				internallyAvailableCollateral
 			);
+			_totalExposure += internalCollateralToUse;
 			if (internalCollateralToUse < amountRequired) {
 				// We need to get more collateral from the Vault
 				uint256 amountToTransfer = amountRequired -
