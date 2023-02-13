@@ -1,8 +1,8 @@
-#### Horse-link Scripts
+# Horse-link Scripts
 
 These utility scripts are run with ts-node e.g. `npx ts-node scripts/settle.py` or `npx ts-node scripts/settle.py`
 
-#### Automation
+## Automation
 
 These scripts are run through cron on 170.64.176.240
 
@@ -10,9 +10,9 @@ The scripts log to the `/root/logs` directory there, so you can see what they're
 
 To update the commands or the frequency `ssh root@170.64.176.240` and then `crontab -e`.
 
-Things might get "funny" if the scripts are restarted before they finish. For now, `crontab -l` shows the actual commands and time will give us an example duration.  e.g. `time npx ts-node scripts/settle.py` shows `real	3m15.799s`, so we don't want to run it more often than that.
+Things might get "funny" if the scripts are restarted before they finish. For now, `crontab -l` shows the actual commands and time will give us an example duration.  e.g. `time npx ts-node scripts/settle.py` showed `real   3m15.799s`, so we don't want to run it more often than that.
 
-### Updating
+## Updating
 
 Deploy by either copying the scripts over:
 `scp scripts/*.ts root@170.64.176.240:contracts.horse.link/scripts/`
