@@ -56,6 +56,7 @@ library OddsLib {
 
     // Assuming that the market previously had targetMargin, then after some runners have been scratched, correct the odds of this runner to make up the margin again
     function rebaseOddsWithScratch(uint256 odds, uint256 scratchedOdds, uint256 targetMargin) external pure returns (uint256) {
+        assert(odds > 0);
         uint256 newMargin = targetMargin - PRECISION / scratchedOdds;
         return changeMargin(odds, newMargin, targetMargin);
     } 
@@ -69,13 +70,15 @@ library OddsLib {
     }
 
     function addMargin(uint256 odds, uint256 margin) public pure returns (uint256) {
+        assert(margin > 0);
         return odds * PRECISION / margin;
     }
 
     // Given an array of odds, return the margin
     function getMargin(uint256[] calldata odds) public pure returns (uint256) {
-        uint256 total = 0;
-        for (uint256 i = 0; i < odds.length; i++) {
+        uint256 total;
+        uint256 oddsCount = odds.length;
+        for (uint256 i = 0; i < oddsCount; i++) {
             if (odds[i] == 0) continue;
             total += ((PRECISION * PRECISION) / odds[i]);
         }
