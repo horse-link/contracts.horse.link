@@ -360,9 +360,8 @@ describe("Market", () => {
 
 	it("Should allow Carol a $200 punt at 2:1", async () => {
 		let balance = await underlying.balanceOf(bob.address);
-		expect(balance).to.equal(
-			ethers.utils.parseUnits("1000", USDT_DECIMALS),
-			"Should have $1,000 USDT"
+		expect(balance, "Should have $1,000 USDT").to.equal(
+			ethers.utils.parseUnits("1000", USDT_DECIMALS)
 		);
 
 		const wager = ethers.utils.parseUnits("200", USDT_DECIMALS);
@@ -374,15 +373,13 @@ describe("Market", () => {
 
 		// check vault balance
 		const vaultBalance = await underlying.balanceOf(vault.address);
-		expect(vaultBalance).to.equal(
-			ethers.utils.parseUnits("1000", USDT_DECIMALS),
-			"Should have $1,000 USDT in vault"
+		expect(vaultBalance, "Should have $1,000 USDT in vault").to.equal(
+			ethers.utils.parseUnits("1000", USDT_DECIMALS)
 		);
 
 		const totalAssets = await vault.totalAssets();
-		expect(totalAssets).to.equal(
-			ethers.utils.parseUnits("1000", USDT_DECIMALS),
-			"Should have $1,000 USDT total assets"
+		expect(totalAssets, "Should have $1,000 USDT total assets").to.equal(
+			ethers.utils.parseUnits("1000", USDT_DECIMALS)
 		);
 
 		await underlying
@@ -417,9 +414,8 @@ describe("Market", () => {
 			);
 
 		balance = await underlying.balanceOf(carol.address);
-		expect(balance).to.equal(
-			ethers.utils.parseUnits("800", USDT_DECIMALS),
-			"Should have $800 USDT after a $200 bet"
+		expect(balance, "Should have $800 USDT after a $200 bet").to.equal(
+			ethers.utils.parseUnits("800", USDT_DECIMALS)
 		);
 	});
 

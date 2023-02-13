@@ -5,9 +5,7 @@ pragma abicoder v2;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-//import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
-
 
 import "./IVault.sol";
 import "./IMarket.sol";
@@ -28,7 +26,6 @@ struct Bet {
 
 contract Market is IMarket, Ownable, ERC721 {
 	using Strings for uint256;
-	//using SafeERC20 for IERC20;
 
 	string public constant baseURI = "https://horse.link/api/bets/";
 
@@ -179,11 +176,12 @@ contract Market is IMarket, Ownable, ERC721 {
 	// Given decimal ("European") odds expressed as the amount one wins for ever unit wagered.
 	// This number represents the to total payout rather than the profit, i.e it includes the return of ther stake.
 	// Hence, these odds will never go below 1, which represents even money.
+	// marketId is not used in this implementation because the odds for every proposition are calculated based on the total pool
 	function _getOdds(
 		uint256 wager,
 		uint256 odds,
 		bytes16 propositionId,
-		bytes16 marketId
+		bytes16 /*marketId*/
 	) internal view returns (uint256) {
 		if (wager <= 1 || odds <= 1) return 1;
 
@@ -287,10 +285,8 @@ contract Market is IMarket, Ownable, ERC721 {
 		_inplayCount++;
 
 		// If the payout for this proposition will be greater than the current max payout for the market)
-
-		uint256 newPotentialPayout = payout - wager;
-        _potentialPayout[propositionId] += newPotentialPayout;
-        _totalExposure += _obtainCollateral(marketId, propositionId, wager, payout);
+		_potentialPayout[propositionId] += payout;
+		_totalExposure += _obtainCollateral(marketId, propositionId, wager, payout);
 
 		uint64 index = _getCount();
 		_bets.push(
@@ -361,7 +357,8 @@ contract Market is IMarket, Ownable, ERC721 {
 
 	// Allow the Vault to provide cover for this market
 	// Standard implementation is to request cover for each and every bet
-	function _obtainCollateral(bytes16 marketId, bytes16 propositionId, uint256 wager, uint256 payout) internal virtual returns (uint256) {
+	// marketId and propositionId are not required in this implementation, as every bet is given its own collateral based on the wager and payout
+	function _obtainCollateral(bytes16 /*marketId*/, bytes16 /*propositionId*/, uint256 wager, uint256 payout) internal virtual returns (uint256) {
 		uint256 amount = payout - wager;
 		IERC20(_vault.asset()).transferFrom(
 			address(_vault),
