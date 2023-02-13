@@ -60,7 +60,7 @@ async function main() {
 	console.log(`Added ${newMarketsCount} new markets to watch list`);
 
 	// For each market in the watch list, fetch the race details
-	const processedItems: any[] = [];
+	const processedItems: string[] = [];
 	for (const marketId of state.watch_list) {
 		// hydrate market ID
 		const hydratedMarket = hydrateMarketId(marketId);

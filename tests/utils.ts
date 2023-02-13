@@ -1,6 +1,5 @@
 ﻿import { ethers } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import axios from "axios";
 import * as dotenv from "dotenv";
 import { concat, hexlify, toUtf8Bytes } from "ethers/lib/utils";
 
@@ -64,35 +63,6 @@ export const getEventData = (
 	}
 	return null;
 };
-
-export async function getOracle(): Promise<string> {
-	const response = await axios.get("https://alpha.horse.link/api/config");
-	const data = response.data;
-	return data.addresses.marketOracle;
-}
-
-export async function loadOracle(): Promise<ethers.Contract> {
-	const address = await getOracle();
-	const response = await axios.get(
-		"https://raw.githubusercontent.com/horse-link/contracts.horse.link/main/deployments/goerli/MarketOracle.json"
-	);
-	const data = response.data;
-	console.log("address,data.abi,provider", address, data.abi, provider);
-	return new ethers.Contract(address, data.abi, provider).connect(
-		new ethers.Wallet(process.env.SETTLE_PRIVATE_KEY, provider)
-	);
-}
-
-export async function loadMarket(address: string): Promise<ethers.Contract> {
-	// All the markets are the same, so we'll just the Usdt for now
-	const response = await axios.get(
-		`https://raw.githubusercontent.com/horse-link/contracts.horse.link/main/deployments/goerli/UsdtMarket.json`
-	);
-	const data = response?.data;
-	return new ethers.Contract(address, data.abi, provider).connect(
-		new ethers.Wallet(process.env.SETTLE_PRIVATE_KEY, provider)
-	);
-}
 
 export function makeMarketId(date: Date, location: string, raceNumber: string) {
 	//Turn Date object into number of days since 1/1/1970, padded to 6 digits

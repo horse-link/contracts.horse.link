@@ -1,20 +1,18 @@
 import fs from "fs";
 import path from "path";
-import rlp from "rlp";
-import keccak from "keccak";
-import { toUtf8String } from "ethers/lib/utils";
-import { ethers } from "ethers";
-import { LedgerSigner } from "@ethersproject/hardware-wallets";
-
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import axios from "axios";
 import * as dotenv from "dotenv";
+import rlp from "rlp";
+import keccak from "keccak";
+import { ethers } from "ethers";
 import { concat, hexlify, toUtf8Bytes } from "ethers/lib/utils";
+import { LedgerSigner } from "@ethersproject/hardware-wallets";
 
-import type { BigNumber, BigNumberish } from "ethers";
+import type { BigNumberish } from "ethers";
 
 export const node = process.env.GOERLI_URL;
-export const provider = new ethers.providers.JsonRpcProvider(node);
+export const provider: ethers.providers.Provider =
+	new ethers.providers.JsonRpcProvider(node);
 
 const configPath = path.resolve(__dirname, "../contracts.json");
 
@@ -121,7 +119,10 @@ export const updateContractConfig = (network, newConfig): boolean => {
 
 const getDerivationPathForIndex = (i: number) => `44'/60'/0'/0/${i}`;
 
-export const getLedgerSigner = (index: number, provider: any): LedgerSigner => {
+export const getLedgerSigner = (
+	index: number,
+	provider: ethers.providers.Provider
+): LedgerSigner => {
 	const signer = new LedgerSigner(
 		provider,
 		null,
@@ -184,7 +185,7 @@ export const getGasPriceFromEnv = (): ethers.BigNumber => {
 
 export async function getSubgraphBetsSince(
 	createdAtGt: Seconds
-): Promise<any[]> {
+): Promise<BetDetails[]> {
 	const timeString = Math.floor(createdAtGt);
 	const betsQuery = `
         {

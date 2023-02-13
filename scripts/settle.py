@@ -25,6 +25,7 @@ bets_query = """
 }
 """
 
+
 def get_subgraph_bets_since(createdAt_gt):
     query = bets_query % {"createdAt_gt": createdAt_gt}
     response = requests.post(
@@ -38,13 +39,13 @@ def get_subgraph_bets_since(createdAt_gt):
 def hydrate_market_id(market_id):
     # Remove the '0x' prefix
     market_id = market_id[2:]
-    
+
     # Convert hexadecimal to binary
     binary = bytes.fromhex(market_id)
     # Decode binary as ASCII
     market_string = binary.decode("ascii")
     print(f">{market_string}<")
- 
+
     # Parse the market string
     id = market_string[0:11]
     date = int(market_string[0:6])
@@ -67,7 +68,8 @@ def get_oracle():
 
 
 def load_market(address, token):
-    response = requests.get(f'https://raw.githubusercontent.com/horse-link/contracts.horse.link/main/deployments/goerli/{token}Market.json')
+    response = requests.get(
+        f'https://raw.githubusercontent.com/horse-link/contracts.horse.link/main/deployments/goerli/{token}Market.json')
     data = response.json()
     abi = data['abi']
     contract = web3.eth.contract(address=address, abi=abi)
@@ -78,7 +80,8 @@ def load_oracle():
 
     address = get_oracle()
 
-    response = requests.get('https://raw.githubusercontent.com/horse-link/contracts.horse.link/main/deployments/goerli/MarketOracle.json')
+    response = requests.get(
+        'https://raw.githubusercontent.com/horse-link/contracts.horse.link/main/deployments/goerli/MarketOracle.json')
     data = response.json()
     abi = data['abi']
     contract = web3.eth.contract(address=address, abi=abi)
@@ -87,8 +90,8 @@ def load_oracle():
 
 def get_result(oracle, marketId):
     # id as byte array
-    encoded=marketId.encode('utf-8')
-    id=bytearray(encoded)
+    encoded = marketId.encode('utf-8')
+    id = bytearray(encoded)
 
     result = oracle.functions.getResult(id).call()
     return result
@@ -104,11 +107,11 @@ def set_result(oracle, marketId, propositionId, signature) -> None:
 
         signature_tuple = [signature['v'], signature['r'], signature['s']]
 
-        encoded=marketId.encode('utf-8')
-        id=bytearray(encoded)
+        encoded = marketId.encode('utf-8')
+        id = bytearray(encoded)
 
-        encoded=propositionId.encode('utf-8')
-        proposition_id=bytearray(encoded)
+        encoded = propositionId.encode('utf-8')
+        proposition_id = bytearray(encoded)
 
         tx = oracle.functions.setResult(id, proposition_id, signature_tuple).buildTransaction(
             {
@@ -158,7 +161,7 @@ def main():
     print(f"Current Time: {now}")
 
     # Now less 2 hours
-    close_time = math.floor(now) - 7200 
+    close_time = math.floor(now) - 7200
     print(f"Using close time of {close_time}")
 
     bets = get_subgraph_bets_since(close_time)

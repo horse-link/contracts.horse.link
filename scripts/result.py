@@ -25,6 +25,7 @@ bets_query = """
 }
 """
 
+
 def get_subgraph_bets_since(createdAt_gt):
     query = bets_query % {"createdAt_gt": createdAt_gt}
     response = requests.post(
@@ -38,25 +39,20 @@ def get_subgraph_bets_since(createdAt_gt):
 def hydrate_market_id(market_id):
     # Remove the '0x' prefix
     market_id = market_id[2:]
-    
+
     # Convert hexadecimal to binary
     binary = bytes.fromhex(market_id)
     # Decode binary as ASCII
     market_string = binary.decode("ascii")
     print(f">{market_string}<")
- 
+
     # Parse the market string
     id = market_string[0:11]
     date = int(market_string[0:6])
     location = market_string[6:9]
     race = int(market_string[9:11])
     # Return a dictionary with the hydrated market data
-    result = {
-        "id": str(id),
-        "date": date,
-        "location": location,
-        "race": race
-    }
+    result = {"id": str(id), "date": date, "location": location, "race": race}
     return result
 
 
@@ -67,7 +63,9 @@ def get_oracle():
 
 
 def load_market(address, token):
-    response = requests.get(f'https://raw.githubusercontent.com/horse-link/contracts.horse.link/main/deployments/goerli/{token}Market.json')
+    response = requests.get(
+        f'https://raw.githubusercontent.com/horse-link/contracts.horse.link/main/deployments/goerli/{token}Market.json'
+    )
     data = response.json()
     abi = data['abi']
     contract = web3.eth.contract(address=address, abi=abi)
@@ -78,7 +76,9 @@ def load_oracle():
 
     address = get_oracle()
 
-    response = requests.get('https://raw.githubusercontent.com/horse-link/contracts.horse.link/main/deployments/goerli/MarketOracle.json')
+    response = requests.get(
+        'https://raw.githubusercontent.com/horse-link/contracts.horse.link/main/deployments/goerli/MarketOracle.json'
+    )
     data = response.json()
     abi = data['abi']
     contract = web3.eth.contract(address=address, abi=abi)
@@ -100,15 +100,16 @@ def set_result(oracle, marketId, propositionId, signature) -> None:
 
         signature_tuple = [signature['v'], signature['r'], signature['s']]
 
-        encoded=propositionId.encode('utf-8')
-        proposition_id=bytearray(encoded)
+        encoded = propositionId.encode('utf-8')
+        proposition_id = bytearray(encoded)
 
-        tx = oracle.functions.setResult(marketId, proposition_id, signature_tuple).buildTransaction(
-            {
-                'from': account_from['address'],
-                'nonce': web3.eth.get_transaction_count(account_from['address']),
-            }
-        )
+        tx = oracle.functions.setResult(
+            marketId, proposition_id, signature_tuple).buildTransaction({
+                'from':
+                account_from['address'],
+                'nonce':
+                web3.eth.get_transaction_count(account_from['address']),
+            })
 
         tx_create = web3.eth.account.sign_transaction(
             tx, account_from['private_key'])
@@ -121,7 +122,6 @@ def set_result(oracle, marketId, propositionId, signature) -> None:
         print("An exception occurred")
 
 
-
 def main():
     # fetch registry contract address from the api
     oracle = load_oracle()
@@ -129,22 +129,19 @@ def main():
     print(f"Current Time: {now}")
 
     # Now less 2 hours
-    close_time = math.floor(now) - 7200 
+    close_time = math.floor(now) - 7200
     print(f"Using close time of {close_time}")
 
     bets = get_subgraph_bets_since(close_time)
 
     for bet in bets:
         # check if bet is settled via the api
-        market_id = bet['marketId'] # [0:11] # bet[5][0:11]
+        market_id = bet['marketId']  # [0:11] # bet[5][0:11]
         # mid = market_id.decode('ASCII')
         # print(f"Market ID: {mid}")
 
         # check if result has been added to the oracle
         result = get_result(oracle, bet['marketId'])
-
-
-
 
         # hydrate
         hydrated_market = hydrate_market_id(market_id)
@@ -163,8 +160,7 @@ def main():
 
             signature = response.json()['signature']
             proposition_id = response.json()['winningPropositionId']
-            set_result(
-                oracle, market_id, proposition_id, signature)
+            set_result(oracle, market_id, proposition_id, signature)
 
 
 if __name__ == '__main__':

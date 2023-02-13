@@ -1,13 +1,11 @@
-import { BigNumber, BigNumberish, ethers } from "ethers";
+import { BigNumberish, ethers } from "ethers";
 import axios from "axios";
-import * as fs from "fs";
 import {
 	getSubgraphBetsSince,
 	loadOracle,
 	hydrateMarketId,
 	loadMarket,
-	Seconds,
-	bytes16HexToString
+	Seconds
 } from "./utils";
 import type { MarketDetails } from "./utils";
 
@@ -57,14 +55,9 @@ export async function main() {
 
 	const bets: BetDetails[] = await getSubgraphBetsSince(closeTime);
 
-	console.log("saving bets to bets.json");
-	fs.writeFileSync("bets.json", JSON.stringify(bets));
-
 	// Process up to 50 most recent, starting with most recent
 	for (const bet of bets) {
 		const market = hydrateMarketId(bet.marketId);
-		// const response = await axios.get(market.id);
-
 		// TODO: cache me
 		const marketContract = await loadMarket(bet.marketAddress);
 
@@ -85,7 +78,6 @@ export async function main() {
 			console.log(`request failure for market ${market.id}:`, e);
 			continue;
 		}
-		// TODO .catch() the promise
 
 		const result = await oracle.getResult(bet.marketId);
 
@@ -109,15 +101,6 @@ export async function main() {
 			console.log(`settled bet ${bet.id}(${index}), receipt`, txReceipt.hash);
 			console.log("txReceipt", txReceipt);
 		}
-
-		// now that the oracle knows about the race, settle the bet.
-
-		// # If we have a result from the API and the oracle has not already added the result
-		// if response.status_code == 200 and result != b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00':
-		//     print(f"Settling bet {bet[id]} for market {bet['marketAddress']}")
-
-		//     tx_receipt = settle(market, i)
-		//     print(tx_receipt)
 	}
 }
 
