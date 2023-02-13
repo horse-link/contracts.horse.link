@@ -32,7 +32,7 @@ contract Market is IMarket, Ownable, ERC721 {
 	using Strings for uint256;
 	//using SafeERC20 for IERC20;
 
-	string public constant baseURI = "https://horse.link/api/bets/";
+	string public constant baseURI = "https://alpha.horse.link/api/bets/";
 
 	uint8 internal immutable _margin;
 	IVault internal immutable _vault;
