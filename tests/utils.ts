@@ -1,12 +1,50 @@
-﻿import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { BigNumber, BigNumberish, ethers } from "ethers";
+﻿import { ethers } from "ethers";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import axios from "axios";
+import * as dotenv from "dotenv";
 import { concat, hexlify, toUtf8Bytes } from "ethers/lib/utils";
+
+import type { BigNumber, BigNumberish } from "ethers";
+
+export const node = process.env.GOERLI_URL;
+export const provider = new ethers.providers.JsonRpcProvider(node);
+
+// load .env into process.env
+dotenv.config();
 
 type Signature = {
 	v: BigNumberish;
 	r: string;
 	s: string;
 };
+
+export type MarketDetails = {
+	id: string;
+	date: number;
+	location: string;
+	race: number;
+};
+
+export type DataHexString = string;
+
+export function bytes16HexToString(hex: string): string {
+	const s = Buffer.from(hex.slice(2), "hex").toString("utf8").toString();
+	// Chop off the trailing 0s
+	return s.slice(0, s.indexOf("\0"));
+}
+
+export function formatBytes16String(text: string): string {
+	// Get the bytes
+	const bytes = toUtf8Bytes(text);
+
+	// Check we have room for null-termination
+	if (bytes.length > 15) {
+		throw new Error("bytes16 string must be less than 16 bytes");
+	}
+
+	// Zero-pad (implicitly null-terminates)
+	return hexlify(concat([bytes, ethers.constants.HashZero]).slice(0, 16));
+}
 
 export const getEventData = (
 	eventName: string,
@@ -27,17 +65,33 @@ export const getEventData = (
 	return null;
 };
 
-export function formatBytes16String(text: string): string {
-	// Get the bytes
-	const bytes = toUtf8Bytes(text);
+export async function getOracle(): Promise<string> {
+	const response = await axios.get("https://alpha.horse.link/api/config");
+	const data = response.data;
+	return data.addresses.marketOracle;
+}
 
-	// Check we have room for null-termination
-	if (bytes.length > 15) {
-		throw new Error("bytes16 string must be less than 16 bytes");
-	}
+export async function loadOracle(): Promise<ethers.Contract> {
+	const address = await getOracle();
+	const response = await axios.get(
+		"https://raw.githubusercontent.com/horse-link/contracts.horse.link/main/deployments/goerli/MarketOracle.json"
+	);
+	const data = response.data;
+	console.log("address,data.abi,provider", address, data.abi, provider);
+	return new ethers.Contract(address, data.abi, provider).connect(
+		new ethers.Wallet(process.env.SETTLE_PRIVATE_KEY, provider)
+	);
+}
 
-	// Zero-pad (implicitly null-terminates)
-	return hexlify(concat([bytes, ethers.constants.HashZero]).slice(0, 16));
+export async function loadMarket(address: string): Promise<ethers.Contract> {
+	// All the markets are the same, so we'll just the Usdt for now
+	const response = await axios.get(
+		`https://raw.githubusercontent.com/horse-link/contracts.horse.link/main/deployments/goerli/UsdtMarket.json`
+	);
+	const data = response?.data;
+	return new ethers.Contract(address, data.abi, provider).connect(
+		new ethers.Wallet(process.env.SETTLE_PRIVATE_KEY, provider)
+	);
 }
 
 export function makeMarketId(date: Date, location: string, raceNumber: string) {
@@ -189,5 +243,3 @@ export const signSetScratchedMessage = async (
 	);
 	return await signMessage(settleMessage, signer);
 };
-
-// TODO Hydrate

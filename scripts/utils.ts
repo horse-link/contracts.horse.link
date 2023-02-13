@@ -3,10 +3,101 @@ import path from "path";
 import rlp from "rlp";
 import keccak from "keccak";
 import { toUtf8String } from "ethers/lib/utils";
-const configPath = path.resolve(__dirname, "../contracts.json");
 import { ethers } from "ethers";
 import { LedgerSigner } from "@ethersproject/hardware-wallets";
+
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import axios from "axios";
+import * as dotenv from "dotenv";
+import { concat, hexlify, toUtf8Bytes } from "ethers/lib/utils";
+
+import type { BigNumber, BigNumberish } from "ethers";
+
+export const node = process.env.GOERLI_URL;
+export const provider = new ethers.providers.JsonRpcProvider(node);
+
+const configPath = path.resolve(__dirname, "../contracts.json");
+
+// load .env into process.env
+dotenv.config();
+
+export type Signature = {
+	v: BigNumberish;
+	r: string;
+	s: string;
+};
+
+export type MarketDetails = {
+	id: string;
+	date: number;
+	location: string;
+	race: number;
+};
+
+export type RaceDetails = {
+	id: string;
+	market: MarketDetails;
+	number: string;
+};
+
+export type BetId = string;
+
+export type BetDetails = {
+	id: BetId;
+	createdAt: string; // BigNum?
+	createdAtTx;
+	marketId;
+	marketAddress;
+};
+
+export type DataHexString = string;
+
+export async function getOracle(): Promise<string> {
+	const response = await axios.get("https://alpha.horse.link/api/config");
+	const data = response.data;
+	return data.addresses.marketOracle;
+}
+
+export async function loadOracle(): Promise<ethers.Contract> {
+	const address = await getOracle();
+	const response = await axios.get(
+		"https://raw.githubusercontent.com/horse-link/contracts.horse.link/main/deployments/goerli/MarketOracle.json"
+	);
+	const data = response.data;
+	return new ethers.Contract(address, data.abi, provider).connect(
+		new ethers.Wallet(process.env.SETTLE_PRIVATE_KEY, provider)
+	);
+}
+
+export async function loadMarket(address: string): Promise<ethers.Contract> {
+	// All the markets are the same, so we'll just the Usdt for now
+	const response = await axios.get(
+		`https://raw.githubusercontent.com/horse-link/contracts.horse.link/main/deployments/goerli/UsdtMarket.json`
+	);
+	const data = response?.data;
+	return new ethers.Contract(address, data.abi, provider).connect(
+		new ethers.Wallet(process.env.SETTLE_PRIVATE_KEY, provider)
+	);
+}
+
+export function bytes16HexToString(hex: DataHexString): string {
+	const s = Buffer.from(hex.slice(2), "hex").toString("utf8").toString();
+	// Chop off the trailing 0s
+	return s.slice(0, s.indexOf("\0"));
+}
+
+export function formatBytes16String(text: string): string {
+	// Get the bytes
+	const bytes = toUtf8Bytes(text);
+
+	// Check we have room for null-termination
+	if (bytes.length > 15) {
+		throw new Error("bytes16 string must be less than 16 bytes");
+	}
+
+	// Zero-pad (implicitly null-terminates)
+	return hexlify(concat([bytes, ethers.constants.HashZero]).slice(0, 16));
+}
 
 export type Seconds = number;
 
@@ -122,6 +213,29 @@ export async function getSubgraphBetsSince(
 	return response.data.data.bets;
 }
 
-export function bytes16HexToString(hex: string): string {
-	return toUtf8String(hex).replace(/\0.*/, "");
+export function hydrateMarketId(marketId: string): MarketDetails {
+	//const binary = hexToString(marketId); //Buffer.from(marketId.slice(2), "hex").toString("utf8");
+	const id = marketId.slice(0, 11);
+	const daysSinceEpoch = parseInt(marketId.slice(0, 6));
+	//Convert daysSinceEpoch to date
+	const date = new Date(daysSinceEpoch * 24 * 60 * 60 * 1000).getTime();
+	const location = marketId.slice(6, 9);
+	const race = parseInt(marketId.slice(9, 11));
+	return {
+		id,
+		date,
+		location,
+		race
+	};
+}
+
+export function hydratePropositionId(propositionId: string): RaceDetails {
+	const id = propositionId.slice(0, 13);
+	const market = hydrateMarketId(propositionId.slice(0, 11));
+	const number = propositionId.slice(12, 14);
+	return {
+		id,
+		market,
+		number
+	};
 }

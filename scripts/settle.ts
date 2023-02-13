@@ -1,21 +1,21 @@
-import { BigNumber, BigNumberish, Contract, ethers } from "ethers";
-import * as dotenv from "dotenv";
+import { BigNumber, BigNumberish, ethers } from "ethers";
 import axios from "axios";
 import * as fs from "fs";
-import { getSubgraphBetsSince, Seconds, bytes16HexToString } from "./utils";
+import {
+	getSubgraphBetsSince,
+	loadOracle,
+	hydrateMarketId,
+	loadMarket,
+	Seconds,
+	bytes16HexToString
+} from "./utils";
+import type { MarketDetails } from "./utils";
 
 const hexZero: Bytes16 = "0x00000000000000000000000000000000";
 export type Signature = {
 	v: BigNumberish;
 	r: string;
 	s: string;
-};
-
-export type MarketDetails = {
-	id: string;
-	date: number;
-	location: string;
-	race: number;
 };
 
 export type RaceDetails = {
@@ -34,7 +34,6 @@ export type BetDetails = {
 
 export type Milliseconds = number;
 export type Bytes16 = string;
-export type DataHexString = string;
 
 // [
 // 	'0x00000000000000000000000000000000',
@@ -45,82 +44,6 @@ export type DataHexString = string;
 // that's result[0],result[1], result.winningPropositionId, result.scratched
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type OracleResult = Array<any>;
-
-// load .env into process.env
-dotenv.config();
-
-export const node = process.env.GOERLI_URL;
-export const provider = new ethers.providers.JsonRpcProvider(node);
-
-export async function getOracle(): Promise<string> {
-	const response = await axios.get("https://alpha.horse.link/api/config");
-	const data = response.data;
-	return data.addresses.marketOracle;
-}
-
-export async function loadOracle(): Promise<ethers.Contract> {
-	const address = await getOracle();
-	const response = await axios.get(
-		"https://raw.githubusercontent.com/horse-link/contracts.horse.link/main/deployments/goerli/MarketOracle.json"
-	);
-	const data = response.data;
-	console.log("address,data.abi,provider", address, data.abi, provider);
-	return new ethers.Contract(address, data.abi, provider).connect(
-		new ethers.Wallet(process.env.SETTLE_PRIVATE_KEY, provider)
-	);
-}
-
-export async function loadMarket(address: string): Promise<ethers.Contract> {
-	// All the markets are the same, so we'll just the Usdt for now
-	const response = await axios.get(
-		`https://raw.githubusercontent.com/horse-link/contracts.horse.link/main/deployments/goerli/UsdtMarket.json`
-	);
-	const data = response?.data;
-	return new ethers.Contract(address, data.abi, provider).connect(
-		new ethers.Wallet(process.env.SETTLE_PRIVATE_KEY, provider)
-	);
-}
-
-export function hydrateMarketId(
-	marketId: DataHexString | string
-): MarketDetails {
-	const id: string = ethers.utils.isHexString(marketId)
-		? bytes16HexToString(marketId)
-		: marketId;
-	//Convert daysSinceEpoch to date
-	const date = parseInt(id.slice(0, 6));
-	const location = id.slice(6, 9);
-	const race = parseInt(id.slice(9, 11));
-	return {
-		id,
-		date,
-		location,
-		race
-	};
-}
-
-export function hydratePropositionId(propositionId: string): RaceDetails {
-	const id = propositionId.slice(0, 13);
-	const market = hydrateMarketId(propositionId.slice(0, 11));
-	const number = propositionId.slice(12, 14);
-	return {
-		id,
-		market,
-		number
-	};
-}
-
-export async function getResult(
-	oracle: Contract,
-	marketId
-): Promise<DataHexString | BigNumber | number> {
-	// # id as byte array
-	// const encoded = marketId.encode("utf-8")
-	// id = bytearray(encoded)
-
-	const result = await oracle.getResult(marketId);
-	return result;
-}
 
 export async function main() {
 	const oracle = await loadOracle();

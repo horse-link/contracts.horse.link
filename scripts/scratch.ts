@@ -1,48 +1,14 @@
-import { BigNumber, BigNumberish, ethers } from "ethers";
-import * as dotenv from "dotenv";
+import { BigNumber, ethers } from "ethers";
 import axios from "axios";
 import * as fs from "fs";
-
-type Signature = {
-	v: BigNumberish;
-	r: string;
-	s: string;
-};
-
-type MarketDetails = {
-	id: string;
-	date: number;
-	location: string;
-	race: number;
-};
-
-type RaceDetails = {
-	id: string;
-	market: MarketDetails;
-	number: string;
-};
-
-dotenv.config();
-
-const node = process.env.GOERLI_URL;
-const provider = new ethers.providers.JsonRpcProvider(node);
-
-async function getOracle(): Promise<string> {
-	const response = await axios.get("https://alpha.horse.link/api/config");
-	const data = response.data;
-	return data.addresses.marketOracle;
-}
-
-async function loadOracle(): Promise<ethers.Contract> {
-	const address = await getOracle();
-	const response = await axios.get(
-		"https://raw.githubusercontent.com/horse-link/contracts.horse.link/main/deployments/goerli/MarketOracle.json"
-	);
-	const data = response.data;
-	return new ethers.Contract(address, data.abi, provider).connect(
-		new ethers.Wallet(process.env.SETTLE_PRIVATE_KEY, provider)
-	);
-}
+import {
+	getSubgraphBetsSince,
+	bytes16HexToString,
+	loadOracle,
+	hydrateMarketId,
+	hydratePropositionId
+} from "./utils";
+import type { Signature } from "./utils";
 
 async function setScratch(
 	oracle: ethers.Contract,
@@ -64,66 +30,6 @@ async function setScratch(
 		signature
 	);
 	return receipt;
-}
-
-function bytes16HexToString(hex: string): string {
-	const s = Buffer.from(hex.slice(2), "hex").toString("utf8").toString();
-	// Chop off the trailing 0s
-	return s.slice(0, s.indexOf("\0"));
-}
-
-function hydrateMarketId(marketId: string): MarketDetails {
-	//const binary = hexToString(marketId); //Buffer.from(marketId.slice(2), "hex").toString("utf8");
-	const id = marketId.slice(0, 11);
-	const daysSinceEpoch = parseInt(marketId.slice(0, 6));
-	//Convert daysSinceEpoch to date
-	const date = new Date(daysSinceEpoch * 24 * 60 * 60 * 1000).getTime();
-	const location = marketId.slice(6, 9);
-	const race = parseInt(marketId.slice(9, 11));
-	return {
-		id,
-		date,
-		location,
-		race
-	};
-}
-
-function hydratePropositionId(propositionId: string): RaceDetails {
-	const id = propositionId.slice(0, 13);
-	const market = hydrateMarketId(propositionId.slice(0, 11));
-	const number = propositionId.slice(12, 14);
-	return {
-		id,
-		market,
-		number
-	};
-}
-
-async function getSubgraphBetsSince(createdAtGt: string): Promise<any[]> {
-	const betsQuery = `
-        {
-            bets(where: {createdAt_gt: "${createdAtGt}"}, orderBy: createdAt, first: 1000) {
-                id
-                createdAt
-                createdAtTx
-                marketId
-            }
-        }
-    `;
-
-	const response = await axios(
-		"https://api.thegraph.com/subgraphs/name/horse-link/hl-protocol-goerli",
-		{
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json"
-			},
-			data: JSON.stringify({
-				query: betsQuery
-			})
-		}
-	);
-	return response.data.data.bets;
 }
 
 async function main() {
