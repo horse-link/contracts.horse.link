@@ -17,6 +17,7 @@ async function setScratch(
 	odds: string,
 	totalOdds: string,
 	signature: Signature
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any> {
 	const bnOdds = ethers.utils.parseUnits(odds.toString(), 6);
 	const bnTotalOdds = BigNumber.from(totalOdds.toString()); //ethers.utils.parseUnits(totalOdds.toString(), 6);

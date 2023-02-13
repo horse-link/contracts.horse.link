@@ -35,6 +35,7 @@ export type BetDetails = {
 export type Milliseconds = number;
 export type Bytes16 = string;
 
+// TODO: Add a better type for this data structure:
 // [
 // 	'0x00000000000000000000000000000000',
 // 	[],
