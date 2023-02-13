@@ -1,6 +1,7 @@
 import { BigNumber, ethers } from "ethers";
 import axios from "axios";
 import * as fs from "fs";
+import * as dotenv from "dotenv";
 import {
 	getSubgraphBetsSince,
 	bytes16HexToString,
@@ -9,6 +10,9 @@ import {
 	hydratePropositionId
 } from "./utils";
 import type { Signature } from "./utils";
+
+// load .env into process.env
+dotenv.config();
 
 async function setScratch(
 	oracle: ethers.Contract,

@@ -1,5 +1,6 @@
 import { BigNumberish, ethers } from "ethers";
 import axios from "axios";
+import * as dotenv from "dotenv";
 import {
 	getSubgraphBetsSince,
 	loadOracle,
@@ -8,6 +9,9 @@ import {
 	Seconds
 } from "./utils";
 import type { MarketDetails } from "./utils";
+
+// load .env into process.env
+dotenv.config();
 
 const hexZero: Bytes16 = "0x00000000000000000000000000000000";
 export type Signature = {

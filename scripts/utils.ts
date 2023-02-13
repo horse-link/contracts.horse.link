@@ -1,7 +1,6 @@
 import fs from "fs";
 import path from "path";
 import axios from "axios";
-import * as dotenv from "dotenv";
 import rlp from "rlp";
 import keccak from "keccak";
 import { ethers } from "ethers";
@@ -15,9 +14,6 @@ export const provider: ethers.providers.Provider =
 	new ethers.providers.JsonRpcProvider(node);
 
 const configPath = path.resolve(__dirname, "../contracts.json");
-
-// load .env into process.env
-dotenv.config();
 
 export type Signature = {
 	v: BigNumberish;
