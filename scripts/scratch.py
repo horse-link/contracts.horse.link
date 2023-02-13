@@ -158,7 +158,7 @@ def main():
       id = hydrated_market["id"]
 
       print(f"Processing race {location} {race}")
-      market_result_url = "https://horse.link/api/bets/sign/" + id
+      market_result_url = "https://alpha.horse.link/api/bets/sign/" + id
       print(market_result_url)
       market_response = requests.get(market_result_url)
       market_data = json.loads(market_response.text)
