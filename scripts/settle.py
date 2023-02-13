@@ -61,7 +61,7 @@ def hydrate_market_id(market_id):
 
 
 def get_oracle():
-    response = requests.get('https://horse.link/api/config')
+    response = requests.get('https://alpha.horse.link/api/config')
     data = response.json()
     return data['addresses']['marketOracle']
 

@@ -14,7 +14,7 @@ web3 = Web3(Web3.HTTPProvider(node))
 
 
 def get_oracle():
-    response = requests.get('https://horse.link/api/config')
+    response = requests.get('https://alpha.horse.link/api/config')
     data = response.json()
     return data['addresses']['marketOracle']
 

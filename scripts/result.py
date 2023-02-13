@@ -153,7 +153,8 @@ def main():
         id = hydrated_market["id"]
 
         # call api to get result
-        response = requests.get(f'https://horse.link/api/markets/result/{id}')
+        response = requests.get(
+            f'https://alpha.horse.link/api/markets/result/{id}')
 
         # If we have a result from the API and the oracle has not already added the result
         if response.status_code == 200 and result == b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00':
