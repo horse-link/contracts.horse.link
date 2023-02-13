@@ -1,6 +1,6 @@
 import chai, { expect } from "chai";
 import { solidity } from "ethereum-waffle";
-import { hydrateMarketId } from "../scripts/settle";
+import { hydrateMarketId } from "../scripts/utils";
 
 chai.use(solidity);
 

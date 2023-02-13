@@ -21,7 +21,7 @@ import {
 
 chai.use(solidity);
 
-describe.only("Late scratched", () => {
+describe("Late scratched", () => {
 	let underlying: Token;
 	let tokenDecimals: number;
 	let vault: Vault;
@@ -42,7 +42,7 @@ describe.only("Late scratched", () => {
 
 		oracleSigner = owner;
 		const fixture = await deployments.fixture([
-			"token",
+			"underlying",
 			"registry",
 			"vault",
 			"market",
