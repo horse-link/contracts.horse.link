@@ -379,6 +379,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		return _bets[index].payout;
 	}
 
+
 	function _payout(uint256 index, uint8 result) internal virtual {
 		if (result == SCRATCHED) {
 			uint256 lay = _bets[index].payout - _bets[index].amount;

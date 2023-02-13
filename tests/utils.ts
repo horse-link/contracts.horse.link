@@ -11,7 +11,7 @@ export const provider = new ethers.providers.JsonRpcProvider(node);
 // load .env into process.env
 dotenv.config();
 
-type Signature = {
+export type Signature = {
 	v: BigNumberish;
 	r: string;
 	s: string;

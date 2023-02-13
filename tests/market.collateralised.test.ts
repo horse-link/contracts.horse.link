@@ -54,7 +54,7 @@ describe("Collateralised Market: play through", () => {
 
 		oracleSigner = owner;
 		const fixture = await deployments.fixture([
-			"token",
+			"underlying",
 			"registry",
 			"vault",
 			"market",
