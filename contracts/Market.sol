@@ -360,8 +360,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		uint256 scratchedOdds;
 		uint256 betCreated = _bets[index].created;
 		uint256 scratchedCount = result.scratched.length;
-		uint256 scratchCount = scratchedCount;
-		for (uint256 i = 0; i < scratchCount; i++) {
+		for (uint256 i = 0; i < scratchedCount; i++) {
 			// If the timestamp of the scratching is after the bet
 			if (result.scratched[i].timestamp > betCreated) {
 				//Sum the odds
