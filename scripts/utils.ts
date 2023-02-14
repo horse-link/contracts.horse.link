@@ -4,7 +4,7 @@ import axios from "axios";
 import rlp from "rlp";
 import keccak from "keccak";
 import { ethers } from "ethers";
-import { concat, hexlify, toUtf8Bytes } from "ethers/lib/utils";
+import { concat, hexlify, isHexString, toUtf8Bytes } from "ethers/lib/utils";
 import { LedgerSigner } from "@ethersproject/hardware-wallets";
 
 import type { BigNumberish } from "ethers";
@@ -210,9 +210,10 @@ export async function getSubgraphBetsSince(
 	return response.data.data.bets;
 }
 
-export function hydrateMarketId(marketId: string): MarketDetails {
-	//const binary = hexToString(marketId); //Buffer.from(marketId.slice(2), "hex").toString("utf8");
-	const id = marketId.slice(0, 11);
+export function hydrateMarketId(
+	marketId: string | DataHexString
+): MarketDetails {
+	const id = isHexString(marketId) ? bytes16HexToString(marketId) : marketId;
 	const daysSinceEpoch = parseInt(marketId.slice(0, 6));
 	//Convert daysSinceEpoch to date
 	const date = new Date(daysSinceEpoch * 24 * 60 * 60 * 1000).getTime();
