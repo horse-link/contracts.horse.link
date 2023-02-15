@@ -1,12 +1,25 @@
-﻿import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { BigNumber, BigNumberish, ethers } from "ethers";
-import { concat, hexlify, toUtf8Bytes } from "ethers/lib/utils";
+﻿import { ethers } from "ethers";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import * as dotenv from "dotenv";
+import type { BigNumber } from "ethers";
 
-export type Signature = {
-	v: BigNumberish;
-	r: string;
-	s: string;
+import { formatBytes16String } from "../scripts/utils";
+import type { Signature } from "../scripts/utils";
+
+export const node = process.env.GOERLI_URL;
+export const provider = new ethers.providers.JsonRpcProvider(node);
+
+// load .env into process.env
+dotenv.config();
+
+export type MarketDetails = {
+	id: string;
+	date: number;
+	location: string;
+	race: number;
 };
+
+export type DataHexString = string;
 
 export const getEventData = (
 	eventName: string,
@@ -26,19 +39,6 @@ export const getEventData = (
 	}
 	return null;
 };
-
-export function formatBytes16String(text: string): string {
-	// Get the bytes
-	const bytes = toUtf8Bytes(text);
-
-	// Check we have room for null-termination
-	if (bytes.length > 15) {
-		throw new Error("bytes16 string must be less than 16 bytes");
-	}
-
-	// Zero-pad (implicitly null-terminates)
-	return hexlify(concat([bytes, ethers.constants.HashZero]).slice(0, 16));
-}
 
 export function makeMarketId(date: Date, location: string, raceNumber: string) {
 	//Turn Date object into number of days since 1/1/1970, padded to 6 digits
@@ -105,7 +105,7 @@ export const signSetResultMessage = async (
 	return await signMessage(settleMessage, signer);
 };
 
-const makeSetResultMessage = (
+export const makeSetResultMessage = (
 	marketId: string,
 	propositionId: string
 ): string => {
@@ -116,6 +116,47 @@ const makeSetResultMessage = (
 		[b16MarketId, b16PropositionId]
 	);
 	return message;
+};
+
+export const signMessageAsString = async (
+	message: string,
+	signer: SignerWithAddress
+) => {
+	const sig = await signer.signMessage(ethers.utils.arrayify(message));
+	return sig;
+};
+
+export const signBackMessageWithRisk = async (
+	nonce: string,
+	marketId: string,
+	propositionId: string,
+	odds: BigNumber,
+	close: number,
+	end: number,
+	risk: number,
+	signer: SignerWithAddress
+): Promise<Signature> => {
+	const message = ethers.utils.solidityKeccak256(
+		[
+			"bytes16", // nonce
+			"bytes16", // propositionId
+			"bytes16", // marketId
+			"uint256", // odds
+			"uint256", // close
+			"uint256", // end
+			"uint256" // risk
+		],
+		[
+			formatBytes16String(nonce),
+			formatBytes16String(propositionId),
+			formatBytes16String(marketId),
+			odds,
+			close,
+			end,
+			risk
+		]
+	);
+	return await signMessage(message, signer);
 };
 
 export const makeSetScratchMessage = (
@@ -147,45 +188,4 @@ export const signSetScratchedMessage = async (
 		totalOdds
 	);
 	return await signMessage(settleMessage, signer);
-};
-
-const signMessageAsString = async (
-	message: string,
-	signer: SignerWithAddress
-) => {
-	const sig = await signer.signMessage(ethers.utils.arrayify(message));
-	return sig;
-};
-
-const signBackMessageWithRisk = async (
-	nonce: string,
-	marketId: string,
-	propositionId: string,
-	odds: BigNumber,
-	close: number,
-	end: number,
-	risk: number,
-	signer: SignerWithAddress
-): Promise<Signature> => {
-	const message = ethers.utils.solidityKeccak256(
-		[
-			"bytes16", // nonce
-			"bytes16", // propositionId
-			"bytes16", // marketId
-			"uint256", // odds
-			"uint256", // close
-			"uint256", // end
-			"uint256" // risk
-		],
-		[
-			formatBytes16String(nonce),
-			formatBytes16String(propositionId),
-			formatBytes16String(marketId),
-			odds,
-			close,
-			end,
-			risk
-		]
-	);
-	return await signMessage(message, signer);
 };

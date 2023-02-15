@@ -13,7 +13,9 @@
     "coverage": "npx hardhat coverage",
     "format": "prettier --write \"scripts/**/*.{js,ts}\" && prettier --write \"contracts/**/*.sol\"",
     "lint": "eslint --ext .ts --fix scripts && yarn format",
-    "lint-staged": "lint-staged"
+    "lint-staged": "lint-staged",
+    "settle": "ts-node scripts/settle.ts",
+    "scratch": "ts-node scripts/scratch.ts"
   },
   "dependencies": {
     "@chainlink/contracts": "^0.5.1",

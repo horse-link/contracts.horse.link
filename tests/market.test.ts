@@ -12,14 +12,13 @@ import {
 import { solidity } from "ethereum-waffle";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {
-	formatBytes16String,
 	makeMarketId,
 	makePropositionId,
-	Signature,
 	signBackMessage,
 	signSetResultMessage,
 	signSetScratchedMessage
 } from "./utils";
+import { formatBytes16String } from "../scripts/utils";
 
 chai.use(solidity);
 
@@ -713,7 +712,7 @@ describe("Market", () => {
 			expect(nftBalance).to.equal(1, "Bob should have 1 NFT");
 			const nftMetaDataURI = await market.tokenURI(0);
 			expect(nftMetaDataURI.toLowerCase()).to.equal(
-				`https://horse.link/api/bets/${market.address.toLowerCase()}/0`
+				`https://alpha.horse.link/api/bets/${market.address.toLowerCase()}/0`
 			);
 
 			const signature = await signSetResultMessage(
@@ -1180,33 +1179,3 @@ describe("Market", () => {
 		});
 	});
 });
-
-const signMessageAsString = async (
-	message: string,
-	signer: SignerWithAddress
-) => {
-	const sig = await signer.signMessage(ethers.utils.arrayify(message));
-	return sig;
-};
-
-const signMessage = async (
-	message: string,
-	signer: SignerWithAddress
-): Promise<Signature> => {
-	const sig = await signer.signMessage(ethers.utils.arrayify(message));
-	const { v, r, s } = ethers.utils.splitSignature(sig);
-	return { v, r, s };
-};
-
-const makeSetResultMessage = (
-	marketId: string,
-	propositionId: string
-): string => {
-	const b16MarketId = formatBytes16String(marketId);
-	const b16PropositionId = formatBytes16String(propositionId);
-	const message = ethers.utils.solidityKeccak256(
-		["bytes16", "bytes16"],
-		[b16MarketId, b16PropositionId]
-	);
-	return message;
-};

@@ -24,10 +24,12 @@ struct Bet {
 	bool settled;
 }
 
+uint256 constant MARGIN = 1500000;
+
 contract Market is IMarket, Ownable, ERC721 {
 	using Strings for uint256;
 
-	string public constant baseURI = "https://horse.link/api/bets/";
+	string public constant baseURI = "https://alpha.horse.link/api/bets/";
 
 	uint8 internal immutable _margin;
 	IVault internal immutable _vault;
@@ -332,12 +334,45 @@ contract Market is IMarket, Ownable, ERC721 {
 				bet.propositionId
 			);
 			recipient = result != LOSER ? ownerOf(index) : address(_vault);
+			if (result == WINNER) {
+				_applyScratchings(index);
+			}
 			_payout(index, result);
 			_totalInPlay -= _bets[index].amount;
 			_inplayCount--;
 		}
 		emit Settled(index, _bets[index].payout, result, recipient);
 		_burn(index);
+	}
+
+	function _applyScratchings(uint64 index) internal virtual returns (uint256) {
+		// Get marketId of bet
+		bytes16 marketId = _bets[index].marketId;
+		// Ask the oracle for scratched runners on this market
+		IOracle.Result memory result = IOracle(_oracle).getResult(marketId);
+
+		// Get all scratchings with a timestamp after this bet
+		// Loop through scratchings
+		uint256 scratchedOdds;
+		uint256 betCreated = _bets[index].created;
+		uint256 scratchedCount = result.scratched.length;
+		for (uint256 i = 0; i < scratchedCount; i++) {
+			// If the timestamp of the scratching is after the bet
+			if (result.scratched[i].timestamp > betCreated) {
+				//Sum the odds
+				scratchedOdds += result.scratched[i].odds;
+			}
+		}
+		// Now apply the scratched odds to get the new odds for the bet
+		if (scratchedOdds > 0 && _bets[index].amount > 0) {
+			// Calculate the odds of the bet
+			uint256 originalOdds = _bets[index].payout / _bets[index].amount ;
+			uint256 newOdds = OddsLib.rebaseOddsWithScratch(originalOdds, scratchedOdds, MARGIN);
+			// Calculate the new payout
+			_bets[index].payout = _bets[index].amount * newOdds;
+		}
+
+		return _bets[index].payout;
 	}
 
 

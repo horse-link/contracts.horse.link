@@ -4,7 +4,7 @@ pragma solidity =0.8.15;
 import "@openzeppelin/contracts/utils/math/Math.sol";
 
 library OddsLib {
-
+    // Precision to be used in calculations
     uint256 public constant PRECISION = 1e6;
 
     /*
@@ -52,5 +52,36 @@ library OddsLib {
             );
         // Return the odds need to generate this adjusted payout with the given wager
         return Math.max(1 * PRECISION, (adjustedPayout * PRECISION) / wager);
+    }
+
+    // Assuming that the market previously had targetMargin, then after some runners have been scratched, correct the odds of this runner to make up the margin again
+    function rebaseOddsWithScratch(uint256 odds, uint256 scratchedOdds, uint256 targetMargin) external pure returns (uint256) {
+        assert(odds > 0);
+        uint256 newMargin = targetMargin - PRECISION / scratchedOdds;
+        return changeMargin(odds, newMargin, targetMargin);
+    } 
+
+    function changeMargin(uint256 odds, uint256 margin, uint256 targetMargin) public pure returns (uint256) {
+        return addMargin(removeMargin(odds, margin), targetMargin);
+    }
+
+    function removeMargin(uint256 odds, uint256 margin) public pure returns (uint256) {
+        return odds * margin / PRECISION;
+    }
+
+    function addMargin(uint256 odds, uint256 margin) public pure returns (uint256) {
+        assert(margin > 0);
+        return odds * PRECISION / margin;
+    }
+
+    // Given an array of odds, return the margin
+    function getMargin(uint256[] calldata odds) public pure returns (uint256) {
+        uint256 total; // 0
+        uint256 oddsCount = odds.length;
+        for (uint256 i = 0; i < oddsCount; i++) {
+            if (odds[i] == 0) continue;
+            total += ((PRECISION * PRECISION) / odds[i]);
+        }
+        return total;
     }
 }

@@ -2,6 +2,7 @@
   "compilerOptions": {
     "target": "es2018",
     "module": "CommonJS",
+    "outDir": "out",
     "esModuleInterop": true,
     "noImplicitAny": false,
     "strictNullChecks": false,
@@ -10,10 +11,9 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "strict": true,
-    "types": [
-      "node",
-      "mocha"
-    ]
+    "types": ["node", "mocha"],
+    "skipLibCheck": true,
+    "sourceMap": true
   },
   "include": ["scripts", "./build", "./tests", "./deployData", "./deploy"],
   "files": ["./hardhat.config.ts"]

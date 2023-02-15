@@ -12,12 +12,12 @@ import {
 import { solidity } from "ethereum-waffle";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {
-	formatBytes16String,
 	makeMarketId,
 	makePropositionId,
 	signBackMessage,
 	signSetResultMessage
 } from "./utils";
+import { formatBytes16String } from "../scripts/utils";
 
 chai.use(solidity);
 
@@ -175,16 +175,17 @@ describe("Collateralised Market: play through", function () {
 		vault = await new Vault__factory(owner).deploy(underlying.address);
 		await vault.deployed();
 
-		const SignatureLib = await ethers.getContractFactory("SignatureLib");
-		const signatureLib = await SignatureLib.deploy();
-		await signatureLib.deployed();
+		//const SignatureLib = await ethers.getContractFactory("SignatureLib");
+		//const signatureLib = await SignatureLib.deploy();
+		//await signatureLib.deployed();
 
 		const marketFactory = await ethers.getContractFactory(
 			"MarketCollateralisedWithoutProtection",
 			{
 				signer: owner,
 				libraries: {
-					SignatureLib: signatureLib.address
+					SignatureLib: fixture.SignatureLib.address,
+					OddsLib: fixture.OddsLib.address
 				}
 			}
 		);
@@ -473,6 +474,7 @@ describe("Collateralised Market: play through", function () {
 			"Total In Play should have gone down by the wager amount"
 		).to.equal(ethers.utils.parseUnits(bet.amount.toString(), tokenDecimals));
 
+		// His balance should have gone up by the potential winnings
 		const newBettorBalance = await underlying.balanceOf(bet.bettor.address);
 		const bettorDelta = newBettorBalance.sub(originalBettorBalance);
 		expect(bettorDelta, "Bettor should have won the bet").to.equal(
@@ -480,6 +482,22 @@ describe("Collateralised Market: play through", function () {
 				ethers.utils.parseUnits(bet.odds.toString(), ODDS_DECIMALS)
 			)
 		);
+
+		const betStruct = await market.getBetByIndex(0);
+		expect(
+			betStruct[1],
+			"Bet struct payout should equal the actual payout"
+		).to.equal(
+			BigNumber.from(bet.amount).mul(
+				ethers.utils.parseUnits(bet.odds.toString(), ODDS_DECIMALS)
+			)
+		);
+
+		const exposureDelta = originalStats.exposure.sub(newStats.exposure);
+		expect(
+			exposureDelta,
+			"Bet 1: Exposure should have gone down by the covered amount"
+		).to.equal(bet1Cover);
 	});
 
 	it("Should settle the second bet, lost", async () => {
