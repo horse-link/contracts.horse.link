@@ -363,9 +363,9 @@ contract Market is IMarket, Ownable, ERC721 {
 				scratchedOdds += result.scratched[i].odds;
 			}
 		}
-		// Calculate the odds of the bet
-		
+		// Now apply the scratched odds to get the new odds for the bet
 		if (scratchedOdds > 0 && _bets[index].amount > 0) {
+			// Calculate the odds of the bet
 			uint256 originalOdds = _bets[index].payout / _bets[index].amount ;
 			uint256 newOdds = OddsLib.rebaseOddsWithScratch(originalOdds, scratchedOdds, MARGIN);
 			// Calculate the new payout
