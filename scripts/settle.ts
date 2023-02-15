@@ -1,4 +1,3 @@
-import { BigNumberish, ethers } from "ethers";
 import axios from "axios";
 import * as dotenv from "dotenv";
 import {
@@ -14,12 +13,6 @@ import type { MarketDetails } from "./utils";
 dotenv.config();
 
 const hexZero: Bytes16 = "0x00000000000000000000000000000000";
-export type Signature = {
-	v: BigNumberish;
-	r: string;
-	s: string;
-};
-
 export type RaceDetails = {
 	id: string;
 	market: MarketDetails;
@@ -106,21 +99,6 @@ export async function main() {
 			console.log("txReceipt", txReceipt);
 		}
 	}
-}
-
-export function formatBytes16String(text: string): string {
-	// Get the bytes
-	const bytes = ethers.utils.toUtf8Bytes(text);
-
-	// Check we have room for null-termination
-	if (bytes.length > 15) {
-		throw new Error("bytes16 string must be less than 16 bytes");
-	}
-
-	// Zero-pad (implicitly null-terminates)
-	return ethers.utils.hexlify(
-		ethers.utils.concat([bytes, ethers.constants.HashZero]).slice(0, 16)
-	);
 }
 
 // This is a translation of a pythonism: `ts-node settle.ts` will run main(),

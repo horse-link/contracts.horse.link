@@ -5,6 +5,7 @@ import * as dotenv from "dotenv";
 import {
 	getSubgraphBetsSince,
 	bytes16HexToString,
+	formatBytes16String,
 	loadOracle,
 	hydrateMarketId,
 	hydratePropositionId
@@ -130,21 +131,6 @@ async function main() {
 	state.last_run = thisRun;
 	console.log("Writing state");
 	fs.writeFileSync("./state.json", JSON.stringify(state, null, 4));
-}
-
-export function formatBytes16String(text: string): string {
-	// Get the bytes
-	const bytes = ethers.utils.toUtf8Bytes(text);
-
-	// Check we have room for null-termination
-	if (bytes.length > 15) {
-		throw new Error("bytes16 string must be less than 16 bytes");
-	}
-
-	// Zero-pad (implicitly null-terminates)
-	return ethers.utils.hexlify(
-		ethers.utils.concat([bytes, ethers.constants.HashZero]).slice(0, 16)
-	);
 }
 
 main()

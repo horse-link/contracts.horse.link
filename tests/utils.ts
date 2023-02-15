@@ -1,21 +1,16 @@
 ﻿import { ethers } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import * as dotenv from "dotenv";
-import { concat, hexlify, toUtf8Bytes } from "ethers/lib/utils";
+import type { BigNumber } from "ethers";
 
-import type { BigNumber, BigNumberish } from "ethers";
+import { formatBytes16String } from "../scripts/utils";
+import type { Signature } from "../scripts/utils";
 
 export const node = process.env.GOERLI_URL;
 export const provider = new ethers.providers.JsonRpcProvider(node);
 
 // load .env into process.env
 dotenv.config();
-
-export type Signature = {
-	v: BigNumberish;
-	r: string;
-	s: string;
-};
 
 export type MarketDetails = {
 	id: string;
@@ -25,25 +20,6 @@ export type MarketDetails = {
 };
 
 export type DataHexString = string;
-
-export function bytes16HexToString(hex: string): string {
-	const s = Buffer.from(hex.slice(2), "hex").toString("utf8").toString();
-	// Chop off the trailing 0s
-	return s.slice(0, s.indexOf("\0"));
-}
-
-export function formatBytes16String(text: string): string {
-	// Get the bytes
-	const bytes = toUtf8Bytes(text);
-
-	// Check we have room for null-termination
-	if (bytes.length > 15) {
-		throw new Error("bytes16 string must be less than 16 bytes");
-	}
-
-	// Zero-pad (implicitly null-terminates)
-	return hexlify(concat([bytes, ethers.constants.HashZero]).slice(0, 16));
-}
 
 export const getEventData = (
 	eventName: string,

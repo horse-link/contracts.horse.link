@@ -12,12 +12,12 @@ import {
 import { solidity } from "ethereum-waffle";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {
-	formatBytes16String,
 	makeMarketId,
 	makePropositionId,
 	signBackMessage,
 	signSetResultMessage
 } from "./utils";
+import { formatBytes16String } from "../scripts/utils";
 
 chai.use(solidity);
 
