@@ -4,7 +4,7 @@ pragma solidity =0.8.15;
 import "@openzeppelin/contracts/utils/math/Math.sol";
 
 library OddsLib {
-
+    // Precision to be used in calculations
     uint256 public constant PRECISION = 1e6;
 
     /*
