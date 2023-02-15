@@ -214,14 +214,12 @@ export function hydrateMarketId(
 	marketId: string | DataHexString
 ): MarketDetails {
 	const id = isHexString(marketId) ? bytes16HexToString(marketId) : marketId;
-	const daysSinceEpoch = parseInt(marketId.slice(0, 6));
-	//Convert daysSinceEpoch to date
-	const date = new Date(daysSinceEpoch * 24 * 60 * 60 * 1000).getTime();
-	const location = marketId.slice(6, 9);
-	const race = parseInt(marketId.slice(9, 11));
+	const daysSinceEpoch = parseInt(id.slice(0, 6));
+	const location = id.slice(6, 9);
+	const race = parseInt(id.slice(9, 11));
 	return {
 		id,
-		date,
+		date: daysSinceEpoch,
 		location,
 		race
 	};
