@@ -76,7 +76,7 @@ library OddsLib {
 
     // Given an array of odds, return the margin
     function getMargin(uint256[] calldata odds) public pure returns (uint256) {
-        uint256 total;
+        uint256 total; // 0
         uint256 oddsCount = odds.length;
         for (uint256 i = 0; i < oddsCount; i++) {
             if (odds[i] == 0) continue;
