@@ -8,6 +8,7 @@ import {
 	Seconds
 } from "./utils";
 import type { MarketDetails } from "./utils";
+import type { AxiosResponse } from "axios";
 
 // load .env into process.env
 dotenv.config();
@@ -58,21 +59,30 @@ export async function main() {
 		// TODO: cache me
 		const marketContract = await loadMarket(bet.marketAddress);
 
-		let marketResultResponse;
+		let marketResultResponse: AxiosResponse;
 		// Get race result
 		try {
 			marketResultResponse = await axios.get(
 				`https://alpha.horse.link/api/markets/result/${market.id}?sign=true`
 			);
 			if (marketResultResponse.status !== 200) {
-				console.log(
-					`request failure for market ${market.id}:`,
-					marketResultResponse
-				);
+				console.log(`request failure for market ${market.id}:`, {
+					status: marketResultResponse?.status,
+					statusText: marketResultResponse?.statusText,
+					url: marketResultResponse?.config?.url,
+					data: marketResultResponse?.request?.data
+				});
 				continue;
 			}
-		} catch (e) {
-			console.log(`request failure for market ${market.id}:`, e);
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		} catch (e: any) {
+			// TODO: type as axios.AxiosError;
+			console.log(`request failure for market ${market.id}:`, {
+				responseStatus: e?.response?.status,
+				responseStatusText: e?.response?.statusText,
+				url: e?.config?.url,
+				data: e?.request?.data
+			});
 			continue;
 		}
 
