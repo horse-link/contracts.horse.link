@@ -1,17 +1,14 @@
 import axios from "axios";
-import * as dotenv from "dotenv";
 import {
 	getSubgraphBetsSince,
 	loadOracle,
 	hydrateMarketId,
 	loadMarket,
-	Seconds
+	Seconds,
+	bytes16HexToString
 } from "./utils";
 import type { MarketDetails } from "./utils";
 import type { AxiosResponse } from "axios";
-
-// load .env into process.env
-dotenv.config();
 
 const hexZero: Bytes16 = "0x00000000000000000000000000000000";
 export type RaceDetails = {
@@ -48,10 +45,16 @@ export async function main() {
 	console.log(`Current Time: ${now}`);
 
 	// Now less 2 hours
-	const closeTime: Seconds = Math.floor(now / 1000) - 2 * 60 * 60;
+	const secondsPerHour = 60 * 60;
+	const closeTime: Seconds = Math.floor(now / 1000) - 8 * secondsPerHour;
 	console.log(`"Using close time of ${closeTime}"`);
 
-	const bets: BetDetails[] = await getSubgraphBetsSince(closeTime);
+	const bets: BetDetails[] = await getSubgraphBetsSince(closeTime, {
+		unsettledOnly: true,
+		maxResults: 150
+	});
+
+	console.log(`Found ${bets.length} unsettled bets`);
 
 	// Process up to 50 most recent, starting with most recent
 	for (const bet of bets) {
@@ -61,6 +64,7 @@ export async function main() {
 
 		let marketResultResponse: AxiosResponse;
 		// Get race result
+		// TODO: Only query each market once
 		try {
 			marketResultResponse = await axios.get(
 				`https://alpha.horse.link/api/markets/result/${market.id}?sign=true`
@@ -86,17 +90,31 @@ export async function main() {
 			continue;
 		}
 
-		const result = await oracle.getResult(bet.marketId);
+		const result = await oracle
+			.getResult(bet.marketId)
+			.catch((e) => console.log("getResult failed:", e?.error?.reason));
+
+		if (result === undefined) {
+			console.log(
+				`no result from oracle.getResult() for marketId ${
+					bet.marketId
+				}(${bytes16HexToString(bet.marketId)})`
+			);
+			continue;
+		}
 
 		if (result.winningPropositionId === hexZero) {
 			// if the oracle doesn't know about it, tell it about it.
-			const receipt = await oracle.setResult(
-				bet.marketId,
-				marketResultResponse.data.winningPropositionId,
-				marketResultResponse.data.signature
-			);
-			console.log("receipt", receipt);
-			console.log(`adding result for market ${bet.marketId}`, receipt.hash);
+			const txReceipt = await oracle
+				.setResult(
+					bet.marketId,
+					marketResultResponse.data.winningPropositionId,
+					marketResultResponse.data.signature
+				)
+				.catch((e) => {
+					return { hash: `setResult FAILED ${e?.error?.reason}` };
+				});
+			console.log(`adding result for market ${bet.marketId}`, txReceipt.hash);
 
 			// we won't wait for it to be mined here,
 			// we'll just process it on the next run
@@ -104,9 +122,10 @@ export async function main() {
 			// There is a result so we can settle
 
 			const index = bet.id.split("_")[2];
-			const txReceipt = await marketContract.settle(index);
-			console.log(`settled bet ${bet.id}(${index}), receipt`, txReceipt.hash);
-			console.log("txReceipt", txReceipt);
+			const txReceipt = await marketContract.settle(index).catch((e) => {
+				return { hash: `FAILED: ${e?.error?.reason}` };
+			});
+			console.log(`settle bet ${bet.id}(${index}), receipt`, txReceipt.hash);
 		}
 	}
 }

@@ -6,8 +6,12 @@ import keccak from "keccak";
 import { ethers } from "ethers";
 import { concat, hexlify, isHexString, toUtf8Bytes } from "ethers/lib/utils";
 import { LedgerSigner } from "@ethersproject/hardware-wallets";
+import * as dotenv from "dotenv";
 
 import type { BigNumberish } from "ethers";
+
+// load .env into process.env
+dotenv.config();
 
 export const node = process.env.GOERLI_URL;
 export const provider: ethers.providers.Provider =
@@ -179,13 +183,24 @@ export const getGasPriceFromEnv = (): ethers.BigNumber => {
 	return gasPrice;
 };
 
+export type SubgraphBetOptions = {
+	unsettledOnly?: Boolean;
+	maxResults?: Number;
+};
+
 export async function getSubgraphBetsSince(
-	createdAtGt: Seconds
+	createdAtGt: Seconds,
+	options: SubgraphBetOptions = {}
 ): Promise<BetDetails[]> {
 	const timeString = Math.floor(createdAtGt);
+
+	const { unsettledOnly = false, maxResults = 1000 } = options;
+
 	const betsQuery = `
         {
-            bets(where: {createdAt_gt: "${timeString}"}, orderBy: createdAt, first: 1000) {
+            bets(where: {createdAt_gt: "${timeString}"${
+		unsettledOnly ? ", settled_not: true" : ""
+	}}, orderBy: createdAt, first: ${maxResults}, orderDirection: desc) {
                 id
                 createdAt
                 createdAtTx
