@@ -186,6 +186,7 @@ export const getGasPriceFromEnv = (): ethers.BigNumber => {
 export type SubgraphBetOptions = {
 	unsettledOnly?: Boolean;
 	maxResults?: Number;
+	payoutAtLt?: Seconds;
 };
 
 export async function getSubgraphBetsSince(
@@ -194,13 +195,18 @@ export async function getSubgraphBetsSince(
 ): Promise<BetDetails[]> {
 	const timeString = Math.floor(createdAtGt);
 
-	const { unsettledOnly = false, maxResults = 1000 } = options;
+	const { unsettledOnly = false, maxResults = 1000, payoutAtLt } = options;
+
+	const whereClauses = [
+		`createdAt_gt: "${timeString}"`,
+		unsettledOnly ? ", settled_not: true" : "",
+		payoutAtLt ? `payoutAt_lt: ${payoutAtLt}` : ""
+	];
+	const whereClause = whereClauses.filter(Boolean).join(",");
 
 	const betsQuery = `
         {
-            bets(where: {createdAt_gt: "${timeString}"${
-		unsettledOnly ? ", settled_not: true" : ""
-	}}, orderBy: createdAt, first: ${maxResults}, orderDirection: desc) {
+            bets(where: {${whereClause}}, orderBy: createdAt, first: ${maxResults}, orderDirection: desc) {
                 id
                 createdAt
                 createdAtTx

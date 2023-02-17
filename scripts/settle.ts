@@ -41,17 +41,18 @@ export type OracleResult = Array<any>;
 
 export async function main() {
 	const oracle = await loadOracle();
-	const now: Milliseconds = Date.now();
-	console.log(`Current Time: ${now}`);
+	const now: Seconds = Math.floor(Date.now() / 1000);
+	console.log(`Current Time: ${now} (seconds)`);
 
 	// Now less 2 hours
 	const secondsPerHour = 60 * 60;
-	const closeTime: Seconds = Math.floor(now / 1000) - 8 * secondsPerHour;
-	console.log(`"Using close time of ${closeTime}"`);
+	const closeTime: Seconds = now - 8 * secondsPerHour;
+	console.log(`"Using close time of ${closeTime} (seconds)"`);
 
 	const bets: BetDetails[] = await getSubgraphBetsSince(closeTime, {
 		unsettledOnly: true,
-		maxResults: 150
+		maxResults: 150,
+		payoutAtLt: now
 	});
 
 	console.log(`Found ${bets.length} unsettled bets`);
