@@ -11,6 +11,8 @@ import type { MarketDetails } from "./utils";
 import type { AxiosResponse } from "axios";
 
 const hexZero: Bytes16 = "0x00000000000000000000000000000000";
+const HOUR_IN_SECONDS = 60 * 60;
+
 export type RaceDetails = {
 	id: string;
 	market: MarketDetails;
@@ -44,9 +46,7 @@ export async function main() {
 	const now: Seconds = Math.floor(Date.now() / 1000);
 	console.log(`Current Time: ${now} (seconds)`);
 
-	// Now less 2 hours
-	const secondsPerHour = 60 * 60;
-	const closeTime: Seconds = now - 8 * secondsPerHour;
+	const closeTime: Seconds = now - 8 * HOUR_IN_SECONDS;
 	console.log(`"Using close time of ${closeTime} (seconds)"`);
 
 	const bets: BetDetails[] = await getSubgraphBetsSince(closeTime, {
@@ -57,7 +57,6 @@ export async function main() {
 
 	console.log(`Found ${bets.length} unsettled bets`);
 
-	// Process up to 50 most recent, starting with most recent
 	for (const bet of bets) {
 		const market = hydrateMarketId(bet.marketId);
 		// TODO: cache me
