@@ -320,24 +320,23 @@ token address is 0x47A78de7a881CCa1a0f510efA2E520b447F707Bb
 balance is 1 wei for address 0xA39560b08FAF6d8Cd2aAC286479D25E0ea70f510
 ```
 
-## Running settle script
+## Running settle/scratch automated scripts
 
-Setup the local Python environment:
+We've got automated scripts running in [utils.horse.link](https://cloud.digitalocean.com/droplets/335220617/graphs?i=7cba59&period=hour):
+`ssh root@170.64.176.240`
 
-```bash
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
+We use private keys to log onto the droplet without a password, so if you get a reply about authorization or password get someone with access to add your public key to the droplet.
+
+
+If you need to make changes to the scripts you can copy them across with scp to make sure they work: `scp scripts/*.ts root@170.64.176.240:contracts.horse.link/scripts/` and run the scripts manually like `npx ts-node scripts/settle.ts`.
+
+To deploy changes, pull the latest changes on the server: `ssh root@170.64.176.240 'cd contracts.horse.link; git pull'` (it shouldn't make a difference if you do it in a single command like this or log in and then pull or even use the console in the DigitalOcean dashboard).  Use  `git pull -f` if you want to clear out any changes that have been made on the server or copied across.
+
+The scripts are usually run with crontab. You can check the current settings with `crontab -l` on the droplet:
 ```
-
-Run the script:
-
-```bash
-python scripts/settle.py
+0,10,20,30,40,50 * * * * cd /root/contracts.horse.link && npx ts-node scripts/settle.ts >> $HOME/logs/settle.log 2>&1
+5,15,25,35,45,55 * * * * cd /root/contracts.horse.link && npx ts-node scripts/scratch.ts >> $HOME/logs/scratch.log 2>&1
 ```
+This says to run `settle.ts` every 10 minutes, and to run scratch.ts also every 10 minutes but offset by 5 minutes.
 
-Or via crontab:
-```txt
-# m h  dom mon dow   command
-* * * * * /usr/bin/python3 -u /root/contracts.horse.link/scripts/scratch.py >> $HOME/logs/scratch.log 2>&1
-```
+You can update the crontab with `crontab -e`
