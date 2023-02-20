@@ -6,8 +6,11 @@ import keccak from "keccak";
 import { ethers } from "ethers";
 import { concat, hexlify, isHexString, toUtf8Bytes } from "ethers/lib/utils";
 import { LedgerSigner } from "@ethersproject/hardware-wallets";
+//dotenv import
+import * as dotenv from "dotenv";
 
 import type { BigNumberish } from "ethers";
+dotenv.config();
 
 export const node = process.env.GOERLI_URL;
 export const provider: ethers.providers.Provider =
