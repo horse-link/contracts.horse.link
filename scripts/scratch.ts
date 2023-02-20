@@ -1,4 +1,4 @@
-import { BigNumber, ethers } from "ethers";
+import { ethers } from "ethers";
 import axios from "axios";
 import * as fs from "fs";
 import * as dotenv from "dotenv";
@@ -28,7 +28,7 @@ async function setScratch(
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any> {
 	const bnOdds = ethers.utils.parseUnits(Number(odds).toFixed(6), 6);
-	const bnTotalOdds = ethers.utils.parseUnits(Number(totalOdds).toFixed(6)); //ethers.utils.parseUnits(totalOdds.toString(), 6);
+	const bnTotalOdds = ethers.utils.parseUnits(Number(totalOdds).toFixed(6));
 	const encodedProposition = formatBytes16String(propositionId);
 	const encodedMarket = formatBytes16String(marketId);
 
