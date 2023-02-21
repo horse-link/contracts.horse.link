@@ -32,25 +32,19 @@ async function setScratch(
 	const encodedProposition = formatBytes16String(propositionId);
 	const encodedMarket = formatBytes16String(marketId);
 
-	// Check that it's not already registered in the Oracle
-	const oracleResult = await oracle.checkResult(
-		encodedMarket,
-		encodedProposition
-	);
-	if (oracleResult) {
-		console.log(
-			`Proposition ${propositionId} already registered in the Oracle`
+	try {
+		const receipt = await oracle.setScratchedResult(
+			encodedMarket,
+			encodedProposition,
+			bnOdds,
+			bnTotalOdds,
+			signature
 		);
+		return receipt;
+	} catch (err) {
+		console.error(err);
 		return;
 	}
-	const receipt = await oracle.setScratchedResult(
-		encodedMarket,
-		encodedProposition,
-		bnOdds,
-		bnTotalOdds,
-		signature
-	);
-	return receipt;
 }
 
 async function main() {
@@ -88,7 +82,7 @@ async function main() {
 		const race = hydratedMarket.race;
 
 		// Get the scratch data from the API
-		const marketResultUrl = `${baseApiUrl}/bets/sign/${marketId}`;
+		const marketResultUrl = `${baseApiUrl}/bets/${marketId}?sign=true`;
 		const marketResponse = await axios.get(marketResultUrl);
 		const marketData = marketResponse.data;
 
