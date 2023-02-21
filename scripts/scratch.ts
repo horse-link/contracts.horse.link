@@ -1,6 +1,7 @@
-import { BigNumber, ethers } from "ethers";
+import { ethers } from "ethers";
 import axios from "axios";
 import * as fs from "fs";
+import * as dotenv from "dotenv";
 import {
 	getSubgraphBetsSince,
 	bytes16HexToString,
@@ -11,6 +12,12 @@ import {
 } from "./utils";
 import type { Signature } from "./utils";
 
+// load .env into process.env
+dotenv.config();
+
+const baseApiUrl = process.env.API_URL ?? "https://alpha.horse.link/api";
+console.log(`Using API URL: ${baseApiUrl}`);
+
 async function setScratch(
 	oracle: ethers.Contract,
 	marketId: string,
@@ -20,10 +27,22 @@ async function setScratch(
 	signature: Signature
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any> {
-	const bnOdds = ethers.utils.parseUnits(odds.toString(), 6);
-	const bnTotalOdds = BigNumber.from(totalOdds.toString()); //ethers.utils.parseUnits(totalOdds.toString(), 6);
+	const bnOdds = ethers.utils.parseUnits(Number(odds).toFixed(6), 6);
+	const bnTotalOdds = ethers.utils.parseUnits(Number(totalOdds).toFixed(6));
 	const encodedProposition = formatBytes16String(propositionId);
 	const encodedMarket = formatBytes16String(marketId);
+
+	// Check that it's not already registered in the Oracle
+	const oracleResult = await oracle.checkResult(
+		encodedMarket,
+		encodedProposition
+	);
+	if (oracleResult) {
+		console.log(
+			`Proposition ${propositionId} already registered in the Oracle`
+		);
+		return;
+	}
 	const receipt = await oracle.setScratchedResult(
 		encodedMarket,
 		encodedProposition,
@@ -69,20 +88,20 @@ async function main() {
 		const race = hydratedMarket.race;
 
 		// Get the scratch data from the API
-		const marketResultUrl = `https://alpha.horse.link/api/bets/sign/${marketId}`;
+		const marketResultUrl = `${baseApiUrl}/bets/sign/${marketId}`;
 		const marketResponse = await axios.get(marketResultUrl);
 		const marketData = marketResponse.data;
 
 		// Process any scratched runners
 		const runners = marketData.scratchedRunners;
 		console.log(
-			`Market ${marketId} has ${runners?.length ?? "no"} scratched runners yet`
+			`Market ${marketId} has ${runners?.length ?? "no"} scratched runners`
 		);
 		if (runners && runners.length > 0) {
 			console.log("======================================");
 			console.log(
 				`Venue: ${location} Race: ${race} Date: ${new Date(
-					hydratedMarket.date
+					hydratedMarket.date * 24 * 60 * 60 * 1000
 				)}`
 			);
 			console.log(`${runners.length} scratched runners`);
@@ -97,6 +116,7 @@ async function main() {
 							console.log("    already registered");
 							continue;
 						}
+
 						// Send this proposition to Oracle contract
 						console.log(`    sending ${propositionId} to Oracle`);
 						const signature = runner.signature;

@@ -7,7 +7,6 @@ import { ethers } from "ethers";
 import { concat, hexlify, isHexString, toUtf8Bytes } from "ethers/lib/utils";
 import { LedgerSigner } from "@ethersproject/hardware-wallets";
 import * as dotenv from "dotenv";
-
 import type { BigNumberish } from "ethers";
 
 // load .env into process.env
