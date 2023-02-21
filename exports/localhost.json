@@ -4581,6 +4581,59 @@
           "inputs": [
             {
               "internalType": "uint256",
+              "name": "odds",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "margin",
+              "type": "uint256"
+            }
+          ],
+          "name": "addMargin",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "pure",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "odds",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "margin",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "targetMargin",
+              "type": "uint256"
+            }
+          ],
+          "name": "changeMargin",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "pure",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
               "name": "wager",
               "type": "uint256"
             },
@@ -4625,6 +4678,78 @@
             }
           ],
           "name": "getLinearAdjustedOdds",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "pure",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256[]",
+              "name": "odds",
+              "type": "uint256[]"
+            }
+          ],
+          "name": "getMargin",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "pure",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "odds",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "scratchedOdds",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "targetMargin",
+              "type": "uint256"
+            }
+          ],
+          "name": "rebaseOddsWithScratch",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "pure",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "odds",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "margin",
+              "type": "uint256"
+            }
+          ],
+          "name": "removeMargin",
           "outputs": [
             {
               "internalType": "uint256",
