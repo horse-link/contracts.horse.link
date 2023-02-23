@@ -61,7 +61,7 @@ So when Bob deposits 1000 DAI they receive 1000 shares:
 shares received = 1000 / 1000 * 1000 = 1000
 ```
 
-The Vault is now holding 2000 DAI in "totalAssets". If Alice withdraws 500 shares, she will receive 500 DAI. Now, let's say Carol places a bet of 1800 DAI on a market that is backed by the Vault at 1:1. The Vault will lend 1800 DAI to the market. 200 DAI remain in the Vault and it will have a total exposure of 1800 DAI.
+The Vault is now holding 2000 DAI in "totalAssets". If Alice redeems 500 shares, she will receive 500 DAI. Now, let's say Carol places a bet of 1800 DAI on a market that is backed by the Vault at 1:1. The Vault will lend 1800 DAI to the market. 200 DAI remain in the Vault and it will have a total exposure of 1800 DAI.
 
 3. Carol places bet of 1800 DAI at 1:1 odds
 
@@ -116,7 +116,7 @@ The perfomance of the Vault is the ratio of the shares to the assets. In the abo
 
 #### Analysing a donation attack
 
-The donation attack (aka inflation attack) is a known exploit with ERC4626 vaults when the amount of underlying assets change without the amount of shares reflecting that. This makes all the share more (or less) valuable, which means that someone buying shares will get less (or more) than they would have expected. The bigger the inflation (or deflation), the bigger the effect of the attack, which makes Horse Link particularly sensitive as the vaults balance can change significatly when funds are withdrawn to cover the exposure of bets.
+The donation attack (aka inflation attack) is a known exploit with ERC4626 vaults when the amount of underlying assets change without the amount of shares reflecting that. This makes all the share more (or less) valuable, which means that someone receiving shares will get less (or more) than they would have expected. The bigger the inflation (or deflation), the bigger the effect of the attack, which makes Horse Link particularly sensitive as the vaults balance can change significatly when funds are withdrawn to cover the exposure of bets.
 
 In our use case, we discuss the possibility that an attacker could attempt to place a bet with high odds, draining the Vault, then deposit a large amount of assets into the Vault to skew the ratio of assets to shares.
 
@@ -175,7 +175,7 @@ shares received = 2000 / 200 * 10000 = 100000
 share = 12010 * 100000 / 102000 = 11774.51
 ```
 
-The attacker spent 10 DAI to place the bet, 10000 depositing into Vault and was able to withdraw 11774.51 resulting in a profit of 1764.51 DAI.
+The attacker spent 10 DAI to place the bet, 10000 depositing into Vault and was able to redeem 11774.51 resulting in a profit of 1764.51 DAI.
 
 The total assets in the Vault is now 235.49 DAI giving a performance of: 235.49 DAI / 2000 shares \* 100 = 11.77% (0.12 DAI per share) compared to before the attack when the performance was 2000 DAI / 2000 shares \* 100 = 100% (1 DAI per share).
 
