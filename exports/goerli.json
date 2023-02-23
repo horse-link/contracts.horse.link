@@ -1155,7 +1155,7 @@
       ]
     },
     "SignatureLib": {
-      "address": "0xBC48ADc7D4bBbf8C9434452AA3d28E69b405047f",
+      "address": "0xda270572f48a366bBDa85b095303c85eb88B1503",
       "abi": [
         {
           "inputs": [
@@ -1201,7 +1201,7 @@
       ]
     },
     "MarketOracle": {
-      "address": "0xc7555FfD59DC8CF8EC00873EbB09906CD880f6B4",
+      "address": "0xf965c35CC9b58747598BC55eB77AE7902950E096",
       "abi": [
         {
           "inputs": [],
@@ -1468,7 +1468,7 @@
       ]
     },
     "Registry": {
-      "address": "0x59376fB34DD6327A07b8412134500528C654a6f1",
+      "address": "0xCB3aAd088dA727d3a4Ab3EEB628adD35fCF14F73",
       "abi": [
         {
           "inputs": [
@@ -1626,7 +1626,7 @@
       ]
     },
     "UsdtVault": {
-      "address": "0x4D2bcf082EDB5b6da0436b503926311f1F5Ee344",
+      "address": "0xe466811C80B20193ccC2BDA65238CC527497cb18",
       "abi": [
         {
           "inputs": [
@@ -2461,7 +2461,7 @@
       ]
     },
     "DaiVault": {
-      "address": "0xC4810218c8173f659BF15C09a49296Cf3c21c80D",
+      "address": "0x125399e180Df9710Da4207EF491C4110FD27EE1b",
       "abi": [
         {
           "inputs": [
@@ -3296,7 +3296,7 @@
       ]
     },
     "HorseLinkVault": {
-      "address": "0x020aA1a83Eb5D6fE61696Dc39d7361A0Fda71ccD",
+      "address": "0xb2d1872d52489552A4Bc12cF9bC7a69686fb8c2f",
       "abi": [
         {
           "inputs": [
@@ -4131,7 +4131,7 @@
       ]
     },
     "OddsLib": {
-      "address": "0x4b965cadE6D634858E4DF08e3Dd2152eB62f1b0c",
+      "address": "0x9dCbCB00B3E30917A71d0DFb92b63Ba4c211E5Fc",
       "abi": [
         {
           "inputs": [],
@@ -4332,7 +4332,7 @@
       ]
     },
     "UsdtMarket": {
-      "address": "0x99010bf337264D1Ce2ec759967a5838b1c3749A4",
+      "address": "0x04266669d869a65D2D6eB78a4bdD7b2e776ed510",
       "abi": [
         {
           "inputs": [
@@ -5259,7 +5259,7 @@
       ]
     },
     "DaiMarket": {
-      "address": "0x193B9872b9468F125280DEc0a8E925c841a497b3",
+      "address": "0x495Ddf0Be57841ECE38b702A7A53Eba18E495D30",
       "abi": [
         {
           "inputs": [
@@ -6186,7 +6186,7 @@
       ]
     },
     "HorseLinkMarket": {
-      "address": "0x39A93A77CfF7C3D5e3233CFf9B9868172A2c6615",
+      "address": "0x3dd72c3Ed95c3a65b843899360Be4Da0EeF6b301",
       "abi": [
         {
           "inputs": [
