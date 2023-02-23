@@ -55,6 +55,17 @@ export default {
 			gasMultiplier: 1,
 			tags: ["uat"]
 		},
+		arbitrumGoerli: {
+			url: process.env.ARBITRUM_GOERLI_URL || defaultRpcUrl,
+			saveDeployment: true,
+			verify: {
+				etherscan: {
+					apiKey: process.env.ETHERSCAN_API_KEY
+				}
+			},
+			gasMultiplier: 1,
+			tags: ["uat"]
+		},
 		mainnet: {
 			url: process.env.MAINNET_URL || defaultRpcUrl,
 			accounts: [process.env.MAINNET_DEPLOYER || defaultKey],
@@ -84,7 +95,8 @@ export default {
 	namedAccounts: {
 		deployer: {
 			default: 0,
-			goerli: `privatekey://${process.env.GOERLI_DEPLOYER}`
+			goerli: `privatekey://${process.env.GOERLI_DEPLOYER}`,
+			arbitrumGoerli: `privatekey://${process.env.GOERLI_DEPLOYER}`
 		},
 		faucet: {
 			default: "0xF919eaF2E37aAC718Aa19668b9071ee42c02c081"
@@ -100,12 +112,14 @@ export default {
 		},
 		MarketSigner: {
 			default: 1,
-			goerli: "0xF33b9A4efA380Df3B435f755DD2C2AF7fE53C2d1" // key in bitwarden
+			goerli: "0xF33b9A4efA380Df3B435f755DD2C2AF7fE53C2d1", // key in bitwarden
+			arbitrumGoerli: "0xF33b9A4efA380Df3B435f755DD2C2AF7fE53C2d1" // key in bitwarden
 		}
 	},
 	namedSigners: {
 		deployer: {
-			goerli: `${process.env.GOERLI_DEPLOYER}`
+			goerli: `${process.env.GOERLI_DEPLOYER}`,
+			arbitrumGoerli: `${process.env.GOERLI_DEPLOYER}`
 		}
 	}
 };
