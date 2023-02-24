@@ -52,7 +52,8 @@ export default {
 					apiKey: process.env.ETHERSCAN_API_KEY
 				}
 			},
-			gasMultiplier: 1,
+			gasMultiplier: 2,
+			gasPrice: 50000000000,
 			tags: ["uat"]
 		},
 		mainnet: {
