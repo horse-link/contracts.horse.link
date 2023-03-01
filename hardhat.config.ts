@@ -57,6 +57,7 @@ export default {
 		},
 		arbitrumGoerli: {
 			url: process.env.ARBITRUM_GOERLI_URL || defaultRpcUrl,
+			accounts: [process.env.GOERLI_DEPLOYER || defaultKey],
 			saveDeployment: true,
 			verify: {
 				etherscan: {
