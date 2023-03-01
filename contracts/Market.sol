@@ -295,10 +295,10 @@ contract Market is IMarket, Ownable, ERC721 {
 			Bet(propositionId, marketId, wager, payout, end, block.timestamp, false)
 		);
 		_marketBets[marketId].push(index);
-		_mint(_msgSender(), index);
+		_mint(_msgSender(), uint256(index));
 
 		emit Placed(
-			index,
+			uint256(index),
 			propositionId,
 			marketId,
 			wager,
