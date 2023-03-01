@@ -67,6 +67,18 @@ export default {
 			gasMultiplier: 1,
 			tags: ["uat"]
 		},
+		arbitrum: {
+			url: process.env.ARBITRUM_URL || defaultRpcUrl,
+			accounts: [process.env.ARBITRUM_DEPLOYER || defaultKey],
+			saveDeployment: true,
+			verify: {
+				etherscan: {
+					apiKey: process.env.ETHERSCAN_API_KEY
+				}
+			},
+			gasMultiplier: 1,
+			tags: ["production"]
+		},
 		mainnet: {
 			url: process.env.MAINNET_URL || defaultRpcUrl,
 			accounts: [process.env.MAINNET_DEPLOYER || defaultKey],
