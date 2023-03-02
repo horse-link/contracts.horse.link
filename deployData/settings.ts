@@ -1,14 +1,17 @@
+import { Token } from "../build/typechain";
+
 export type TokenDeployDetails = {
 	name: string;
-	symbol: string;
-	decimals: number;
+	symbol?: string;
+	decimals?: number;
 	deploymentName: string;
 	vaultName: string;
 	marketName: string;
-	mintAmount: string;
+	mintAmount?: string;
+	networks: string[];
 };
 
-export const UnderlyingTokens: TokenDeployDetails[] = [
+export const mockTokens: TokenDeployDetails[] = [
 	{
 		name: "Mock USDT",
 		symbol: "USDT",
@@ -16,7 +19,8 @@ export const UnderlyingTokens: TokenDeployDetails[] = [
 		vaultName: "UsdtVault",
 		marketName: "UsdtMarket",
 		decimals: 6,
-		mintAmount: "1000000000"
+		mintAmount: "1000000000",
+		networks: ["hardhat", "localhost", "goerli", "arbitrumGoerli"]
 	},
 	{
 		name: "Mock DAI",
@@ -25,7 +29,8 @@ export const UnderlyingTokens: TokenDeployDetails[] = [
 		vaultName: "DaiVault",
 		marketName: "DaiMarket",
 		decimals: 18,
-		mintAmount: "1000000000"
+		mintAmount: "1000000000",
+		networks: ["hardhat", "localhost", "goerli", "arbitrumGoerli"]
 	},
 	{
 		name: "Mock HorseLink",
@@ -34,15 +39,45 @@ export const UnderlyingTokens: TokenDeployDetails[] = [
 		vaultName: "HorseLinkVault",
 		marketName: "HorseLinkMarket",
 		decimals: 18,
-		mintAmount: "1000000000"
+		mintAmount: "1000000000",
+		networks: ["hardhat", "localhost", "goerli", "arbitrumGoerli"]
 	}
 ];
 
-export const RegistryToken = {
-	name: "HorseLink",
-	symbol: "HL",
-	decimals: 18
-};
+export const productionTokens: TokenDeployDetails[] = [
+	{
+		name: "HorseLink",
+		symbol: "HL",
+		deploymentName: "HorseLink",
+		vaultName: "HorseLinkVault",
+		marketName: "HorseLinkMarket",
+		decimals: 18,
+		networks: ["arbitrum"]
+	},
+	{
+		name: "Usdc",
+		deploymentName: "Usdc",
+		vaultName: "USDC Vault",
+		marketName: "USDC Market",
+		networks: ["arbitrum"]
+	},
+	{
+		name: "fxAud",
+		deploymentName: "fxAud",
+		vaultName: "fxAUD Vault",
+		marketName: "fxAUD Market",
+		networks: ["arbitrum"]
+	},
+	{
+		name: "fxUsd",
+		deploymentName: "fxUsd",
+		vaultName: "fxUSD Vault",
+		marketName: "fxUSD Market",
+		networks: ["arbitrum"]
+	}
+];
+
+export const UnderlyingTokens = [...mockTokens, ...productionTokens];
 
 export const TestAccounts = [
 	{

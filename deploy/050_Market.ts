@@ -33,14 +33,28 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	});
 
 	const collateralised = true;
-	for (const tokenDetails of UnderlyingTokens) {
+
+	// Get tokens we are using for the current network
+	const underlyingTokens = UnderlyingTokens.filter((details) => {
+		return details.networks.includes(network.name);
+	});
+
+	for (const tokenDetails of underlyingTokens) {
 		const vaultName = tokenDetails.vaultName;
 		const marketName = tokenDetails.marketName;
 		const vaultDeployment = await deployments.get(tokenDetails.vaultName);
 		let tokenAddress: string;
-		if (network.tags.production) {
+
+		// If the token has a named account, use that, otherwise get the address from the deployment
+		// Warn if there is a named account AND a deployment
+		if (namedAccounts[tokenDetails.deploymentName]) {
+			console.log(
+				"Using named account for token: ",
+				tokenDetails.deploymentName
+			);
 			tokenAddress = namedAccounts[tokenDetails.deploymentName];
 		} else {
+			console.log("Using deployment for token: ", tokenDetails.deploymentName);
 			const tokenDeployment = await deployments.get(
 				tokenDetails.deploymentName
 			);
@@ -58,6 +72,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 				OddsLib: oddsLib.address
 			}
 		});
+
 		if (marketDeployment?.newlyDeployed) {
 			await execute(
 				vaultName,
