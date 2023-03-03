@@ -66,16 +66,19 @@ abstract contract MarketCollateralised is Market {
 		uint256 /*payout*/
 	) internal override returns (uint256) {
 		uint256 result;
+		uint256 internalCollateralToUse;
 		uint256 existingCollateral = _marketCollateral[marketId] + _marketTotal[marketId];
 		
 		if (_potentialPayout[propositionId] > existingCollateral) {
 			// Get any additional collateral we need for this market
 			_mostExpensivePropositionId[marketId] = propositionId;
 			result = _potentialPayout[propositionId] - existingCollateral;
-			uint256 internallyAvailableCollateral = _totalCollateral - _totalExposure;
-			uint256 internalCollateralToUse = Math.min(result, internallyAvailableCollateral);
-
-			_totalExposure += internalCollateralToUse;
+			if (_totalCollateral > _totalExposure) {
+				// We have some collateral available to use (from previous bets
+				uint256 internallyAvailableCollateral = _totalCollateral - _totalExposure;
+				internalCollateralToUse = Math.min(result, internallyAvailableCollateral);
+				_totalExposure += internalCollateralToUse;
+			}
 			if (internalCollateralToUse < result) {
 				// We need to get more collateral from the Vault
 				result = result - internalCollateralToUse;
