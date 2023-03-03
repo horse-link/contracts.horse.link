@@ -1,5 +1,6 @@
 import "@nomiclabs/hardhat-ethers";
 import { parseUnits } from "ethers/lib/utils";
+import { network } from "hardhat";
 import "hardhat-deploy";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
@@ -7,7 +8,7 @@ import { UnderlyingTokens, TestAccounts } from "../deployData/settings";
 
 /*
  * Deploy a test ERC-20 token to be used as an underlying token in the Vault contract
- * This is skipped if the network is not tagged as "test" in hardhat.config.ts
+ * This is skipped if the network is tagged as "production" in hardhat.config.ts
  */
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	const { deployments, getNamedAccounts } = hre;
@@ -15,7 +16,19 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	const namedAccounts = await getNamedAccounts();
 	const { deployer } = namedAccounts;
 
-	for (const tokenDetails of UnderlyingTokens) {
+	// Get tokens we are using for the current network
+	const underlyingTokens = UnderlyingTokens.filter((details) => {
+		return details.networks.includes(hre.network.name);
+	});
+
+	for (const tokenDetails of underlyingTokens) {
+		if (namedAccounts[tokenDetails.deploymentName]) {
+			console.log(
+				"Using named account for token: ",
+				tokenDetails.deploymentName
+			);
+			continue;
+		}
 		const underlying = await deploy(tokenDetails.deploymentName, {
 			contract: "Token",
 			from: deployer,
@@ -25,7 +38,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 			skipIfAlreadyDeployed: true
 		});
 
-		if (underlying.newlyDeployed) {
+		if (underlying.newlyDeployed && !network.tags.production) {
 			console.log(`${tokenDetails.symbol} deployed at ${underlying.address}`);
 			await execute(
 				tokenDetails.deploymentName,
@@ -61,6 +74,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 export default func;
 func.tags = ["underlying"];
-func.skip = async (hre: HardhatRuntimeEnvironment) => {
-	return hre.network.tags.production;
-};
+//func.skip = async (hre: HardhatRuntimeEnvironment) => {
+//	return hre.network.tags.production;
+//};

@@ -5,6 +5,8 @@ import type { BigNumber } from "ethers";
 
 import { formatBytes16String } from "../scripts/utils";
 import type { Signature } from "../scripts/utils";
+import { Market, Token, Vault } from "../build/typechain";
+import { prototype } from "events";
 
 export const node = process.env.GOERLI_URL;
 export const provider = new ethers.providers.JsonRpcProvider(node);
@@ -189,3 +191,114 @@ export const signSetScratchedMessage = async (
 	);
 	return await signMessage(settleMessage, signer);
 };
+
+type MarketStats = {
+	marketTotal: BigNumber;
+	exposure: BigNumber;
+	inPlay: BigNumber;
+	vaultBalance: BigNumber;
+};
+
+export async function getMarketStats(
+	marketId: string,
+	market: Market,
+	token: Token,
+	vault: Vault
+): Promise<MarketStats> {
+	const marketTotal = await market.getMarketTotal(
+		formatBytes16String(marketId)
+	);
+	const exposure = await market.getTotalExposure();
+	const inPlay = await market.getTotalInPlay();
+	const vaultBalance = await token.balanceOf(vault.address);
+	return {
+		marketTotal,
+		exposure,
+		inPlay,
+		vaultBalance
+	};
+}
+
+export type TestRunner = {
+	runnerNumber: number;
+	name: string;
+	propositionId: string;
+};
+export type TestBet = {
+	market: TestMarket;
+	runner: TestRunner;
+	amount: number;
+	odds: number;
+	bettor: SignerWithAddress;
+};
+export type TestMarket = {
+	name: string;
+	marketId: string;
+	runners: TestRunner[];
+};
+export const END = 1000000000000;
+
+export async function makeBet(
+	token: Token,
+	marketContract: Market,
+	vault: Vault,
+	bet: TestBet,
+	owner: SignerWithAddress
+): Promise<MarketStats> {
+	const tokenDecimals = await token.decimals();
+	await token
+		.connect(bet.bettor)
+		.approve(
+			marketContract.address,
+			ethers.utils.parseUnits(bet.amount.toString(), tokenDecimals)
+		);
+
+	const nonce = "1";
+	const close = END;
+	const end = END;
+	const wager = ethers.utils.parseUnits(bet.amount.toString(), tokenDecimals);
+	const odds = ethers.utils.parseUnits(bet.odds.toString(), 6);
+	const b16Nonce = formatBytes16String(nonce);
+	const b16PropositionId = formatBytes16String(bet.runner.propositionId);
+	const b16MarketId = formatBytes16String(bet.market.marketId);
+
+	const signature = await signBackMessage(
+		nonce,
+		bet.market.marketId,
+		bet.runner.propositionId,
+		odds,
+		close,
+		end,
+		owner
+	);
+
+	const awardedOdds = await marketContract.getOdds(
+		wager,
+		odds,
+		b16PropositionId,
+		b16MarketId
+	);
+	console.log("awardedOdds", awardedOdds.toString());
+
+	await marketContract
+		.connect(bet.bettor)
+		.back(
+			b16Nonce,
+			b16PropositionId,
+			b16MarketId,
+			wager,
+			odds,
+			close,
+			end,
+			signature
+		);
+	return getMarketStats(bet.market.marketId, marketContract, token, vault);
+}
+
+export function printMarketStats(marketId: string, stats: MarketStats) {
+	console.log("Market ID: ", marketId);
+	console.log("Market Total: ", stats.marketTotal.toString());
+	console.log("Exposure: ", stats.exposure.toString());
+	console.log("In Play: ", stats.inPlay.toString());
+	console.log("Vault Balance: ", stats.vaultBalance.toString());
+}
