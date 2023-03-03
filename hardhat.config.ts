@@ -9,6 +9,14 @@ import "hardhat-deploy";
 import "@nomiclabs/hardhat-ethers";
 import "solidity-coverage";
 
+import * as tdly from "@tenderly/hardhat-tenderly";
+tdly.setup();
+
+// @ts-ignore - Workaround for issue with Tenderly plugin failing to parse hardhat config https://github.com/Tenderly/tenderly-cli/issues/108
+BigInt.prototype.toJSON = function () {
+	return this.toString();
+};
+
 const defaultKey =
 	"0000000000000000000000000000000000000000000000000000000000000001";
 const defaultRpcUrl = "http://localhost:8545";
@@ -52,7 +60,7 @@ export default {
 				}
 			},
 			gasMultiplier: 2,
-			gasPrice: 50000000000,
+			//gasPrice: 50000000000,
 			tags: ["uat"]
 		},
 		arbitrumGoerli: {
@@ -85,6 +93,11 @@ export default {
 			saveDeployment: true,
 			tags: ["production"]
 		}
+	},
+	tenderly: {
+		username: "bazmati", // Temporary until the dltxio account is activated (support ticket raised)
+		project: "hl", // project name
+		privateVerification: false // if true, contracts will be verified privately, if false, contracts will be verified publicly
 	},
 	solidity: {
 		compilers: [

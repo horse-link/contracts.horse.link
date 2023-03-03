@@ -90,9 +90,13 @@ export async function main() {
 			continue;
 		}
 
-		const result = await oracle
-			.getResult(bet.marketId)
-			.catch((e) => console.log("getResult failed:", e?.error?.reason));
+		let result;
+		try {
+			result = await oracle.getResult(bet.marketId);
+		} catch (e) {
+			console.log("getResult failed:", JSON.stringify(e));
+			continue;
+		}
 
 		if (result === undefined) {
 			console.log(
@@ -105,16 +109,17 @@ export async function main() {
 
 		if (result.winningPropositionId === hexZero) {
 			// if the oracle doesn't know about it, tell it about it.
-			const txReceipt = await oracle
-				.setResult(
+			try {
+				const txReceipt = await oracle.setResult(
 					bet.marketId,
 					marketResultResponse.data.winningPropositionId,
 					marketResultResponse.data.signature
-				)
-				.catch((e) => {
-					return { hash: `setResult FAILED ${e?.error?.reason}` };
-				});
-			console.log(`adding result for market ${bet.marketId}`, txReceipt.hash);
+				);
+				console.log(`adding result for market ${bet.marketId}`, txReceipt.hash);
+			} catch (e) {
+				console.log("setResult failed:", JSON.stringify(e));
+				continue;
+			}
 
 			// we won't wait for it to be mined here,
 			// we'll just process it on the next run
