@@ -12,34 +12,18 @@ import {
 import { solidity } from "ethereum-waffle";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {
+	END,
+	getMarketStats,
+	makeBet,
 	makeMarketId,
 	makePropositionId,
-	signBackMessage,
-	signSetResultMessage
+	signSetResultMessage,
+	TestBet,
+	TestMarket
 } from "./utils";
 import { formatBytes16String } from "../scripts/utils";
 
 chai.use(solidity);
-
-type TestRunner = {
-	runnerNumber: number;
-	name: string;
-	propositionId: string;
-};
-type TestBet = {
-	market: TestMarket;
-	runner: TestRunner;
-	amount: number;
-	odds: number;
-	bettor: SignerWithAddress;
-};
-type TestMarket = {
-	name: string;
-	marketId: string;
-	runners: TestRunner[];
-};
-const END = 1000000000000;
-
 describe("Collateralised Market: play through", function () {
 	let underlying: Token;
 	let tokenDecimals: number;
@@ -645,79 +629,3 @@ describe("Collateralised Market: play through", function () {
 		// ).to.equal(marketBalance);
 	});
 });
-
-type MarketStats = {
-	marketTotal: BigNumber;
-	exposure: BigNumber;
-	inPlay: BigNumber;
-	vaultBalance: BigNumber;
-};
-
-async function makeBet(
-	token: Token,
-	marketContract: Market,
-	vault: Vault,
-	bet: TestBet,
-	owner: SignerWithAddress
-): Promise<MarketStats> {
-	const tokenDecimals = await token.decimals();
-	await token
-		.connect(bet.bettor)
-		.approve(
-			marketContract.address,
-			ethers.utils.parseUnits(bet.amount.toString(), tokenDecimals)
-		);
-
-	const nonce = "1";
-	const close = END;
-	const end = END;
-	const wager = ethers.utils.parseUnits(bet.amount.toString(), tokenDecimals);
-	const odds = ethers.utils.parseUnits(bet.odds.toString(), 6);
-	const b16Nonce = formatBytes16String(nonce);
-	const b16PropositionId = formatBytes16String(bet.runner.propositionId);
-	const b16MarketId = formatBytes16String(bet.market.marketId);
-
-	const signature = await signBackMessage(
-		nonce,
-		bet.market.marketId,
-		bet.runner.propositionId,
-		odds,
-		close,
-		end,
-		owner
-	);
-
-	await marketContract
-		.connect(bet.bettor)
-		.back(
-			b16Nonce,
-			b16PropositionId,
-			b16MarketId,
-			wager,
-			odds,
-			close,
-			end,
-			signature
-		);
-	return getMarketStats(bet.market.marketId, marketContract, token, vault);
-}
-
-async function getMarketStats(
-	marketId: string,
-	market: Market,
-	token: Token,
-	vault: Vault
-): Promise<MarketStats> {
-	const marketTotal = await market.getMarketTotal(
-		formatBytes16String(marketId)
-	);
-	const exposure = await market.getTotalExposure();
-	const inPlay = await market.getTotalInPlay();
-	const vaultBalance = await token.balanceOf(vault.address);
-	return {
-		marketTotal,
-		exposure,
-		inPlay,
-		vaultBalance
-	};
-}
