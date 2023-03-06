@@ -110,6 +110,9 @@ export default {
 		project: "hl", // project name
 		privateVerification: false // if true, contracts will be verified privately, if false, contracts will be verified publicly
 	},
+	etherscan: {
+		apiKey: process.env.ETHERSCAN_API_KEY
+	},
 	solidity: {
 		compilers: [
 			{
