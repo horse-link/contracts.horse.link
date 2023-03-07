@@ -110,7 +110,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 			}, 10000);
 		}
 
-		const token: Token = await ethers.getContractAt("Token", tokenAddress);
 		if (!network.tags.production && !network.tags.testing) {
 			const token: Token = await ethers.getContractAt("Token", tokenAddress);
 
