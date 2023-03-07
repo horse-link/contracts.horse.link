@@ -4,13 +4,10 @@ dotenvConfig();
 import "@openzeppelin/hardhat-upgrades";
 import "@typechain/hardhat";
 import "hardhat-gas-reporter";
-
 import "hardhat-deploy";
 import "@nomiclabs/hardhat-ethers";
 import "solidity-coverage";
-
-import * as tdly from "@tenderly/hardhat-tenderly";
-tdly.setup();
+import "hardhat-deploy-tenderly";
 
 // @ts-ignore - Workaround for issue with Tenderly plugin failing to parse hardhat config https://github.com/Tenderly/tenderly-cli/issues/108
 BigInt.prototype.toJSON = function () {
@@ -106,7 +103,7 @@ export default {
 		}
 	},
 	tenderly: {
-		username: "bazmati", // Temporary until the dltxio account is activated (support ticket raised)
+		username: "dltxio",
 		project: "hl", // project name
 		privateVerification: false // if true, contracts will be verified privately, if false, contracts will be verified publicly
 	},

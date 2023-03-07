@@ -32,10 +32,16 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 				deployResult.receipt?.gasUsed ?? "?"
 			} gas`
 		);
+		if (!hre.network.tags.testing) {
+			// Verify
+			setTimeout(async () => {
+				await hre.run("verify:verify", {
+					address: deployResult.address,
+					constructorArguments: []
+				});
+			}, 30000);
+		}
 	}
 };
 export default func;
 func.tags = ["oracle"];
-func.skip = async (hre: HardhatRuntimeEnvironment) => {
-	return false;
-};

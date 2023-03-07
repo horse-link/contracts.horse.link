@@ -44,6 +44,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 		const marketName = tokenDetails.marketName;
 		const vaultDeployment = await deployments.get(tokenDetails.vaultName);
 		let tokenAddress: string;
+		const constructorArguments = [
+			vaultDeployment.address,
+			0,
+			timeoutDays,
+			oracle.address
+		];
 
 		// If the token has a named account, use that, otherwise get the address from the deployment
 		// Warn if there is a named account AND a deployment
@@ -63,7 +69,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 		const marketDeployment = await deploy(marketName, {
 			contract: collateralised ? "MarketCollateralisedLinear" : "Market",
 			from: deployer,
-			args: [vaultDeployment.address, 0, timeoutDays, oracle.address],
+			args: constructorArguments,
 			log: true,
 			autoMine: true,
 			skipIfAlreadyDeployed: false,
@@ -95,6 +101,13 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 					marketDeployment.address
 				);
 			}
+			// Wait 10 seconds before verifying
+			setTimeout(async () => {
+				await hre.run("verify:verify", {
+					address: marketDeployment.address,
+					constructorArguments
+				});
+			}, 10000);
 		}
 
 		const token: Token = await ethers.getContractAt("Token", tokenAddress);
@@ -124,6 +137,14 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 			);
 		}
 	}
+	await hre.run("verify:verify", {
+		address: oddsLib.address,
+		constructorArguments: []
+	});
+	await hre.run("verify:verify", {
+		address: signatureLib.address,
+		constructorArguments: []
+	});
 };
 export default func;
 func.tags = ["market"];

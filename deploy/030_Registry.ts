@@ -13,13 +13,23 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 		"HorseLink"
 	);
 
-	await deploy("Registry", {
+	const deployment = await deploy("Registry", {
 		from: deployer,
 		args: [registryTokenDeployment.address],
 		log: true,
 		autoMine: true,
 		skipIfAlreadyDeployed: false
 	});
+	if (!hre.network.tags.testing) {
+		// Verify
+		// Wait 20 seconds
+		setTimeout(async () => {
+			await hre.run("verify:verify", {
+				address: deployment.address,
+				constructorArguments: [registryTokenDeployment.address]
+			});
+		}, 20000);
+	}
 };
 
 export default func;
