@@ -1,6 +1,6 @@
 import "@nomiclabs/hardhat-ethers";
 import "hardhat-deploy";
-import { DeployFunction } from "hardhat-deploy/types";
+import { DeployFunction, DeployResult } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { UnderlyingTokens } from "../deployData/settings";
 
@@ -40,10 +40,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 			);
 			tokenAddress = tokenDeployment.address;
 		}
-		const deployResult = await deploy(tokenDetails.vaultName, {
+		const constructorArguments = [tokenAddress, process.env.VAULT_LOCK_TIME];
+		const deployResult: DeployResult = await deploy(tokenDetails.vaultName, {
 			contract: "VaultTimeLock",
 			from: deployer,
-			args: [tokenAddress, process.env.VAULT_LOCK_TIME],
+			args: constructorArguments,
 			log: true,
 			autoMine: true, // speed up deployment on local network (ganache, hardhat), no effect on live networks,
 			skipIfAlreadyDeployed: false
@@ -64,6 +65,14 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 				"addVault",
 				deployResult.address
 			);
+			// Verify
+			// Wait 10 seconds
+			setTimeout(async () => {
+				await hre.run("verify:verify", {
+					address: deployResult.address,
+					constructorArguments
+				});
+			}, 10000);
 		}
 	}
 };

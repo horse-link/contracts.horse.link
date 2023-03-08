@@ -29,10 +29,15 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 			);
 			continue;
 		}
+		const constructorArguments = [
+			tokenDetails.name,
+			tokenDetails.symbol,
+			tokenDetails.decimals
+		];
 		const underlying = await deploy(tokenDetails.deploymentName, {
 			contract: "Token",
 			from: deployer,
-			args: [tokenDetails.name, tokenDetails.symbol, tokenDetails.decimals],
+			args: constructorArguments,
 			log: true,
 			autoMine: true, // speed up deployment on local network (ganache, hardhat), no effect on live networks,
 			skipIfAlreadyDeployed: true
@@ -68,6 +73,16 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 					testAccount.address,
 					parseUnits(testAccount.prefundAmount, tokenDetails.decimals)
 				);
+			}
+
+			if (!hre.network.tags.testing) {
+				// Verify
+				setTimeout(async () => {
+					await hre.run("verify:verify", {
+						address: underlying.address,
+						constructorArguments
+					});
+				}, 10000);
 			}
 		}
 	}

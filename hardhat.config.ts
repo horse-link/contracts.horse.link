@@ -4,13 +4,10 @@ dotenvConfig();
 import "@openzeppelin/hardhat-upgrades";
 import "@typechain/hardhat";
 import "hardhat-gas-reporter";
-
 import "hardhat-deploy";
 import "@nomiclabs/hardhat-ethers";
 import "solidity-coverage";
-
-import * as tdly from "@tenderly/hardhat-tenderly";
-tdly.setup();
+import "hardhat-deploy-tenderly";
 
 // @ts-ignore - Workaround for issue with Tenderly plugin failing to parse hardhat config https://github.com/Tenderly/tenderly-cli/issues/108
 BigInt.prototype.toJSON = function () {
@@ -63,6 +60,17 @@ export default {
 			//gasPrice: 50000000000,
 			tags: ["uat"]
 		},
+		sepolia: {
+			url: process.env.SEPOLIA_URL || defaultRpcUrl,
+			accounts: [process.env.SEPOLIA_DEPLOYER || defaultKey],
+			saveDeployment: true,
+			verify: {
+				etherscan: {
+					apiKey: process.env.ETHERSCAN_API_KEY
+				}
+			},
+			tags: ["uat"]
+		},
 		arbitrumGoerli: {
 			url: process.env.ARBITRUM_GOERLI_URL || defaultRpcUrl,
 			accounts: [process.env.GOERLI_DEPLOYER || defaultKey],
@@ -95,9 +103,12 @@ export default {
 		}
 	},
 	tenderly: {
-		username: "bazmati", // Temporary until the dltxio account is activated (support ticket raised)
+		username: "dltxio",
 		project: "hl", // project name
 		privateVerification: false // if true, contracts will be verified privately, if false, contracts will be verified publicly
+	},
+	etherscan: {
+		apiKey: process.env.ETHERSCAN_API_KEY
 	},
 	solidity: {
 		compilers: [
@@ -123,7 +134,8 @@ export default {
 			default: 0,
 			goerli: `privatekey://${process.env.GOERLI_DEPLOYER}`,
 			arbitrumGoerli: `privatekey://${process.env.GOERLI_DEPLOYER}`,
-			arbitrum: `privatekey://${process.env.ARBITRUM_DEPLOYER}`
+			arbitrum: `privatekey://${process.env.ARBITRUM_DEPLOYER}`,
+			sepolia: `privatekey://${process.env.SEPOLIA_DEPLOYER}`
 		},
 		faucet: {
 			default: "0xF919eaF2E37aAC718Aa19668b9071ee42c02c081"
@@ -153,14 +165,16 @@ export default {
 			default: 1,
 			goerli: "0xF33b9A4efA380Df3B435f755DD2C2AF7fE53C2d1", // key in bitwarden
 			arbitrumGoerli: "0xF33b9A4efA380Df3B435f755DD2C2AF7fE53C2d1", // key in bitwarden,
-			arbitrum: "0xF33b9A4efA380Df3B435f755DD2C2AF7fE53C2d1" // key in bitwarden
+			arbitrum: "0xF33b9A4efA380Df3B435f755DD2C2AF7fE53C2d1", // key in bitwarden,
+			sepolia: "0xF33b9A4efA380Df3B435f755DD2C2AF7fE53C2d1" // key in bitwarden,
 		}
 	},
 	namedSigners: {
 		deployer: {
 			goerli: `${process.env.GOERLI_DEPLOYER}`,
 			arbitrumGoerli: `${process.env.GOERLI_DEPLOYER}`,
-			arbitrum: `${process.env.ARBITRUM_DEPLOYER}`
+			arbitrum: `${process.env.ARBITRUM_DEPLOYER}`,
+			sepolia: `${process.env.SEPOLIA_DEPLOYER}`
 		}
 	}
 };
