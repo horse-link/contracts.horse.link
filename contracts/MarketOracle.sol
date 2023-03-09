@@ -30,7 +30,7 @@ contract MarketOracle is IOracle {
 	) external view returns (uint8) {
 		require(
 			propositionId != bytes16(0),
-			"getBinaryResult: Invalid propositionId"
+			"checkResult: Invalid propositionId"
 		);
 
 		if (_results[marketId].winningPropositionId == propositionId) {
@@ -49,7 +49,7 @@ contract MarketOracle is IOracle {
 	function getResult(bytes16 marketId) external view returns (Result memory) {
 		require(
 			marketId != bytes16(0),
-			"getBinaryResult: Invalid propositionId"
+			"getResult: Invalid propositionId"
 		);
 		return _results[marketId];
 	}

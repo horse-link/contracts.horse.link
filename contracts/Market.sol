@@ -298,14 +298,14 @@ contract Market is IMarket, Ownable, ERC721 {
 	) internal returns (uint256) {
 		require(
 			end > block.timestamp && close > block.timestamp,
-			"back: Invalid date"
+			"_back: Invalid date"
 		);
 
 		// Do not allow a bet placed if we know the result
 		// Note: Now that we are checking the close time, this is not strictly necessary
 		require(
 			IOracle(_oracle).checkResult(marketId, propositionId) == 0x02,
-			"back: Oracle result already set for this market"
+			"_back: Oracle result already set for this market"
 		);
 
 		address underlying = _vault.asset();
@@ -391,7 +391,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		for (uint256 i = 0; i < scratchedCount; i++) {
 			// If the timestamp of the scratching is after the bet
 			if (result.scratched[i].timestamp > betCreated) {
-				//Sum the odds
+				// Sum the odds
 				scratchedOdds += result.scratched[i].odds;
 			}
 		}
