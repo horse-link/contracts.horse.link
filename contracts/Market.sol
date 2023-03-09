@@ -24,6 +24,17 @@ struct Bet {
 	bool settled;
 }
 
+struct BackData {
+	bytes16 nonce;
+	bytes16 propositionId;
+	bytes16 marketId;
+	uint256 wager;
+	uint256 odds;
+	uint256 close;
+	uint256 end;
+	SignatureLib.Signature signature;
+}
+
 uint256 constant MARGIN = 1500000;
 
 contract Market is IMarket, Ownable, ERC721 {
@@ -230,6 +241,27 @@ contract Market is IMarket, Ownable, ERC721 {
 		return Math.max(wager, (trueOdds * wager) / OddsLib.PRECISION);
 	}
 
+	function multiBack(
+		BackData[] calldata backDataList
+	) external returns (uint256[] memory) {
+		uint256[] memory indexes = new uint256[](backDataList.length);
+
+		for (uint64 i = 0; i < backDataList.length; i++) {
+			BackData calldata data = backDataList[i];
+			indexes[i] = back(
+				data.nonce,
+				data.propositionId,
+				data.marketId,
+				data.wager,
+				data.odds,
+				data.close,
+				data.end,
+				data.signature
+			);
+		}
+		return indexes;
+	}
+
 	function back(
 		bytes16 nonce,
 		bytes16 propositionId,
@@ -239,7 +271,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		uint256 close,
 		uint256 end,
 		SignatureLib.Signature calldata signature
-	) external returns (uint256) {
+	) public returns (uint256) {
 		bytes32 messageHash = keccak256(
 			abi.encodePacked(nonce, propositionId, marketId, odds, close, end)
 		);

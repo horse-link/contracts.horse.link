@@ -1126,6 +1126,95 @@ describe("Market", () => {
 			inPlayCount = await market.getInPlayCount();
 			expect(inPlayCount).to.equal(0);
 		});
+
+		it("Should settle multiple bets made with multiBack on a market", async () => {
+			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
+			const currentTime = await time.latest();
+			// Assume race closes in 1 hour from now
+			const close = currentTime + 3600;
+
+			const latestBlockNumber = await ethers.provider.getBlockNumber();
+			const latestBlock = await ethers.provider.getBlock(latestBlockNumber);
+
+			const end = latestBlock.timestamp + 10000;
+			const marketId = makeMarketId(new Date(), "ABC", "1");
+			const max = 5;
+
+			const backDataList = [];
+			for (let i = 0; i < max; i++) {
+				const nonce = i.toString();
+				const propositionId = makePropositionId("ABC", i + 1);
+				const betSignature = await signBackMessage(
+					nonce,
+					marketId,
+					propositionId,
+					odds,
+					close,
+					end,
+					owner
+				);
+				const wager = ethers.utils.parseUnits(
+					(100 * (i + 1)).toString(),
+					USDT_DECIMALS
+				);
+
+				const backData = {
+					nonce: formatBytes16String(nonce),
+					propositionId: formatBytes16String(propositionId),
+					marketId: formatBytes16String(marketId),
+					wager,
+					odds,
+					close,
+					end,
+					signature: betSignature
+				};
+				backDataList.push(backData);
+			}
+			expect(await market.connect(alice).multiBack(backDataList)).to.emit(
+				market,
+				"Placed"
+			);
+
+			const count = await market.getCount();
+			expect(count).to.equal(5, "Should back all 5 bets");
+
+			for (let i = 0; i < max; i++) {
+				const bet = await market.getBetByIndex(i);
+				expect(bet[0]).to.equal(
+					backDataList[i].wager,
+					"Bet amount should be same as wager"
+				);
+			}
+
+			let inPlayCount = await market.getInPlayCount();
+			expect(inPlayCount, "In play count should be 10").to.equal(max);
+
+			// add a result
+			const propositionId = makePropositionId("ABC", 1);
+			const signature = await signSetResultMessage(
+				marketId,
+				propositionId,
+				oracleSigner
+			);
+
+			const oracleOwner = await oracle.getOwner();
+			expect(oracleOwner).to.equal(oracleSigner.address);
+			await oracle.setResult(
+				formatBytes16String(marketId),
+				formatBytes16String(propositionId),
+				signature
+			);
+
+			await hre.network.provider.request({
+				method: "evm_setNextBlockTimestamp",
+				params: [end + 7200]
+			});
+
+			await market.settleMarket(formatBytes16String(marketId));
+
+			inPlayCount = await market.getInPlayCount();
+			expect(inPlayCount).to.equal(0);
+		});
 	});
 
 	describe("ACL", () => {
