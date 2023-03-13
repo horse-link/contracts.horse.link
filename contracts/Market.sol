@@ -24,7 +24,7 @@ struct Bet {
 	bool settled;
 }
 
-struct BackData {
+struct Back {
 	bytes16 nonce;
 	bytes16 propositionId;
 	bytes16 marketId;
@@ -37,7 +37,7 @@ struct BackData {
 
 uint256 constant MARGIN = 1500000;
 
-contract Market is IMarket, Ownable, ERC721 {
+abstract contract Market is IMarket, Ownable, ERC721 {
 	using Strings for uint256;
 
 	string public constant baseURI = "https://alpha.horse.link/api/bets/";
@@ -242,50 +242,35 @@ contract Market is IMarket, Ownable, ERC721 {
 	}
 
 	function multiBack(
-		BackData[] calldata backDataList
+		Back[] calldata backArray
 	) external returns (uint256[] memory) {
-		uint256[] memory indexes = new uint256[](backDataList.length);
+		uint256[] memory indexes = new uint256[](backArray.length);
 
-		for (uint64 i = 0; i < backDataList.length; i++) {
-			BackData calldata data = backDataList[i];
-			indexes[i] = back(
-				data.nonce,
-				data.propositionId,
-				data.marketId,
-				data.wager,
-				data.odds,
-				data.close,
-				data.end,
-				data.signature
-			);
+		for (uint8 i; i < backArray.length; i++) {
+			Back calldata data = backArray[i];
+			indexes[i] = back(data);
 		}
+
 		return indexes;
 	}
 
 	function back(
-		bytes16 nonce,
-		bytes16 propositionId,
-		bytes16 marketId,
-		uint256 wager,
-		uint256 odds,
-		uint256 close,
-		uint256 end,
-		SignatureLib.Signature calldata signature
+		Back calldata backData
 	) public returns (uint256) {
 		bytes32 messageHash = keccak256(
-			abi.encodePacked(nonce, propositionId, marketId, odds, close, end)
+			abi.encodePacked(backData.nonce, backData.propositionId, backData.marketId, backData.odds, backData.close, backData.end)
 		);
 
 		require(
-			isValidSignature(messageHash, signature) == true,
+			isValidSignature(messageHash, backData.signature) == true,
 			"back: Invalid signature"
 		);
 
 		// add underlying to the market
-		uint256 payout = _getPayout(propositionId, marketId, wager, odds);
+		uint256 payout = _getPayout(backData.propositionId, backData.marketId, backData.wager, backData.odds);
 		assert(payout > 0);
 
-		return _back(propositionId, marketId, wager, close, end, payout);
+		return _back(backData.propositionId, backData.marketId, backData.wager, backData.close, backData.end, payout);
 	}
 
 	function _back(
