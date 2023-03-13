@@ -4,7 +4,7 @@ pragma solidity =0.8.15;
 import "../MarketCollateralised.sol";
 import "../Market.sol";
 
-contract MarketCollateralisedLinear is MarketCollateralised {
+abstract contract MarketCollateralisedLinear is MarketCollateralised {
 
     constructor(
         IVault vault,

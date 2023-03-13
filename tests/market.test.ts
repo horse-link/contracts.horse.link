@@ -243,7 +243,7 @@ describe("Market", () => {
 		const nonce = "1";
 		const propositionId = makePropositionId("ABC", 1);
 		const marketId = makeMarketId(new Date(), "ABC", "1");
-		const betSignature = await signBackMessage(
+		const signature = await signBackMessage(
 			nonce,
 			marketId,
 			propositionId,
@@ -253,19 +253,23 @@ describe("Market", () => {
 			alice // alice should not sign
 		);
 
+		const back = {
+			nonce,
+			propositionId,
+			marketId,
+			wager,
+			odds,
+			close,
+			end,
+			signature
+		};
+
 		await expect(
 			market
 				.connect(bob)
-				.back(
-					formatBytes16String(nonce),
-					formatBytes16String(propositionId),
-					formatBytes16String(marketId),
-					wager,
-					odds,
-					close,
-					end,
-					betSignature
-				)
+				[
+					"back((bytes16,bytes16,bytes16,uint256,uint256,uint256,uint256,(uint8,bytes32,bytes32))[])"
+				]([back])
 		).to.be.revertedWith("back: Invalid signature");
 	});
 
@@ -314,18 +318,22 @@ describe("Market", () => {
 			owner
 		);
 
+		const back = {
+			nonce,
+			propositionId,
+			marketId,
+			wager,
+			odds,
+			close,
+			end,
+			signature
+		};
+
 		await market
 			.connect(bob)
-			.back(
-				formatBytes16String(nonce),
-				formatBytes16String(propositionId),
-				formatBytes16String(marketId),
-				wager,
-				odds,
-				close,
-				end,
-				signature
-			);
+			[
+				"back((bytes16,bytes16,bytes16,uint256,uint256,uint256,uint256,(uint8,bytes32,bytes32))[])"
+			]([back]);
 
 		expect(await market.getMarketTotal(formatBytes16String(marketId))).to.equal(
 			ethers.utils.parseUnits("100", USDT_DECIMALS)
@@ -399,18 +407,22 @@ describe("Market", () => {
 			owner
 		);
 
+		const back = {
+			nonce,
+			propositionId,
+			marketId,
+			wager,
+			odds,
+			close,
+			end,
+			signature
+		};
+
 		await market
 			.connect(carol)
-			.back(
-				formatBytes16String(nonce),
-				formatBytes16String(propositionId),
-				formatBytes16String(marketId),
-				wager,
-				odds,
-				close,
-				end,
-				signature
-			);
+			[
+				"back((bytes16,bytes16,bytes16,uint256,uint256,uint256,uint256,(uint8,bytes32,bytes32))[])"
+			]([back]);
 
 		balance = await underlying.balanceOf(carol.address);
 		expect(balance, "Should have $800 USDT after a $200 bet").to.equal(
@@ -463,22 +475,26 @@ describe("Market", () => {
 			owner
 		);
 
+		const back = {
+			nonce,
+			propositionId,
+			marketId,
+			wager,
+			odds,
+			close,
+			end,
+			signature
+		};
+
 		// Move time to 1 second past the close
 		await time.increaseTo(close + 1);
 
 		await expect(
 			market
 				.connect(carol)
-				.back(
-					formatBytes16String(nonce),
-					formatBytes16String(propositionId),
-					formatBytes16String(marketId),
-					wager,
-					odds,
-					close,
-					end,
-					signature
-				)
+				[
+					"back((bytes16,bytes16,bytes16,uint256,uint256,uint256,uint256,(uint8,bytes32,bytes32))[])"
+				]([back])
 		).to.be.revertedWith("back: Invalid date");
 	});
 
@@ -518,19 +534,23 @@ describe("Market", () => {
 			owner
 		);
 
+		const back = {
+			nonce,
+			propositionId,
+			marketId,
+			wager,
+			odds,
+			close,
+			end,
+			signature: betSignature
+		};
+
 		await underlying.connect(whale).approve(market.address, wager);
 		await market
 			.connect(whale)
-			.back(
-				formatBytes16String(nonce),
-				formatBytes16String(propositionId),
-				formatBytes16String(marketId),
-				wager,
-				odds,
-				close,
-				end,
-				betSignature
-			);
+			[
+				"back((bytes16,bytes16,bytes16,uint256,uint256,uint256,uint256,(uint8,bytes32,bytes32))[])"
+			]([back]);
 
 		// Whale now buys shares
 		await vault
@@ -600,7 +620,7 @@ describe("Market", () => {
 			const propositionId = makePropositionId(marketId, 1);
 			const nonce = "1";
 
-			const betSignature = await signBackMessage(
+			const signature = await signBackMessage(
 				nonce,
 				marketId,
 				propositionId,
@@ -610,19 +630,23 @@ describe("Market", () => {
 				owner
 			);
 
+			const back = {
+				nonce,
+				propositionId,
+				marketId,
+				wager,
+				odds,
+				close,
+				end,
+				signature
+			};
+
 			expect(
 				await market
 					.connect(bob)
-					.back(
-						formatBytes16String(nonce),
-						formatBytes16String(propositionId),
-						formatBytes16String(marketId),
-						wager,
-						odds,
-						close,
-						end,
-						betSignature
-					)
+					[
+						"back((bytes16,bytes16,bytes16,uint256,uint256,uint256,uint256,(uint8,bytes32,bytes32))[])"
+					]([back])
 			).to.emit(market, "Placed");
 
 			const vaultBalanceBefore = await underlying.balanceOf(vault.address);
@@ -668,22 +692,26 @@ describe("Market", () => {
 				owner
 			);
 
+			const back = {
+				nonce,
+				propositionId,
+				marketId,
+				wager,
+				odds,
+				close,
+				end,
+				signature: betSignature
+			};
+
 			let count = await market.getCount();
 			expect(count, "There should be no bets").to.equal(0);
 
 			expect(
 				await market
 					.connect(bob)
-					.back(
-						formatBytes16String(nonce),
-						formatBytes16String(propositionId),
-						formatBytes16String(marketId),
-						wager,
-						odds,
-						close,
-						end,
-						betSignature
-					)
+					[
+						"back((bytes16,bytes16,bytes16,uint256,uint256,uint256,uint256,(uint8,bytes32,bytes32))[])"
+					]([back])
 			).to.emit(market, "Placed");
 
 			count = await market.getCount();
@@ -785,22 +813,26 @@ describe("Market", () => {
 				owner
 			);
 
+			const back = {
+				nonce,
+				propositionId,
+				marketId,
+				wager,
+				odds,
+				close,
+				end,
+				signature: betSignature
+			};
+
 			let count = await market.getCount();
 			expect(count, "There should be no bets").to.equal(0);
 
 			expect(
 				await market
 					.connect(bob)
-					.back(
-						formatBytes16String(nonce),
-						formatBytes16String(propositionId),
-						formatBytes16String(marketId),
-						wager,
-						odds,
-						close,
-						end,
-						betSignature
-					)
+					[
+						"back((bytes16,bytes16,bytes16,uint256,uint256,uint256,uint256,(uint8,bytes32,bytes32))[])"
+					]([back])
 			).to.emit(market, "Placed");
 
 			count = await market.getCount();
@@ -899,22 +931,26 @@ describe("Market", () => {
 				owner
 			);
 
+			const back = {
+				nonce,
+				propositionId,
+				marketId,
+				wager,
+				odds,
+				close,
+				end,
+				signature: betSignature
+			};
+
 			let count = await market.getCount();
 			expect(count, "There should be no bets").to.equal(0);
 
 			expect(
 				await market
 					.connect(bob)
-					.back(
-						formatBytes16String(nonce),
-						formatBytes16String(propositionId),
-						formatBytes16String(marketId),
-						wager,
-						odds,
-						close,
-						end,
-						betSignature
-					)
+					[
+						"back((bytes16,bytes16,bytes16,uint256,uint256,uint256,uint256,(uint8,bytes32,bytes32))[])"
+					]([back])
 			).to.emit(market, "Placed");
 
 			count = await market.getCount();
@@ -1002,7 +1038,7 @@ describe("Market", () => {
 			const propositionId = makePropositionId(marketId, 1);
 			const nonce = "1";
 
-			const betSignature = await signBackMessage(
+			const signature = await signBackMessage(
 				nonce,
 				marketId,
 				propositionId,
@@ -1012,20 +1048,24 @@ describe("Market", () => {
 				owner
 			);
 
+			const back = {
+				nonce,
+				propositionId,
+				marketId,
+				wager,
+				odds,
+				close,
+				end,
+				signature
+			};
+
 			const index = 0;
 			expect(
 				await market
 					.connect(bob)
-					.back(
-						formatBytes16String(nonce),
-						formatBytes16String(propositionId),
-						formatBytes16String(marketId),
-						wager,
-						odds,
-						close,
-						end,
-						betSignature
-					),
+					[
+						"back((bytes16,bytes16,bytes16,uint256,uint256,uint256,uint256,(uint8,bytes32,bytes32))[])"
+					]([back]),
 				"Should emit a Placed event"
 			)
 				.to.emit(market, "Placed")
@@ -1065,7 +1105,7 @@ describe("Market", () => {
 			for (let i = 0; i < max; i++) {
 				const nonce = i.toString();
 				const propositionId = makePropositionId("ABC", i + 1);
-				const betSignature = await signBackMessage(
+				const signature = await signBackMessage(
 					nonce,
 					marketId,
 					propositionId,
@@ -1075,19 +1115,23 @@ describe("Market", () => {
 					owner
 				);
 
+				const back = {
+					nonce,
+					propositionId,
+					marketId,
+					wager,
+					odds,
+					close,
+					end,
+					signature
+				};
+
 				expect(
 					await market
 						.connect(bob)
-						.back(
-							formatBytes16String(nonce),
-							formatBytes16String(propositionId),
-							formatBytes16String(marketId),
-							wager,
-							odds,
-							close,
-							end,
-							betSignature
-						)
+						[
+							"back((bytes16,bytes16,bytes16,uint256,uint256,uint256,uint256,(uint8,bytes32,bytes32))[])"
+						]([back])
 				).to.emit(market, "Placed");
 
 				const count = await market.getCount();

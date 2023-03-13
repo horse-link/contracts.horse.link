@@ -5,7 +5,7 @@ import "../MarketWithoutProtection.sol";
 import "../MarketCollateralised.sol";
 import "../Market.sol";
 
-contract MarketCollateralisedWithoutProtection is MarketCollateralised {
+abstract contract MarketCollateralisedWithoutProtection is MarketCollateralised {
 
     constructor(
         IVault vault,

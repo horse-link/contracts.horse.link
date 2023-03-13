@@ -140,20 +140,24 @@ describe("Late scratched", () => {
 			owner
 		);
 
+		const back = {
+			nonce,
+			propositionId,
+			marketId,
+			wager,
+			odds,
+			close,
+			end,
+			signature
+		};
+
 		await underlying.connect(alice).approve(market.address, wager);
 
 		await market
 			.connect(alice)
-			.back(
-				formatBytes16String(nonce),
-				formatBytes16String(propositionId),
-				formatBytes16String(marketId),
-				wager,
-				odds,
-				close,
-				end,
-				signature
-			);
+			[
+				"back((bytes16,bytes16,bytes16,uint256,uint256,uint256,uint256,(uint8,bytes32,bytes32))[])"
+			]([back]);
 
 		const betBeforeScratch = await market.getBetByIndex(0);
 		const potentialPayoutBeforeScratch = betBeforeScratch[1];

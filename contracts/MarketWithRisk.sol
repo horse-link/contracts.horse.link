@@ -13,7 +13,7 @@ import "./SignatureLib.sol";
 import "./OddsLib.sol";
 import "./Market.sol";
 
-contract MarketWithRisk is Market {
+abstract contract MarketWithRisk is Market {
     constructor(
         IVault vault,
         uint8 fee,

@@ -4,7 +4,7 @@ pragma solidity =0.8.15;
 import "./Market.sol";
 import "./OddsLib.sol";
 
-contract MarketCurved is Market {
+abstract contract MarketCurved is Market {
 
     constructor(
         IVault vault,

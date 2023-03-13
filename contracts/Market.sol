@@ -24,9 +24,20 @@ struct Bet {
 	bool settled;
 }
 
+struct Back {
+	bytes16 nonce;
+	bytes16 propositionId;
+	bytes16 marketId;
+	uint256 wager;
+	uint256 odds;
+	uint256 close;
+	uint256 end;
+	SignatureLib.Signature signature;
+}
+
 uint256 constant MARGIN = 1500000;
 
-contract Market is IMarket, Ownable, ERC721 {
+abstract contract Market is IMarket, Ownable, ERC721 {
 	using Strings for uint256;
 
 	string public constant baseURI = "https://alpha.horse.link/api/bets/";
@@ -231,30 +242,36 @@ contract Market is IMarket, Ownable, ERC721 {
 	}
 
 	function back(
-		bytes16 nonce,
-		bytes16 propositionId,
-		bytes16 marketId,
-		uint256 wager,
-		uint256 odds,
-		uint256 close,
-		uint256 end,
-		SignatureLib.Signature calldata signature
-	) external returns (uint256) {
+		Back[] calldata backData
+	) external returns (uint256[] memory) {
+		uint256[] memory indexes = new uint256[](backData.length);
+
+		for (uint8 i; i < backData.length; i++) {
+			uint256 index = _prepareAndBack(backData[i]);
+			indexes[i] = index;
+		}
+
+		return indexes;
+	}
+
+	function _prepareAndBack(
+		Back calldata backData
+	) internal returns (uint256) {
 		bytes32 messageHash = keccak256(
-			abi.encodePacked(nonce, propositionId, marketId, odds, close, end)
+			abi.encodePacked(backData.nonce, backData.propositionId, backData.marketId, backData.odds, backData.close, backData.end)
 		);
 
 		require(
-			isValidSignature(messageHash, signature) == true,
+			isValidSignature(messageHash, backData.signature) == true,
 			"back: Invalid signature"
 		);
 
 		// add underlying to the market
-		uint256 payout = _getPayout(propositionId, marketId, wager, odds);
+		uint256 payout = _getPayout(backData.propositionId, backData.marketId, backData.wager, backData.odds);
 		assert(payout > 0);
 
-		return _back(propositionId, marketId, wager, close, end, payout);
-	}
+		return _back(backData.propositionId, backData.marketId, backData.wager, backData.close, backData.end, payout);
+	}	
 
 	function _back(
 		bytes16 propositionId,

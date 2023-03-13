@@ -280,18 +280,22 @@ export async function makeBet(
 	);
 	console.log("awardedOdds", awardedOdds.toString());
 
+	const back = {
+		nonce,
+		propositionId: b16PropositionId,
+		marketId: b16MarketId,
+		wager,
+		odds,
+		close,
+		end,
+		signature
+	};
+
 	await marketContract
 		.connect(bet.bettor)
-		.back(
-			b16Nonce,
-			b16PropositionId,
-			b16MarketId,
-			wager,
-			odds,
-			close,
-			end,
-			signature
-		);
+		[
+			"back((bytes16,bytes16,bytes16,uint256,uint256,uint256,uint256,(uint8,bytes32,bytes32))[])"
+		]([back]);
 	return getMarketStats(bet.market.marketId, marketContract, token, vault);
 }
 
