@@ -24,9 +24,20 @@ struct Bet {
 	bool settled;
 }
 
+struct Back {
+	bytes16 nonce;
+	bytes16 propositionId;
+	bytes16 marketId;
+	uint256 wager;
+	uint256 odds;
+	uint256 close;
+	uint256 end;
+	SignatureLib.Signature signature;
+}
+
 uint256 constant MARGIN = 1500000;
 
-contract Market is IMarket, Ownable, ERC721 {
+abstract contract Market is IMarket, Ownable, ERC721 {
 	using Strings for uint256;
 
 	string public constant baseURI = "https://alpha.horse.link/api/bets/";
@@ -230,30 +241,36 @@ contract Market is IMarket, Ownable, ERC721 {
 		return Math.max(wager, (trueOdds * wager) / OddsLib.PRECISION);
 	}
 
+	function multiBack(
+		Back[] calldata backArray
+	) external returns (uint256[] memory) {
+		uint256[] memory indexes = new uint256[](backArray.length);
+
+		for (uint8 i; i < backArray.length; i++) {
+			Back calldata data = backArray[i];
+			indexes[i] = back(data);
+		}
+
+		return indexes;
+	}
+
 	function back(
-		bytes16 nonce,
-		bytes16 propositionId,
-		bytes16 marketId,
-		uint256 wager,
-		uint256 odds,
-		uint256 close,
-		uint256 end,
-		SignatureLib.Signature calldata signature
+		Back calldata backData
 	) external returns (uint256) {
 		bytes32 messageHash = keccak256(
-			abi.encodePacked(nonce, propositionId, marketId, odds, close, end)
+			abi.encodePacked(backData.nonce, backData.propositionId, backData.marketId, backData.odds, backData.close, backData.end)
 		);
 
 		require(
-			isValidSignature(messageHash, signature) == true,
+			isValidSignature(messageHash, backData.signature) == true,
 			"back: Invalid signature"
 		);
 
 		// add underlying to the market
-		uint256 payout = _getPayout(propositionId, marketId, wager, odds);
+		uint256 payout = _getPayout(backData.propositionId, backData.marketId, backData.wager, backData.odds);
 		assert(payout > 0);
 
-		return _back(propositionId, marketId, wager, close, end, payout);
+		return _back(backData.propositionId, backData.marketId, backData.wager, backData.close, backData.end, payout);
 	}
 
 	function _back(
@@ -266,14 +283,14 @@ contract Market is IMarket, Ownable, ERC721 {
 	) internal returns (uint256) {
 		require(
 			end > block.timestamp && close > block.timestamp,
-			"back: Invalid date"
+			"_back: Invalid date"
 		);
 
 		// Do not allow a bet placed if we know the result
 		// Note: Now that we are checking the close time, this is not strictly necessary
 		require(
 			IOracle(_oracle).checkResult(marketId, propositionId) == 0x02,
-			"back: Oracle result already set for this market"
+			"_back: Oracle result already set for this market"
 		);
 
 		address underlying = _vault.asset();
@@ -359,7 +376,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		for (uint256 i = 0; i < scratchedCount; i++) {
 			// If the timestamp of the scratching is after the bet
 			if (result.scratched[i].timestamp > betCreated) {
-				//Sum the odds
+				// Sum the odds
 				scratchedOdds += result.scratched[i].odds;
 			}
 		}

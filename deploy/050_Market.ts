@@ -100,14 +100,15 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 					"addMarket",
 					marketDeployment.address
 				);
+
+				// Wait 10 seconds before verifying
+				setTimeout(async () => {
+					await hre.run("verify:verify", {
+						address: marketDeployment.address,
+						constructorArguments
+					});
+				}, 10000);
 			}
-			// Wait 10 seconds before verifying
-			setTimeout(async () => {
-				await hre.run("verify:verify", {
-					address: marketDeployment.address,
-					constructorArguments
-				});
-			}, 10000);
 		}
 
 		if (!network.tags.production && !network.tags.testing) {
@@ -136,14 +137,16 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 			);
 		}
 	}
-	await hre.run("verify:verify", {
-		address: oddsLib.address,
-		constructorArguments: []
-	});
-	await hre.run("verify:verify", {
-		address: signatureLib.address,
-		constructorArguments: []
-	});
+	if (!network.tags.testing) {
+		await hre.run("verify:verify", {
+			address: oddsLib.address,
+			constructorArguments: []
+		});
+		await hre.run("verify:verify", {
+			address: signatureLib.address,
+			constructorArguments: []
+		});
+	}
 };
 export default func;
 func.tags = ["market"];
