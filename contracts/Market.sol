@@ -256,7 +256,7 @@ abstract contract Market is IMarket, Ownable, ERC721 {
 
 	function back(
 		Back calldata backData
-	) public returns (uint256) {
+	) external returns (uint256) {
 		bytes32 messageHash = keccak256(
 			abi.encodePacked(backData.nonce, backData.propositionId, backData.marketId, backData.odds, backData.close, backData.end)
 		);
