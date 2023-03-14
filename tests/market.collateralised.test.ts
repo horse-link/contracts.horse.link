@@ -17,6 +17,7 @@ import {
 	makeBet,
 	makeMarketId,
 	makePropositionId,
+	Markets,
 	signSetResultMessage,
 	TestBet,
 	TestMarket
@@ -38,47 +39,6 @@ describe("Collateralised Market: play through", function () {
 
 	this.timeout(60000);
 
-	const Markets: { [key: string]: TestMarket } = {
-		RedRacetrack: {
-			name: "Red Racetrack",
-			marketId: makeMarketId(new Date(), "RED", "1"),
-			runners: []
-		},
-		BlueDogs: {
-			name: "Blue Dogs",
-			marketId: makeMarketId(new Date(), "BLUE", "1"),
-			runners: []
-		}
-	};
-	Markets.RedRacetrack.runners = [
-		{
-			runnerNumber: 1,
-			name: "Red 1",
-			propositionId: makePropositionId(Markets.RedRacetrack.marketId, 1)
-		},
-		{
-			runnerNumber: 2,
-			name: "Red 2",
-			propositionId: makePropositionId(Markets.RedRacetrack.marketId, 2)
-		},
-		{
-			runnerNumber: 3,
-			name: "Red 3",
-			propositionId: makePropositionId(Markets.RedRacetrack.marketId, 3)
-		}
-	];
-	Markets.BlueDogs.runners = [
-		{
-			runnerNumber: 1,
-			name: "Blue 1",
-			propositionId: makePropositionId(Markets.BlueDogs.marketId, 1)
-		},
-		{
-			runnerNumber: 2,
-			name: "Blue 2",
-			propositionId: makePropositionId(Markets.BlueDogs.marketId, 2)
-		}
-	];
 	let Bets: { [key: string]: TestBet };
 
 	let bet1Cover: BigNumber;

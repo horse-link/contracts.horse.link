@@ -24,20 +24,9 @@ struct Bet {
 	bool settled;
 }
 
-struct Back {
-	bytes16 nonce;
-	bytes16 propositionId;
-	bytes16 marketId;
-	uint256 wager;
-	uint256 odds;
-	uint256 close;
-	uint256 end;
-	SignatureLib.Signature signature;
-}
-
 uint256 constant MARGIN = 1500000;
 
-abstract contract Market is IMarket, Ownable, ERC721 {
+contract Market is IMarket, Ownable, ERC721 {
 	using Strings for uint256;
 
 	string public constant baseURI = "https://alpha.horse.link/api/bets/";
