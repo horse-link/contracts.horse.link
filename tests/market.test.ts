@@ -12,6 +12,7 @@ import {
 import { solidity } from "ethereum-waffle";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {
+	constructBet,
 	makeMarketId,
 	makePropositionId,
 	signBackMessage,
@@ -257,14 +258,16 @@ describe("Market", () => {
 			market
 				.connect(bob)
 				.back(
-					formatBytes16String(nonce),
-					formatBytes16String(propositionId),
-					formatBytes16String(marketId),
-					wager,
-					odds,
-					close,
-					end,
-					betSignature
+					constructBet(
+						formatBytes16String(nonce),
+						formatBytes16String(propositionId),
+						formatBytes16String(marketId),
+						wager,
+						odds,
+						close,
+						end,
+						betSignature
+					)
 				)
 		).to.be.revertedWith("back: Invalid signature");
 	});
@@ -317,14 +320,16 @@ describe("Market", () => {
 		await market
 			.connect(bob)
 			.back(
-				formatBytes16String(nonce),
-				formatBytes16String(propositionId),
-				formatBytes16String(marketId),
-				wager,
-				odds,
-				close,
-				end,
-				signature
+				constructBet(
+					formatBytes16String(nonce),
+					formatBytes16String(propositionId),
+					formatBytes16String(marketId),
+					wager,
+					odds,
+					close,
+					end,
+					signature
+				)
 			);
 
 		expect(await market.getMarketTotal(formatBytes16String(marketId))).to.equal(
@@ -402,14 +407,16 @@ describe("Market", () => {
 		await market
 			.connect(carol)
 			.back(
-				formatBytes16String(nonce),
-				formatBytes16String(propositionId),
-				formatBytes16String(marketId),
-				wager,
-				odds,
-				close,
-				end,
-				signature
+				constructBet(
+					formatBytes16String(nonce),
+					formatBytes16String(propositionId),
+					formatBytes16String(marketId),
+					wager,
+					odds,
+					close,
+					end,
+					signature
+				)
 			);
 
 		balance = await underlying.balanceOf(carol.address);
@@ -470,14 +477,16 @@ describe("Market", () => {
 			market
 				.connect(carol)
 				.back(
-					formatBytes16String(nonce),
-					formatBytes16String(propositionId),
-					formatBytes16String(marketId),
-					wager,
-					odds,
-					close,
-					end,
-					signature
+					constructBet(
+						formatBytes16String(nonce),
+						formatBytes16String(propositionId),
+						formatBytes16String(marketId),
+						wager,
+						odds,
+						close,
+						end,
+						signature
+					)
 				)
 		).to.be.revertedWith("back: Invalid date");
 	});
@@ -522,14 +531,16 @@ describe("Market", () => {
 		await market
 			.connect(whale)
 			.back(
-				formatBytes16String(nonce),
-				formatBytes16String(propositionId),
-				formatBytes16String(marketId),
-				wager,
-				odds,
-				close,
-				end,
-				betSignature
+				constructBet(
+					formatBytes16String(nonce),
+					formatBytes16String(propositionId),
+					formatBytes16String(marketId),
+					wager,
+					odds,
+					close,
+					end,
+					betSignature
+				)
 			);
 
 		// Whale now buys shares
@@ -614,14 +625,16 @@ describe("Market", () => {
 				await market
 					.connect(bob)
 					.back(
-						formatBytes16String(nonce),
-						formatBytes16String(propositionId),
-						formatBytes16String(marketId),
-						wager,
-						odds,
-						close,
-						end,
-						betSignature
+						constructBet(
+							formatBytes16String(nonce),
+							formatBytes16String(propositionId),
+							formatBytes16String(marketId),
+							wager,
+							odds,
+							close,
+							end,
+							betSignature
+						)
 					)
 			).to.emit(market, "Placed");
 
@@ -675,14 +688,16 @@ describe("Market", () => {
 				await market
 					.connect(bob)
 					.back(
-						formatBytes16String(nonce),
-						formatBytes16String(propositionId),
-						formatBytes16String(marketId),
-						wager,
-						odds,
-						close,
-						end,
-						betSignature
+						constructBet(
+							formatBytes16String(nonce),
+							formatBytes16String(propositionId),
+							formatBytes16String(marketId),
+							wager,
+							odds,
+							close,
+							end,
+							betSignature
+						)
 					)
 			).to.emit(market, "Placed");
 
@@ -792,14 +807,16 @@ describe("Market", () => {
 				await market
 					.connect(bob)
 					.back(
-						formatBytes16String(nonce),
-						formatBytes16String(propositionId),
-						formatBytes16String(marketId),
-						wager,
-						odds,
-						close,
-						end,
-						betSignature
+						constructBet(
+							formatBytes16String(nonce),
+							formatBytes16String(propositionId),
+							formatBytes16String(marketId),
+							wager,
+							odds,
+							close,
+							end,
+							betSignature
+						)
 					)
 			).to.emit(market, "Placed");
 
@@ -906,14 +923,16 @@ describe("Market", () => {
 				await market
 					.connect(bob)
 					.back(
-						formatBytes16String(nonce),
-						formatBytes16String(propositionId),
-						formatBytes16String(marketId),
-						wager,
-						odds,
-						close,
-						end,
-						betSignature
+						constructBet(
+							formatBytes16String(nonce),
+							formatBytes16String(propositionId),
+							formatBytes16String(marketId),
+							wager,
+							odds,
+							close,
+							end,
+							betSignature
+						)
 					)
 			).to.emit(market, "Placed");
 
@@ -1017,14 +1036,16 @@ describe("Market", () => {
 				await market
 					.connect(bob)
 					.back(
-						formatBytes16String(nonce),
-						formatBytes16String(propositionId),
-						formatBytes16String(marketId),
-						wager,
-						odds,
-						close,
-						end,
-						betSignature
+						constructBet(
+							formatBytes16String(nonce),
+							formatBytes16String(propositionId),
+							formatBytes16String(marketId),
+							wager,
+							odds,
+							close,
+							end,
+							betSignature
+						)
 					),
 				"Should emit a Placed event"
 			)
@@ -1079,14 +1100,16 @@ describe("Market", () => {
 					await market
 						.connect(bob)
 						.back(
-							formatBytes16String(nonce),
-							formatBytes16String(propositionId),
-							formatBytes16String(marketId),
-							wager,
-							odds,
-							close,
-							end,
-							betSignature
+							constructBet(
+								formatBytes16String(nonce),
+								formatBytes16String(propositionId),
+								formatBytes16String(marketId),
+								wager,
+								odds,
+								close,
+								end,
+								betSignature
+							)
 						)
 				).to.emit(market, "Placed");
 

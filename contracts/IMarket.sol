@@ -4,6 +4,16 @@ pragma solidity =0.8.15;
 import "./SignatureLib.sol";
 
 interface IMarket {
+	struct Back {
+		bytes16 nonce;
+		bytes16 propositionId;
+		bytes16 marketId;
+		uint256 wager;
+		uint256 odds;
+		uint256 close;
+		uint256 end;
+		SignatureLib.Signature signature;
+	}
 	function getMargin() external view returns (uint8);
 	function getCount() external view returns (uint64);
 	function getTotalInPlay() external view returns (uint256);
@@ -42,14 +52,7 @@ interface IMarket {
 	function getVaultAddress() external view returns (address);
 
 	function back(
-		bytes16 nonce,
-		bytes16 propositionId,
-		bytes16 marketId,
-		uint256 wager,
-		uint256 odds,
-		uint256 close,
-		uint256 end,
-		SignatureLib.Signature calldata sig
+		Back calldata backData
 	) external returns (uint256);
 
 	function settle(uint64 index) external;

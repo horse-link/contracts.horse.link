@@ -11,11 +11,15 @@ import {
 import { solidity } from "ethereum-waffle";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {
+	END,
+	makeBet,
 	makeMarketId,
 	makePropositionId,
+	Markets,
 	signBackMessage,
 	signSetResultMessage,
-	signSetScratchedMessage
+	signSetScratchedMessage,
+	TestBet
 } from "./utils";
 import { formatBytes16String } from "../scripts/utils";
 
@@ -31,7 +35,8 @@ describe("Late scratched", () => {
 	let alice: SignerWithAddress;
 
 	let oracleSigner: SignerWithAddress;
-	const marketId = makeMarketId(new Date(), "ABC", "1");
+	const testMarket = Markets.BlueDogs;
+	const marketId = testMarket.marketId;
 
 	const USDT_DECIMALS = 6;
 	const ODDS_DECIMALS = 6;
@@ -118,42 +123,18 @@ describe("Late scratched", () => {
 	it("A scratching occurs after a bet has been placed", async () => {
 		const betNum = 100; // 100 USDT
 		const oddsNum = 2;
-		const wager = ethers.utils.parseUnits(betNum.toString(), USDT_DECIMALS);
-		const odds = ethers.utils.parseUnits(oddsNum.toString(), ODDS_DECIMALS);
-		const close = 1000000000000;
-		const end = 1000000000000;
-		const propositionId = makePropositionId(marketId, 1);
-		const nonce = "1";
 
-		const potentialWinnings = wager
-			.mul(odds)
-			.div(ethers.utils.parseUnits("1", ODDS_DECIMALS));
+		const potentialWinnings = betNum * oddsNum;
 
 		//=== Place the bet
-		const signature = await signBackMessage(
-			nonce,
-			marketId,
-			propositionId,
-			odds,
-			close,
-			end,
-			owner
-		);
-
-		await underlying.connect(alice).approve(market.address, wager);
-
-		await market
-			.connect(alice)
-			.back(
-				formatBytes16String(nonce),
-				formatBytes16String(propositionId),
-				formatBytes16String(marketId),
-				wager,
-				odds,
-				close,
-				end,
-				signature
-			);
+		const bet: TestBet = {
+			market: testMarket,
+			runner: Markets.BlueDogs.runners[0],
+			amount: betNum,
+			odds: oddsNum,
+			bettor: alice
+		};
+		await makeBet(underlying, market, vault, bet, owner);
 
 		const betBeforeScratch = await market.getBetByIndex(0);
 		const potentialPayoutBeforeScratch = betBeforeScratch[1];
@@ -164,10 +145,10 @@ describe("Late scratched", () => {
 				potentialPayoutBeforeScratch,
 				6
 			)}`
-		).to.equal(potentialWinnings);
+		).to.equal(ethers.utils.parseUnits(potentialWinnings.toString(), 6));
 
 		//=== Scratch a runner
-		const scratchedPropositionId = makePropositionId(marketId, 2);
+		const scratchedPropositionId = testMarket.runners[1].propositionId;
 		const scratchedOdds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
 		const scratchedSig = await signSetScratchedMessage(
 			marketId,
@@ -187,19 +168,19 @@ describe("Late scratched", () => {
 		//=== Set the result to make Alice a winner
 		const resultSig = await signSetResultMessage(
 			marketId,
-			propositionId,
+			bet.runner.propositionId,
 			oracleSigner
 		);
 		await oracle.setResult(
 			formatBytes16String(marketId),
-			formatBytes16String(propositionId),
+			formatBytes16String(bet.runner.propositionId),
 			resultSig
 		);
 
 		//=== Go forward in time
 		await hre.network.provider.request({
 			method: "evm_setNextBlockTimestamp",
-			params: [end + 7200]
+			params: [END + 7200]
 		});
 
 		//=== Settle Alice's bet
@@ -207,6 +188,8 @@ describe("Late scratched", () => {
 		await market.settle(0);
 
 		//=== Check Alice's balance
+		const wager = ethers.utils.parseUnits(bet.amount.toString(), USDT_DECIMALS);
+		const odds = ethers.utils.parseUnits(bet.odds.toString(), ODDS_DECIMALS);
 		const aliceBalance = await underlying.balanceOf(alice.address);
 		const aliceWinnings = aliceBalance.sub(aliceOriginalBalance);
 		expect(aliceWinnings).to.be.lt(wager.mul(odds));

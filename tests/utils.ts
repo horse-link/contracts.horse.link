@@ -1,4 +1,4 @@
-﻿import { ethers } from "ethers";
+﻿import { BigNumberish, ethers } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import * as dotenv from "dotenv";
 import type { BigNumber } from "ethers";
@@ -280,18 +280,18 @@ export async function makeBet(
 	);
 	console.log("awardedOdds", awardedOdds.toString());
 
-	await marketContract
-		.connect(bet.bettor)
-		.back(
-			b16Nonce,
-			b16PropositionId,
-			b16MarketId,
-			wager,
-			odds,
-			close,
-			end,
-			signature
-		);
+	const betStruct = {
+		nonce: b16Nonce,
+		propositionId: b16PropositionId,
+		marketId: b16MarketId,
+		wager,
+		odds,
+		close,
+		end,
+		signature
+	};
+
+	await marketContract.connect(bet.bettor).back(betStruct);
 	return getMarketStats(bet.market.marketId, marketContract, token, vault);
 }
 
@@ -301,4 +301,68 @@ export function printMarketStats(marketId: string, stats: MarketStats) {
 	console.log("Exposure: ", stats.exposure.toString());
 	console.log("In Play: ", stats.inPlay.toString());
 	console.log("Vault Balance: ", stats.vaultBalance.toString());
+}
+
+export const Markets: { [key: string]: TestMarket } = {
+	RedRacetrack: {
+		name: "Red Racetrack",
+		marketId: makeMarketId(new Date(), "RED", "1"),
+		runners: []
+	},
+	BlueDogs: {
+		name: "Blue Dogs",
+		marketId: makeMarketId(new Date(), "BLUE", "1"),
+		runners: []
+	}
+};
+Markets.RedRacetrack.runners = [
+	{
+		runnerNumber: 1,
+		name: "Red 1",
+		propositionId: makePropositionId(Markets.RedRacetrack.marketId, 1)
+	},
+	{
+		runnerNumber: 2,
+		name: "Red 2",
+		propositionId: makePropositionId(Markets.RedRacetrack.marketId, 2)
+	},
+	{
+		runnerNumber: 3,
+		name: "Red 3",
+		propositionId: makePropositionId(Markets.RedRacetrack.marketId, 3)
+	}
+];
+Markets.BlueDogs.runners = [
+	{
+		runnerNumber: 1,
+		name: "Blue 1",
+		propositionId: makePropositionId(Markets.BlueDogs.marketId, 1)
+	},
+	{
+		runnerNumber: 2,
+		name: "Blue 2",
+		propositionId: makePropositionId(Markets.BlueDogs.marketId, 2)
+	}
+];
+
+export function constructBet(
+	b16Nonce: string,
+	b16PropositionId: string,
+	b16MarketId: string,
+	wager: BigNumberish,
+	odds: BigNumberish,
+	close: BigNumberish,
+	end: BigNumberish,
+	signature: Signature
+) {
+	return {
+		nonce: b16Nonce,
+		propositionId: b16PropositionId,
+		marketId: b16MarketId,
+		wager,
+		odds,
+		close,
+		end,
+		signature
+	};
 }
