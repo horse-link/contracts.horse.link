@@ -59,12 +59,17 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 		if (deployResult.newlyDeployed && !network.tags.testing) {
 			console.log("Adding vault to registry: ", tokenDetails.vaultName);
 			// Add vaultTimeLock to registry
-			await execute(
-				"Registry",
-				{ from: deployer, log: true },
-				"addVault",
-				deployResult.address
-			);
+			try {
+				await execute(
+					"Registry",
+					{ from: deployer, log: true },
+					"addVault",
+					deployResult.address
+				);
+			} catch (error) {
+				console.log("Error adding vault to registry: ", error);
+			}
+
 			// Verify
 			// Wait 10 seconds
 			setTimeout(async () => {

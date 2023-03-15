@@ -20,7 +20,7 @@ export const mockTokens: TokenDeployDetails[] = [
 		marketName: "UsdtMarket",
 		decimals: 6,
 		mintAmount: "1000000000",
-		networks: ["hardhat", "localhost", "goerli", "arbitrumGoerli", "sepolia"]
+		networks: ["hardhat", "localhost", "goerli", "sepolia"]
 	},
 	{
 		name: "Mock DAI",
@@ -30,7 +30,7 @@ export const mockTokens: TokenDeployDetails[] = [
 		marketName: "DaiMarket",
 		decimals: 18,
 		mintAmount: "1000000000",
-		networks: ["hardhat", "localhost", "goerli", "arbitrumGoerli", "sepolia"]
+		networks: ["hardhat", "localhost", "goerli", "sepolia"]
 	},
 	{
 		name: "Mock HorseLink",
@@ -41,6 +41,27 @@ export const mockTokens: TokenDeployDetails[] = [
 		decimals: 18,
 		mintAmount: "1000000000",
 		networks: ["hardhat", "localhost", "goerli", "arbitrumGoerli", "sepolia"]
+	},
+	{
+		name: "Mock Usdc",
+		deploymentName: "Usdc",
+		vaultName: "USDC Vault",
+		marketName: "USDC Market",
+		networks: ["arbitrumGorli"]
+	},
+	{
+		name: "Mock fxAud",
+		deploymentName: "fxAud",
+		vaultName: "fxAUD Vault",
+		marketName: "fxAUD Market",
+		networks: ["arbitrumGorli"]
+	},
+	{
+		name: "Mock fxUsd",
+		deploymentName: "fxUsd",
+		vaultName: "fxUSD Vault",
+		marketName: "fxUSD Market",
+		networks: ["arbitrumGorli"]
 	}
 ];
 
@@ -52,28 +73,28 @@ export const productionTokens: TokenDeployDetails[] = [
 		vaultName: "HorseLinkVault",
 		marketName: "HorseLinkMarket",
 		decimals: 18,
-		networks: ["arbitrum"]
+		networks: ["arbitrum", "arbitrumGorli"]
 	},
 	{
 		name: "Usdc",
 		deploymentName: "Usdc",
 		vaultName: "USDC Vault",
 		marketName: "USDC Market",
-		networks: ["arbitrum"]
+		networks: ["arbitrum", "arbitrumGorli"]
 	},
 	{
 		name: "fxAud",
 		deploymentName: "fxAud",
 		vaultName: "fxAUD Vault",
 		marketName: "fxAUD Market",
-		networks: ["arbitrum"]
+		networks: ["arbitrum", "arbitrumGorli"]
 	},
 	{
 		name: "fxUsd",
 		deploymentName: "fxUsd",
 		vaultName: "fxUSD Vault",
 		marketName: "fxUSD Market",
-		networks: ["arbitrum"]
+		networks: ["arbitrum", "arbitrumGorli"]
 	}
 ];
 
@@ -94,6 +115,10 @@ export const TestAccounts = [
 	},
 	{
 		address: "0x5F88eC396607Fc3edb0424E8E6061949e6b624e7",
+		prefundAmount: "1000000"
+	},
+	{
+		address: "0x8b503c95dC22F3F2b5d22BBA8a49451991EAF8c0",
 		prefundAmount: "1000000"
 	}
 ];

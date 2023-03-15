@@ -77,7 +77,7 @@ export default {
 			saveDeployment: true,
 			verify: {
 				etherscan: {
-					apiKey: process.env.ETHERSCAN_API_KEY
+					apiKey: process.env.ARBISCAN_API_KEY
 				}
 			},
 			gasMultiplier: 1,
@@ -108,7 +108,12 @@ export default {
 		privateVerification: false // if true, contracts will be verified privately, if false, contracts will be verified publicly
 	},
 	etherscan: {
-		apiKey: process.env.ETHERSCAN_API_KEY
+		apiKey: {
+			arbitrumGoerli: process.env.ARBISCAN_API_KEY,
+			arbitrum: process.env.ARBISCAN_API_KEY,
+			goerli: process.env.ETHERSCAN_API_KEY,
+			sepolia: process.env.ETHERSCAN_API_KEY
+		}
 	},
 	solidity: {
 		compilers: [
@@ -141,8 +146,7 @@ export default {
 			default: "0xF919eaF2E37aAC718Aa19668b9071ee42c02c081"
 		},
 		Usdt: {
-			mainnet: "0xdac17f958d2ee523a2206206994597c13d831ec7",
-			arbitrumGoerli: "0xE777Ce3a78Ef786Ca8d6eA60518DF71Cacd4BdAB"
+			mainnet: "0xdac17f958d2ee523a2206206994597c13d831ec7"
 		},
 		Usdc: {
 			mainnet: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
@@ -154,9 +158,7 @@ export default {
 		fxUsd: {
 			arbitrum: "0x8616E8EA83f048ab9A5eC513c9412Dd2993bcE3F"
 		},
-		HorseLink: {
-			arbitrumGoerli: "0xe73Bab4b1955365F32EABabC2d2Ecac2A993604d"
-		},
+		HorseLink: {},
 		Dai: {
 			mainnet: "0x6B175474E89094C44Da98b954EedeAC495271d0F",
 			arbitrumGoerli: "0xdc1ac214959f46Cc6dB378f4E3d15ebdC6639540"
