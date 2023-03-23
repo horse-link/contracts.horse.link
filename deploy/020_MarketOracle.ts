@@ -32,7 +32,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 				deployResult.receipt?.gasUsed ?? "?"
 			} gas`
 		);
-		if (!hre.network.tags.testing) {
+		if (hre.network.live) {
 			// Verify
 			setTimeout(async () => {
 				await hre.run("verify:verify", {

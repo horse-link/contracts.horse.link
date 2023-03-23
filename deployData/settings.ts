@@ -20,7 +20,7 @@ export const mockTokens: TokenDeployDetails[] = [
 		marketName: "UsdtMarket",
 		decimals: 6,
 		mintAmount: "1000000000",
-		networks: ["hardhat", "localhost", "goerli", "sepolia"]
+		networks: ["hardhat", "localhost", "goerli_dev"]
 	},
 	{
 		name: "Mock DAI",
@@ -30,7 +30,7 @@ export const mockTokens: TokenDeployDetails[] = [
 		marketName: "DaiMarket",
 		decimals: 18,
 		mintAmount: "1000000000",
-		networks: ["hardhat", "localhost", "goerli", "sepolia"]
+		networks: ["hardhat", "localhost", "goerli_dev"]
 	},
 	{
 		name: "Mock HorseLink",
@@ -40,28 +40,7 @@ export const mockTokens: TokenDeployDetails[] = [
 		marketName: "HorseLinkMarket",
 		decimals: 18,
 		mintAmount: "1000000000",
-		networks: ["hardhat", "localhost", "goerli", "arbitrumGoerli", "sepolia"]
-	},
-	{
-		name: "Mock Usdc",
-		deploymentName: "Usdc",
-		vaultName: "USDC Vault",
-		marketName: "USDC Market",
-		networks: ["arbitrumGorli"]
-	},
-	{
-		name: "Mock fxAud",
-		deploymentName: "fxAud",
-		vaultName: "fxAUD Vault",
-		marketName: "fxAUD Market",
-		networks: ["arbitrumGorli"]
-	},
-	{
-		name: "Mock fxUsd",
-		deploymentName: "fxUsd",
-		vaultName: "fxUSD Vault",
-		marketName: "fxUSD Market",
-		networks: ["arbitrumGorli"]
+		networks: ["hardhat", "localhost", "goerli_dev"]
 	}
 ];
 
@@ -73,28 +52,28 @@ export const productionTokens: TokenDeployDetails[] = [
 		vaultName: "HorseLinkVault",
 		marketName: "HorseLinkMarket",
 		decimals: 18,
-		networks: ["arbitrum", "arbitrumGorli"]
+		networks: ["prod_arbitrum", "dev_arbitrum", "prod_goerli"]
 	},
 	{
 		name: "Usdc",
 		deploymentName: "Usdc",
 		vaultName: "USDC Vault",
 		marketName: "USDC Market",
-		networks: ["arbitrum", "arbitrumGorli"]
+		networks: ["prod_arbitrum", "dev_arbitrum", "prod_goerli"]
 	},
 	{
 		name: "fxAud",
 		deploymentName: "fxAud",
 		vaultName: "fxAUD Vault",
 		marketName: "fxAUD Market",
-		networks: ["arbitrum", "arbitrumGorli"]
+		networks: ["prod_arbitrum", "dev_arbitrum", "prod_goerli"]
 	},
 	{
 		name: "fxUsd",
 		deploymentName: "fxUsd",
 		vaultName: "fxUSD Vault",
 		marketName: "fxUSD Market",
-		networks: ["arbitrum", "arbitrumGorli"]
+		networks: ["prod_arbitrum", "dev_arbitrun", "prod_goerli"]
 	}
 ];
 

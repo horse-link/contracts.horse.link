@@ -20,7 +20,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 		autoMine: true,
 		skipIfAlreadyDeployed: false
 	});
-	if (!hre.network.tags.testing) {
+	if (hre.network.live) {
 		// Verify
 		// Wait 20 seconds
 		setTimeout(async () => {

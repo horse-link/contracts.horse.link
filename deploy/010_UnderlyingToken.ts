@@ -21,7 +21,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 		return details.networks.includes(hre.network.name);
 	});
 
+	// For all tokens in ths list,
 	for (const tokenDetails of underlyingTokens) {
+		// If there is a named account in hardhat.config.ts, use that. Don't deploy anything.
 		if (namedAccounts[tokenDetails.deploymentName]) {
 			console.log(
 				"Using named account for token: ",
@@ -29,6 +31,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 			);
 			continue;
 		}
+
+		// Otherwise, deploy the token
 		const constructorArguments = [
 			tokenDetails.name,
 			tokenDetails.symbol,
@@ -43,6 +47,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 			skipIfAlreadyDeployed: true
 		});
 
+		//Mint some tokens if not production network
 		if (underlying.newlyDeployed && !network.tags.production) {
 			console.log(`${tokenDetails.symbol} deployed at ${underlying.address}`);
 			await execute(
@@ -74,8 +79,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 					parseUnits(testAccount.prefundAmount, tokenDetails.decimals)
 				);
 			}
+		}
 
-			if (!hre.network.tags.testing) {
+		if (underlying.newlyDeployed) {
+			if (hre.network.live) {
 				// Verify
 				setTimeout(async () => {
 					await hre.run("verify:verify", {
@@ -89,6 +96,3 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 export default func;
 func.tags = ["underlying"];
-//func.skip = async (hre: HardhatRuntimeEnvironment) => {
-//	return hre.network.tags.production;
-//};
