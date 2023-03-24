@@ -1,0 +1,261 @@
+{
+  "address": "0x351a213aDae8e3A987558ada1149500fa52a06A4",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "contract IERC20Metadata",
+          "name": "token",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "market",
+          "type": "address"
+        }
+      ],
+      "name": "MarketAdded",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "threshold",
+          "type": "uint256"
+        }
+      ],
+      "name": "ThresholdUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "vault",
+          "type": "address"
+        }
+      ],
+      "name": "VaultAdded",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "market",
+          "type": "address"
+        }
+      ],
+      "name": "addMarket",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "vault",
+          "type": "address"
+        }
+      ],
+      "name": "addVault",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "marketCount",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "markets",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "threshold",
+          "type": "uint256"
+        }
+      ],
+      "name": "setThreshold",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "vaultCount",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "vaults",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x5605077a5f8e29f8f52b20b566dd9341b4955c4f5a1bb160120f1ef7e2169add",
+  "receipt": {
+    "to": null,
+    "from": "0x0212132Ee2e40d7D525e948CBd467bAfa370EF4C",
+    "contractAddress": "0x351a213aDae8e3A987558ada1149500fa52a06A4",
+    "transactionIndex": 11,
+    "gasUsed": "3119953",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0x1c1d3583f88f745a2b9237b54b7dfea0df3ac007cdab3b4d3341170a6ff1f7f8",
+    "transactionHash": "0x5605077a5f8e29f8f52b20b566dd9341b4955c4f5a1bb160120f1ef7e2169add",
+    "logs": [],
+    "blockNumber": 73019778,
+    "cumulativeGasUsed": "8062767",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [
+    "0x4F1588ee1c81ee2DD568d9400dc7989B0CF3b225"
+  ],
+  "numDeployments": 1,
+  "solcInputHash": "ed5032941ea139426309977127f188cb",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.15+commit.e14f2714\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"contract IERC20Metadata\",\"name\":\"token\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"market\",\"type\":\"address\"}],\"name\":\"MarketAdded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"}],\"name\":\"ThresholdUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"vault\",\"type\":\"address\"}],\"name\":\"VaultAdded\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"market\",\"type\":\"address\"}],\"name\":\"addMarket\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"vault\",\"type\":\"address\"}],\"name\":\"addVault\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"marketCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"markets\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"}],\"name\":\"setThreshold\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"vaultCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"vaults\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/Registry.sol\":\"Registry\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"@openzeppelin/contracts/interfaces/IERC4626.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts (last updated v4.8.0) (interfaces/IERC4626.sol)\\n\\npragma solidity ^0.8.0;\\n\\nimport \\\"../token/ERC20/IERC20.sol\\\";\\nimport \\\"../token/ERC20/extensions/IERC20Metadata.sol\\\";\\n\\n/**\\n * @dev Interface of the ERC4626 \\\"Tokenized Vault Standard\\\", as defined in\\n * https://eips.ethereum.org/EIPS/eip-4626[ERC-4626].\\n *\\n * _Available since v4.7._\\n */\\ninterface IERC4626 is IERC20, IERC20Metadata {\\n    event Deposit(address indexed sender, address indexed owner, uint256 assets, uint256 shares);\\n\\n    event Withdraw(\\n        address indexed sender,\\n        address indexed receiver,\\n        address indexed owner,\\n        uint256 assets,\\n        uint256 shares\\n    );\\n\\n    /**\\n     * @dev Returns the address of the underlying token used for the Vault for accounting, depositing, and withdrawing.\\n     *\\n     * - MUST be an ERC-20 token contract.\\n     * - MUST NOT revert.\\n     */\\n    function asset() external view returns (address assetTokenAddress);\\n\\n    /**\\n     * @dev Returns the total amount of the underlying asset that is \\u201cmanaged\\u201d by Vault.\\n     *\\n     * - SHOULD include any compounding that occurs from yield.\\n     * - MUST be inclusive of any fees that are charged against assets in the Vault.\\n     * - MUST NOT revert.\\n     */\\n    function totalAssets() external view returns (uint256 totalManagedAssets);\\n\\n    /**\\n     * @dev Returns the amount of shares that the Vault would exchange for the amount of assets provided, in an ideal\\n     * scenario where all the conditions are met.\\n     *\\n     * - MUST NOT be inclusive of any fees that are charged against assets in the Vault.\\n     * - MUST NOT show any variations depending on the caller.\\n     * - MUST NOT reflect slippage or other on-chain conditions, when performing the actual exchange.\\n     * - MUST NOT revert.\\n     *\\n     * NOTE: This calculation MAY NOT reflect the \\u201cper-user\\u201d price-per-share, and instead should reflect the\\n     * \\u201caverage-user\\u2019s\\u201d price-per-share, meaning what the average user should expect to see when exchanging to and\\n     * from.\\n     */\\n    function convertToShares(uint256 assets) external view returns (uint256 shares);\\n\\n    /**\\n     * @dev Returns the amount of assets that the Vault would exchange for the amount of shares provided, in an ideal\\n     * scenario where all the conditions are met.\\n     *\\n     * - MUST NOT be inclusive of any fees that are charged against assets in the Vault.\\n     * - MUST NOT show any variations depending on the caller.\\n     * - MUST NOT reflect slippage or other on-chain conditions, when performing the actual exchange.\\n     * - MUST NOT revert.\\n     *\\n     * NOTE: This calculation MAY NOT reflect the \\u201cper-user\\u201d price-per-share, and instead should reflect the\\n     * \\u201caverage-user\\u2019s\\u201d price-per-share, meaning what the average user should expect to see when exchanging to and\\n     * from.\\n     */\\n    function convertToAssets(uint256 shares) external view returns (uint256 assets);\\n\\n    /**\\n     * @dev Returns the maximum amount of the underlying asset that can be deposited into the Vault for the receiver,\\n     * through a deposit call.\\n     *\\n     * - MUST return a limited value if receiver is subject to some deposit limit.\\n     * - MUST return 2 ** 256 - 1 if there is no limit on the maximum amount of assets that may be deposited.\\n     * - MUST NOT revert.\\n     */\\n    function maxDeposit(address receiver) external view returns (uint256 maxAssets);\\n\\n    /**\\n     * @dev Allows an on-chain or off-chain user to simulate the effects of their deposit at the current block, given\\n     * current on-chain conditions.\\n     *\\n     * - MUST return as close to and no more than the exact amount of Vault shares that would be minted in a deposit\\n     *   call in the same transaction. I.e. deposit should return the same or more shares as previewDeposit if called\\n     *   in the same transaction.\\n     * - MUST NOT account for deposit limits like those returned from maxDeposit and should always act as though the\\n     *   deposit would be accepted, regardless if the user has enough tokens approved, etc.\\n     * - MUST be inclusive of deposit fees. Integrators should be aware of the existence of deposit fees.\\n     * - MUST NOT revert.\\n     *\\n     * NOTE: any unfavorable discrepancy between convertToShares and previewDeposit SHOULD be considered slippage in\\n     * share price or some other type of condition, meaning the depositor will lose assets by depositing.\\n     */\\n    function previewDeposit(uint256 assets) external view returns (uint256 shares);\\n\\n    /**\\n     * @dev Mints shares Vault shares to receiver by depositing exactly amount of underlying tokens.\\n     *\\n     * - MUST emit the Deposit event.\\n     * - MAY support an additional flow in which the underlying tokens are owned by the Vault contract before the\\n     *   deposit execution, and are accounted for during deposit.\\n     * - MUST revert if all of assets cannot be deposited (due to deposit limit being reached, slippage, the user not\\n     *   approving enough underlying tokens to the Vault contract, etc).\\n     *\\n     * NOTE: most implementations will require pre-approval of the Vault with the Vault\\u2019s underlying asset token.\\n     */\\n    function deposit(uint256 assets, address receiver) external returns (uint256 shares);\\n\\n    /**\\n     * @dev Returns the maximum amount of the Vault shares that can be minted for the receiver, through a mint call.\\n     * - MUST return a limited value if receiver is subject to some mint limit.\\n     * - MUST return 2 ** 256 - 1 if there is no limit on the maximum amount of shares that may be minted.\\n     * - MUST NOT revert.\\n     */\\n    function maxMint(address receiver) external view returns (uint256 maxShares);\\n\\n    /**\\n     * @dev Allows an on-chain or off-chain user to simulate the effects of their mint at the current block, given\\n     * current on-chain conditions.\\n     *\\n     * - MUST return as close to and no fewer than the exact amount of assets that would be deposited in a mint call\\n     *   in the same transaction. I.e. mint should return the same or fewer assets as previewMint if called in the\\n     *   same transaction.\\n     * - MUST NOT account for mint limits like those returned from maxMint and should always act as though the mint\\n     *   would be accepted, regardless if the user has enough tokens approved, etc.\\n     * - MUST be inclusive of deposit fees. Integrators should be aware of the existence of deposit fees.\\n     * - MUST NOT revert.\\n     *\\n     * NOTE: any unfavorable discrepancy between convertToAssets and previewMint SHOULD be considered slippage in\\n     * share price or some other type of condition, meaning the depositor will lose assets by minting.\\n     */\\n    function previewMint(uint256 shares) external view returns (uint256 assets);\\n\\n    /**\\n     * @dev Mints exactly shares Vault shares to receiver by depositing amount of underlying tokens.\\n     *\\n     * - MUST emit the Deposit event.\\n     * - MAY support an additional flow in which the underlying tokens are owned by the Vault contract before the mint\\n     *   execution, and are accounted for during mint.\\n     * - MUST revert if all of shares cannot be minted (due to deposit limit being reached, slippage, the user not\\n     *   approving enough underlying tokens to the Vault contract, etc).\\n     *\\n     * NOTE: most implementations will require pre-approval of the Vault with the Vault\\u2019s underlying asset token.\\n     */\\n    function mint(uint256 shares, address receiver) external returns (uint256 assets);\\n\\n    /**\\n     * @dev Returns the maximum amount of the underlying asset that can be withdrawn from the owner balance in the\\n     * Vault, through a withdraw call.\\n     *\\n     * - MUST return a limited value if owner is subject to some withdrawal limit or timelock.\\n     * - MUST NOT revert.\\n     */\\n    function maxWithdraw(address owner) external view returns (uint256 maxAssets);\\n\\n    /**\\n     * @dev Allows an on-chain or off-chain user to simulate the effects of their withdrawal at the current block,\\n     * given current on-chain conditions.\\n     *\\n     * - MUST return as close to and no fewer than the exact amount of Vault shares that would be burned in a withdraw\\n     *   call in the same transaction. I.e. withdraw should return the same or fewer shares as previewWithdraw if\\n     *   called\\n     *   in the same transaction.\\n     * - MUST NOT account for withdrawal limits like those returned from maxWithdraw and should always act as though\\n     *   the withdrawal would be accepted, regardless if the user has enough shares, etc.\\n     * - MUST be inclusive of withdrawal fees. Integrators should be aware of the existence of withdrawal fees.\\n     * - MUST NOT revert.\\n     *\\n     * NOTE: any unfavorable discrepancy between convertToShares and previewWithdraw SHOULD be considered slippage in\\n     * share price or some other type of condition, meaning the depositor will lose assets by depositing.\\n     */\\n    function previewWithdraw(uint256 assets) external view returns (uint256 shares);\\n\\n    /**\\n     * @dev Burns shares from owner and sends exactly assets of underlying tokens to receiver.\\n     *\\n     * - MUST emit the Withdraw event.\\n     * - MAY support an additional flow in which the underlying tokens are owned by the Vault contract before the\\n     *   withdraw execution, and are accounted for during withdraw.\\n     * - MUST revert if all of assets cannot be withdrawn (due to withdrawal limit being reached, slippage, the owner\\n     *   not having enough shares, etc).\\n     *\\n     * Note that some implementations will require pre-requesting to the Vault before a withdrawal may be performed.\\n     * Those methods should be performed separately.\\n     */\\n    function withdraw(\\n        uint256 assets,\\n        address receiver,\\n        address owner\\n    ) external returns (uint256 shares);\\n\\n    /**\\n     * @dev Returns the maximum amount of Vault shares that can be redeemed from the owner balance in the Vault,\\n     * through a redeem call.\\n     *\\n     * - MUST return a limited value if owner is subject to some withdrawal limit or timelock.\\n     * - MUST return balanceOf(owner) if owner is not subject to any withdrawal limit or timelock.\\n     * - MUST NOT revert.\\n     */\\n    function maxRedeem(address owner) external view returns (uint256 maxShares);\\n\\n    /**\\n     * @dev Allows an on-chain or off-chain user to simulate the effects of their redeemption at the current block,\\n     * given current on-chain conditions.\\n     *\\n     * - MUST return as close to and no more than the exact amount of assets that would be withdrawn in a redeem call\\n     *   in the same transaction. I.e. redeem should return the same or more assets as previewRedeem if called in the\\n     *   same transaction.\\n     * - MUST NOT account for redemption limits like those returned from maxRedeem and should always act as though the\\n     *   redemption would be accepted, regardless if the user has enough shares, etc.\\n     * - MUST be inclusive of withdrawal fees. Integrators should be aware of the existence of withdrawal fees.\\n     * - MUST NOT revert.\\n     *\\n     * NOTE: any unfavorable discrepancy between convertToAssets and previewRedeem SHOULD be considered slippage in\\n     * share price or some other type of condition, meaning the depositor will lose assets by redeeming.\\n     */\\n    function previewRedeem(uint256 shares) external view returns (uint256 assets);\\n\\n    /**\\n     * @dev Burns exactly shares from owner and sends assets of underlying tokens to receiver.\\n     *\\n     * - MUST emit the Withdraw event.\\n     * - MAY support an additional flow in which the underlying tokens are owned by the Vault contract before the\\n     *   redeem execution, and are accounted for during redeem.\\n     * - MUST revert if all of shares cannot be redeemed (due to withdrawal limit being reached, slippage, the owner\\n     *   not having enough shares, etc).\\n     *\\n     * NOTE: some implementations will require pre-requesting to the Vault before a withdrawal may be performed.\\n     * Those methods should be performed separately.\\n     */\\n    function redeem(\\n        uint256 shares,\\n        address receiver,\\n        address owner\\n    ) external returns (uint256 assets);\\n}\\n\",\"keccak256\":\"0xd82776ed6975a5939668e068f995acb1394c2f60a12a9ef3f14cacb91b5a8fd4\",\"license\":\"MIT\"},\"@openzeppelin/contracts/token/ERC20/IERC20.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts (last updated v4.6.0) (token/ERC20/IERC20.sol)\\n\\npragma solidity ^0.8.0;\\n\\n/**\\n * @dev Interface of the ERC20 standard as defined in the EIP.\\n */\\ninterface IERC20 {\\n    /**\\n     * @dev Emitted when `value` tokens are moved from one account (`from`) to\\n     * another (`to`).\\n     *\\n     * Note that `value` may be zero.\\n     */\\n    event Transfer(address indexed from, address indexed to, uint256 value);\\n\\n    /**\\n     * @dev Emitted when the allowance of a `spender` for an `owner` is set by\\n     * a call to {approve}. `value` is the new allowance.\\n     */\\n    event Approval(address indexed owner, address indexed spender, uint256 value);\\n\\n    /**\\n     * @dev Returns the amount of tokens in existence.\\n     */\\n    function totalSupply() external view returns (uint256);\\n\\n    /**\\n     * @dev Returns the amount of tokens owned by `account`.\\n     */\\n    function balanceOf(address account) external view returns (uint256);\\n\\n    /**\\n     * @dev Moves `amount` tokens from the caller's account to `to`.\\n     *\\n     * Returns a boolean value indicating whether the operation succeeded.\\n     *\\n     * Emits a {Transfer} event.\\n     */\\n    function transfer(address to, uint256 amount) external returns (bool);\\n\\n    /**\\n     * @dev Returns the remaining number of tokens that `spender` will be\\n     * allowed to spend on behalf of `owner` through {transferFrom}. This is\\n     * zero by default.\\n     *\\n     * This value changes when {approve} or {transferFrom} are called.\\n     */\\n    function allowance(address owner, address spender) external view returns (uint256);\\n\\n    /**\\n     * @dev Sets `amount` as the allowance of `spender` over the caller's tokens.\\n     *\\n     * Returns a boolean value indicating whether the operation succeeded.\\n     *\\n     * IMPORTANT: Beware that changing an allowance with this method brings the risk\\n     * that someone may use both the old and the new allowance by unfortunate\\n     * transaction ordering. One possible solution to mitigate this race\\n     * condition is to first reduce the spender's allowance to 0 and set the\\n     * desired value afterwards:\\n     * https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729\\n     *\\n     * Emits an {Approval} event.\\n     */\\n    function approve(address spender, uint256 amount) external returns (bool);\\n\\n    /**\\n     * @dev Moves `amount` tokens from `from` to `to` using the\\n     * allowance mechanism. `amount` is then deducted from the caller's\\n     * allowance.\\n     *\\n     * Returns a boolean value indicating whether the operation succeeded.\\n     *\\n     * Emits a {Transfer} event.\\n     */\\n    function transferFrom(\\n        address from,\\n        address to,\\n        uint256 amount\\n    ) external returns (bool);\\n}\\n\",\"keccak256\":\"0x9750c6b834f7b43000631af5cc30001c5f547b3ceb3635488f140f60e897ea6b\",\"license\":\"MIT\"},\"@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts v4.4.1 (token/ERC20/extensions/IERC20Metadata.sol)\\n\\npragma solidity ^0.8.0;\\n\\nimport \\\"../IERC20.sol\\\";\\n\\n/**\\n * @dev Interface for the optional metadata functions from the ERC20 standard.\\n *\\n * _Available since v4.1._\\n */\\ninterface IERC20Metadata is IERC20 {\\n    /**\\n     * @dev Returns the name of the token.\\n     */\\n    function name() external view returns (string memory);\\n\\n    /**\\n     * @dev Returns the symbol of the token.\\n     */\\n    function symbol() external view returns (string memory);\\n\\n    /**\\n     * @dev Returns the decimals places of the token.\\n     */\\n    function decimals() external view returns (uint8);\\n}\\n\",\"keccak256\":\"0x8de418a5503946cabe331f35fe242d3201a73f67f77aaeb7110acb1f30423aca\",\"license\":\"MIT\"},\"contracts/IMarket.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity =0.8.15;\\n\\nimport \\\"./SignatureLib.sol\\\";\\n\\ninterface IMarket {\\n\\tstruct Back {\\n\\t\\tbytes16 nonce;\\n\\t\\tbytes16 propositionId;\\n\\t\\tbytes16 marketId;\\n\\t\\tuint256 wager;\\n\\t\\tuint256 odds;\\n\\t\\tuint256 close;\\n\\t\\tuint256 end;\\n\\t\\tSignatureLib.Signature signature;\\n\\t}\\n\\tfunction getMargin() external view returns (uint8);\\n\\tfunction getCount() external view returns (uint64);\\n\\tfunction getTotalInPlay() external view returns (uint256);\\n\\tfunction getInPlayCount() external view returns (uint256);\\n\\tfunction getTotalExposure() external view returns (uint256);\\n\\n\\tfunction getBetByIndex(uint64 index)\\n\\t\\texternal\\n\\t\\tview\\n\\t\\treturns (\\n\\t\\t\\tuint256,\\n\\t\\t\\tuint256,\\n\\t\\t\\tuint256,\\n\\t\\t\\tuint256,\\n\\t\\t\\tbool,\\n\\t\\t\\tbytes16,\\n\\t\\t\\tbytes16\\n\\t\\t);\\n\\n\\tfunction getOdds(\\n\\t\\tuint256 wager,\\n\\t\\tuint256 odds,\\n\\t\\tbytes16 propositionId,\\n\\t\\tbytes16 marketId\\n\\t) external view returns (uint256);\\n\\n\\tfunction getOracleAddress() external view returns (address);\\n\\n\\tfunction getPotentialPayout(\\n\\t\\tbytes16 propositionId,\\n\\t\\tbytes16 marketId,\\n\\t\\tuint256 wager,\\n\\t\\tuint256 odds\\n\\t) external view returns (uint256);\\n\\n\\tfunction getVaultAddress() external view returns (address);\\n\\n\\tfunction back(\\n\\t\\tBack calldata backData\\n\\t) external returns (uint256);\\n\\n\\tfunction settle(uint64 index) external;\\n\\tfunction settleMarket(bytes16 marketId) external;\\n}\\n\",\"keccak256\":\"0x2da873728ec15575e9f9ad4327d112cab085947ab4332826c1988c2fc45e9986\",\"license\":\"MIT\"},\"contracts/IVault.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity =0.8.15;\\n\\nimport \\\"@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol\\\";\\nimport \\\"@openzeppelin/contracts/interfaces/IERC4626.sol\\\";\\n\\ninterface IVault is IERC20Metadata, IERC4626 {\\n    function getPerformance() external view returns (uint256);\\n    function getMarket() external view returns (address);\\n    function getMarketAllowance() external view returns (uint256);\\n    function setMarket(address market, uint256 max) external;\\n    function totalAssetsLocked() external view returns (uint256);\\n}\\n\",\"keccak256\":\"0x166b9468e18cbb900fb6f2dc8c239477d3781889dc50e5a21a9ae56137f036e3\",\"license\":\"MIT\"},\"contracts/Registry.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity =0.8.15;\\n\\nimport \\\"./IMarket.sol\\\";\\nimport \\\"./IVault.sol\\\";\\nimport \\\"@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol\\\";\\n\\ncontract Registry {\\n    address[] public markets;\\n    address[] public vaults;\\n\\n    mapping(address => address) private _vaultByAsset;\\n    mapping(address => address) private _markets; \\n\\n    address private immutable _owner;\\n    IERC20Metadata private immutable _token;\\n    uint256 private _threshold;\\n\\n    function marketCount() external view returns (uint256) {\\n        return markets.length;\\n    }\\n\\n    function vaultCount() external view returns (uint256) {\\n        return vaults.length;\\n    }\\n\\n    constructor(IERC20Metadata token) {\\n        _owner = msg.sender;\\n        _token = token;\\n    }\\n\\n    function addVault(address vault) external onlyTokenHolders {\\n        assert(vault != address(0));\\n        address assetAddress = IVault(vault).asset();\\n        require(_vaultByAsset[assetAddress] == address(0), \\\"addVault: Vault with this asset token already added\\\");\\n\\n        vaults.push(vault);\\n        _vaultByAsset[assetAddress] = vault; \\n\\n        emit VaultAdded(vault);\\n    }\\n\\n    function addMarket(address market) external onlyTokenHolders {\\n        require(\\n            _markets[market] == address(0),\\n            \\\"addMarket: Market already added\\\"\\n        );\\n        _markets[market] = market;\\n        markets.push(market);\\n        emit MarketAdded(market);\\n    }\\n\\n    function setThreshold(uint256 threshold) external onlyOwner {\\n        require(threshold != _threshold, \\\"setThreshold: Threshold already set\\\");\\n        _threshold = threshold;\\n        emit ThresholdUpdated(threshold);\\n    }\\n\\n    modifier onlyTokenHolders() {\\n        require(\\n            _token.balanceOf(msg.sender) >= _threshold,\\n            \\\"onlyTokenHolders: Caller does not hold enough tokens\\\"\\n        );\\n        _;\\n    }\\n\\n    modifier onlyOwner() {\\n        require(\\n            msg.sender == _owner,\\n            \\\"onlyOwner: Caller is not the contract owner\\\"\\n        );\\n        _;\\n    }\\n\\n    event MarketAdded(address indexed market);\\n    event ThresholdUpdated(uint256 threshold);\\n    event VaultAdded(address indexed vault);\\n}\\n\",\"keccak256\":\"0xb7c777af687d13a4d4dd30f81b5c2a5a77297be89ec69161adb3f5c77f620027\",\"license\":\"MIT\"},\"contracts/SignatureLib.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity =0.8.15;\\n\\nlibrary SignatureLib {\\n    struct Signature {\\n        uint8 v;\\n        bytes32 r;\\n        bytes32 s;\\n    }\\n\\n    function recoverSigner(\\n        bytes32 message,\\n        Signature memory signature\\n    ) public pure returns (address) {\\n        bytes32 prefixedHash = keccak256(\\n            abi.encodePacked(\\\"\\\\x19Ethereum Signed Message:\\\\n32\\\", message)\\n        );\\n        return ecrecover(prefixedHash, signature.v, signature.r, signature.s);\\n    }\\n}\\n\",\"keccak256\":\"0x3d2aea16b52e98b22e10addc4401c67151de809a94688cc5fa7c0e5529b65ccb\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x60c060405234801561001057600080fd5b5060405161082838038061082883398101604081905261002f91610044565b336080526001600160a01b031660a052610074565b60006020828403121561005657600080fd5b81516001600160a01b038116811461006d57600080fd5b9392505050565b60805160a0516107886100a06000396000818161013e01526103ae0152600061053401526107886000f3fe608060405234801561001057600080fd5b506004361061007d5760003560e01c8063960bfe041161005b578063960bfe04146100da578063a7c6a100146100ed578063b1283e77146100ff578063ec9790821461011257600080fd5b8063256b5a02146100825780638c64ea4a1461009757806393e30633146100c7575b600080fd5b610095610090366004610675565b61011a565b005b6100aa6100a5366004610699565b610360565b6040516001600160a01b0390911681526020015b60405180910390f35b6100956100d5366004610675565b61038a565b6100956100e8366004610699565b610529565b6001545b6040519081526020016100be565b6100aa61010d366004610699565b61064d565b6000546100f1565b600480546040516370a0823160e01b81523392810192909252906001600160a01b037f000000000000000000000000000000000000000000000000000000000000000016906370a0823190602401602060405180830381865afa158015610185573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906101a991906106b2565b10156101d05760405162461bcd60e51b81526004016101c7906106cb565b60405180910390fd5b6001600160a01b0381166101e6576101e661071f565b6000816001600160a01b03166338d52e0f6040518163ffffffff1660e01b8152600401602060405180830381865afa158015610226573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061024a9190610735565b6001600160a01b0380821660009081526002602052604090205491925016156102d15760405162461bcd60e51b815260206004820152603360248201527f6164645661756c743a205661756c7420776974682074686973206173736574206044820152721d1bdad95b88185b1c9958591e481859191959606a1b60648201526084016101c7565b600180548082019091557fb10e2d527612073b26eecdfd717e6a320cf44b4afac2b0732d9fcbe2b7fa0cf60180546001600160a01b038085166001600160a01b0319928316811790935583166000908152600260205260408082208054909316841790925590517f7b7ef7a864d96a85497a1ed846adb39940dd6ccef678ff6ac8d55505e09b8cc49190a25050565b6001818154811061037057600080fd5b6000918252602090912001546001600160a01b0316905081565b600480546040516370a0823160e01b81523392810192909252906001600160a01b037f000000000000000000000000000000000000000000000000000000000000000016906370a0823190602401602060405180830381865afa1580156103f5573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061041991906106b2565b10156104375760405162461bcd60e51b81526004016101c7906106cb565b6001600160a01b03818116600090815260036020526040902054161561049f5760405162461bcd60e51b815260206004820152601f60248201527f6164644d61726b65743a204d61726b657420616c72656164792061646465640060448201526064016101c7565b6001600160a01b03811660008181526003602052604080822080546001600160a01b0319908116851790915582546001810184558380527f290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e56301805490911684179055517fbc600b1f03d316c479b49930c28e328809316458d5b5dacbb7419df5f6f896479190a250565b336001600160a01b037f000000000000000000000000000000000000000000000000000000000000000016146105b55760405162461bcd60e51b815260206004820152602b60248201527f6f6e6c794f776e65723a2043616c6c6572206973206e6f742074686520636f6e60448201526a3a3930b1ba1037bbb732b960a91b60648201526084016101c7565b60045481036106125760405162461bcd60e51b815260206004820152602360248201527f7365745468726573686f6c643a205468726573686f6c6420616c7265616479206044820152621cd95d60ea1b60648201526084016101c7565b60048190556040518181527fadfa8ecb21b6962ebcd0adbd9ab985b7b4c5b5eb3b0dead683171565c7bfe1719060200160405180910390a150565b6000818154811061037057600080fd5b6001600160a01b038116811461067257600080fd5b50565b60006020828403121561068757600080fd5b81356106928161065d565b9392505050565b6000602082840312156106ab57600080fd5b5035919050565b6000602082840312156106c457600080fd5b5051919050565b60208082526034908201527f6f6e6c79546f6b656e486f6c646572733a2043616c6c657220646f6573206e6f6040820152737420686f6c6420656e6f75676820746f6b656e7360601b606082015260800190565b634e487b7160e01b600052600160045260246000fd5b60006020828403121561074757600080fd5b81516106928161065d56fea264697066735822122085afb1f6bf986d4924f8e97434b448ad46730348042c51a6940fac6fc09bae9764736f6c634300080f0033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b506004361061007d5760003560e01c8063960bfe041161005b578063960bfe04146100da578063a7c6a100146100ed578063b1283e77146100ff578063ec9790821461011257600080fd5b8063256b5a02146100825780638c64ea4a1461009757806393e30633146100c7575b600080fd5b610095610090366004610675565b61011a565b005b6100aa6100a5366004610699565b610360565b6040516001600160a01b0390911681526020015b60405180910390f35b6100956100d5366004610675565b61038a565b6100956100e8366004610699565b610529565b6001545b6040519081526020016100be565b6100aa61010d366004610699565b61064d565b6000546100f1565b600480546040516370a0823160e01b81523392810192909252906001600160a01b037f000000000000000000000000000000000000000000000000000000000000000016906370a0823190602401602060405180830381865afa158015610185573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906101a991906106b2565b10156101d05760405162461bcd60e51b81526004016101c7906106cb565b60405180910390fd5b6001600160a01b0381166101e6576101e661071f565b6000816001600160a01b03166338d52e0f6040518163ffffffff1660e01b8152600401602060405180830381865afa158015610226573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061024a9190610735565b6001600160a01b0380821660009081526002602052604090205491925016156102d15760405162461bcd60e51b815260206004820152603360248201527f6164645661756c743a205661756c7420776974682074686973206173736574206044820152721d1bdad95b88185b1c9958591e481859191959606a1b60648201526084016101c7565b600180548082019091557fb10e2d527612073b26eecdfd717e6a320cf44b4afac2b0732d9fcbe2b7fa0cf60180546001600160a01b038085166001600160a01b0319928316811790935583166000908152600260205260408082208054909316841790925590517f7b7ef7a864d96a85497a1ed846adb39940dd6ccef678ff6ac8d55505e09b8cc49190a25050565b6001818154811061037057600080fd5b6000918252602090912001546001600160a01b0316905081565b600480546040516370a0823160e01b81523392810192909252906001600160a01b037f000000000000000000000000000000000000000000000000000000000000000016906370a0823190602401602060405180830381865afa1580156103f5573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061041991906106b2565b10156104375760405162461bcd60e51b81526004016101c7906106cb565b6001600160a01b03818116600090815260036020526040902054161561049f5760405162461bcd60e51b815260206004820152601f60248201527f6164644d61726b65743a204d61726b657420616c72656164792061646465640060448201526064016101c7565b6001600160a01b03811660008181526003602052604080822080546001600160a01b0319908116851790915582546001810184558380527f290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e56301805490911684179055517fbc600b1f03d316c479b49930c28e328809316458d5b5dacbb7419df5f6f896479190a250565b336001600160a01b037f000000000000000000000000000000000000000000000000000000000000000016146105b55760405162461bcd60e51b815260206004820152602b60248201527f6f6e6c794f776e65723a2043616c6c6572206973206e6f742074686520636f6e60448201526a3a3930b1ba1037bbb732b960a91b60648201526084016101c7565b60045481036106125760405162461bcd60e51b815260206004820152602360248201527f7365745468726573686f6c643a205468726573686f6c6420616c7265616479206044820152621cd95d60ea1b60648201526084016101c7565b60048190556040518181527fadfa8ecb21b6962ebcd0adbd9ab985b7b4c5b5eb3b0dead683171565c7bfe1719060200160405180910390a150565b6000818154811061037057600080fd5b6001600160a01b038116811461067257600080fd5b50565b60006020828403121561068757600080fd5b81356106928161065d565b9392505050565b6000602082840312156106ab57600080fd5b5035919050565b6000602082840312156106c457600080fd5b5051919050565b60208082526034908201527f6f6e6c79546f6b656e486f6c646572733a2043616c6c657220646f6573206e6f6040820152737420686f6c6420656e6f75676820746f6b656e7360601b606082015260800190565b634e487b7160e01b600052600160045260246000fd5b60006020828403121561074757600080fd5b81516106928161065d56fea264697066735822122085afb1f6bf986d4924f8e97434b448ad46730348042c51a6940fac6fc09bae9764736f6c634300080f0033",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 14511,
+        "contract": "contracts/Registry.sol:Registry",
+        "label": "markets",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_array(t_address)dyn_storage"
+      },
+      {
+        "astId": 14514,
+        "contract": "contracts/Registry.sol:Registry",
+        "label": "vaults",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_array(t_address)dyn_storage"
+      },
+      {
+        "astId": 14518,
+        "contract": "contracts/Registry.sol:Registry",
+        "label": "_vaultByAsset",
+        "offset": 0,
+        "slot": "2",
+        "type": "t_mapping(t_address,t_address)"
+      },
+      {
+        "astId": 14522,
+        "contract": "contracts/Registry.sol:Registry",
+        "label": "_markets",
+        "offset": 0,
+        "slot": "3",
+        "type": "t_mapping(t_address,t_address)"
+      },
+      {
+        "astId": 14529,
+        "contract": "contracts/Registry.sol:Registry",
+        "label": "_threshold",
+        "offset": 0,
+        "slot": "4",
+        "type": "t_uint256"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_array(t_address)dyn_storage": {
+        "base": "t_address",
+        "encoding": "dynamic_array",
+        "label": "address[]",
+        "numberOfBytes": "32"
+      },
+      "t_mapping(t_address,t_address)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => address)",
+        "numberOfBytes": "32",
+        "value": "t_address"
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      }
+    }
+  }
+}

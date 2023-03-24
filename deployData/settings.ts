@@ -40,7 +40,7 @@ export const mockTokens: TokenDeployDetails[] = [
 		marketName: "HorseLinkMarket",
 		decimals: 18,
 		mintAmount: "1000000000",
-		networks: ["hardhat", "localhost", "dev_goerli"]
+		networks: ["hardhat", "localhost", "dev_goerli", "dev_arbitrum"]
 	}
 ];
 
@@ -52,7 +52,7 @@ export const productionTokens: TokenDeployDetails[] = [
 		vaultName: "HorseLinkVault",
 		marketName: "HorseLinkMarket",
 		decimals: 18,
-		networks: ["prod_arbitrum", "dev_arbitrum", "prod_goerli"]
+		networks: ["prod_arbitrum", "prod_goerli"]
 	},
 	{
 		name: "Usdc",
@@ -73,7 +73,7 @@ export const productionTokens: TokenDeployDetails[] = [
 		deploymentName: "fxUsd",
 		vaultName: "fxUSD Vault",
 		marketName: "fxUSD Market",
-		networks: ["prod_arbitrum", "dev_arbitrun", "prod_goerli"]
+		networks: ["prod_arbitrum", "dev_arbitrum", "prod_goerli"]
 	}
 ];
 

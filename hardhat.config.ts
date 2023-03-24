@@ -146,17 +146,19 @@ export default {
 		},
 		Usdc: {
 			mainnet: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-			prod_arbitrum: "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8"
+			prod_arbitrum: "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8",
+			dev_arbitrum: "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8"
 		},
 		fxAud: {
-			prod_arbitrum: "0x7E141940932E3D13bfa54B224cb4a16510519308"
+			prod_arbitrum: "0x7E141940932E3D13bfa54B224cb4a16510519308",
+			dev_arbitrum: "0x7E141940932E3D13bfa54B224cb4a16510519308"
 		},
 		fxUsd: {
-			prod_arbitrum: "0x8616E8EA83f048ab9A5eC513c9412Dd2993bcE3F"
+			prod_arbitrum: "0x8616E8EA83f048ab9A5eC513c9412Dd2993bcE3F",
+			dev_arbitrum: "0x8616E8EA83f048ab9A5eC513c9412Dd2993bcE3F"
 		},
 		HorseLink: {
-			prod_arbitrum: "0x06d0164b1bFb040D667a82C64De870dDeac38b86",
-			dev_arbitrum: "0x06d0164b1Bfb040D667A82c64DE870DDEac38b86"
+			prod_arbitrum: "0x06d0164b1bFb040D667a82C64De870dDeac38b86"
 		},
 		Dai: {
 			prod_goerli: "0x8D9A084b37E826d02040479911375Dc79C266684",
