@@ -59,13 +59,13 @@ export default {
 				}
 			},
 			gasMultiplier: 2,
-			tags: ["uat"]
+			tags: ["production"]
 		},
 		prod_arbitrum: {
 			url: process.env.ARBITRUM_URL || defaultRpcUrl,
 			accounts: [process.env.ARBITRUM_DEPLOYER || defaultKey],
 			saveDeployment: true,
-			_verify: {
+			verify: {
 				etherscan: {
 					apiKey: process.env.ARBISCAN_API_KEY
 				}
@@ -79,13 +79,24 @@ export default {
 			url: process.env.ARBITRUM_URL || defaultRpcUrl,
 			accounts: [process.env.ARBITRUM_DEPLOYER || defaultKey],
 			saveDeployment: true,
-			_verify: {
+			verify: {
 				etherscan: {
 					apiKey: process.env.ARBISCAN_API_KEY
 				}
 			},
 			gasMultiplier: 1,
-			tags: ["production"]
+			tags: ["uat"]
+		},
+		dev_goerli: {
+			url: process.env.GOERLI_URL || defaultRpcUrl,
+			accounts: [process.env.GOERLI_DEPLOYER || defaultKey],
+			saveDeployment: true,
+			verify: {
+				etherscan: {
+					apiKey: process.env.ETHERSCAN_API_KEY
+				}
+			},
+			tags: ["uat"]
 		}
 	},
 	tenderly: {
@@ -143,12 +154,17 @@ export default {
 		fxUsd: {
 			prod_arbitrum: "0x8616E8EA83f048ab9A5eC513c9412Dd2993bcE3F"
 		},
-		HorseLink: {},
+		HorseLink: {
+			prod_arbitrum: "0x06d0164b1bFb040D667a82C64De870dDeac38b86",
+			dev_arbitrum: "0x06d0164b1Bfb040D667A82c64DE870DDEac38b86"
+		},
 		Dai: {
-			prod_goerli: "0x8D9A084b37E826d02040479911375Dc79C266684"
+			prod_goerli: "0x8D9A084b37E826d02040479911375Dc79C266684",
+			dev_goerli: "0x8D9A084b37E826d02040479911375Dc79C266684"
 		},
 		Usdt: {
-			prod_goerli: "0xF9F36C66854010D61e8F46F9Cc46F9ed55996229"
+			prod_goerli: "0xF9F36C66854010D61e8F46F9Cc46F9ed55996229",
+			dev_goerli: "0xF9F36C66854010D61e8F46F9Cc46F9ed55996229"
 		},
 		MarketSigner: {
 			default: 1,

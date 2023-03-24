@@ -8,6 +8,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	const { deploy } = deployments;
 	const { deployer } = await getNamedAccounts();
 
+	console.log(`Deployer: ${deployer}`);
+
 	const signatureLib = await deploy("SignatureLib", {
 		contract: "SignatureLib",
 		from: deployer,

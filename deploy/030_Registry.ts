@@ -13,6 +13,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 		"HorseLink"
 	);
 
+	console.log(`Deployer: ${deployer}`);
+
 	const deployment = await deploy("Registry", {
 		from: deployer,
 		args: [registryTokenDeployment.address],

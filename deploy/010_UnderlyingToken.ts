@@ -16,6 +16,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	const namedAccounts = await getNamedAccounts();
 	const { deployer } = namedAccounts;
 
+	console.log(`Deployer: ${deployer}`);
+
 	// Get tokens we are using for the current network
 	const underlyingTokens = UnderlyingTokens.filter((details) => {
 		return details.networks.includes(hre.network.name);

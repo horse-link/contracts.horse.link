@@ -20,7 +20,7 @@ export const mockTokens: TokenDeployDetails[] = [
 		marketName: "UsdtMarket",
 		decimals: 6,
 		mintAmount: "1000000000",
-		networks: ["hardhat", "localhost", "goerli_dev"]
+		networks: ["hardhat", "localhost", "dev_goerli"]
 	},
 	{
 		name: "Mock DAI",
@@ -30,7 +30,7 @@ export const mockTokens: TokenDeployDetails[] = [
 		marketName: "DaiMarket",
 		decimals: 18,
 		mintAmount: "1000000000",
-		networks: ["hardhat", "localhost", "goerli_dev"]
+		networks: ["hardhat", "localhost", "dev_goerli"]
 	},
 	{
 		name: "Mock HorseLink",
@@ -40,7 +40,7 @@ export const mockTokens: TokenDeployDetails[] = [
 		marketName: "HorseLinkMarket",
 		decimals: 18,
 		mintAmount: "1000000000",
-		networks: ["hardhat", "localhost", "goerli_dev"]
+		networks: ["hardhat", "localhost", "dev_goerli"]
 	}
 ];
 
