@@ -396,7 +396,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		}
 		_totalExposure -= _bets[index].payout - _bets[index].amount;
 	}
-
+	
 	// Allow the Vault to provide cover for this market
 	// Standard implementation is to request cover for each and every bet
 	// marketId and propositionId are not required in this implementation, as every bet is given its own collateral based on the wager and payout

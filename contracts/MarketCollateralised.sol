@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity =0.8.15;
 pragma abicoder v2;
+
 import "./Market.sol";
 
 abstract contract MarketCollateralised is Market {
@@ -62,11 +63,10 @@ abstract contract MarketCollateralised is Market {
 	// 2. The size of the most expensive proposition in the market
 	// 3. The potential payout of this proposition (which already includes the current wager)
 	function _obtainCollateral(
+		uint256 index,
 		bytes16 marketId,
-		bytes16 propositionId,
-		uint256 /*wager*/,
-		uint256 /*payout*/
-	) internal override returns (uint256) {
+		bytes16 propositionId
+	) internal virtual returns (uint256) {
 		uint256 result;
 		uint256 internalCollateralToUse;
 		uint256 existingCollateral = _marketCollateral[marketId] + _marketTotal[marketId];
@@ -89,6 +89,9 @@ abstract contract MarketCollateralised is Market {
 					_self,
 					result
 				);
+				
+				emit BetCovered(index, result);
+
 				_totalCollateral += result;
 			}
 			_marketCollateral[marketId] += result;

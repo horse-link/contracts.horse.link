@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "prepare": "husky install",
-    "hh:compile": "npx hardhat compile && npx hardhat deploy --network hardhat --tags underlying,oracle,registryToken,vault,market",
+    "hh:compile": "npx hardhat compile",
+    "hh:deploy": "npx hardhat deploy --network hardhat --tags underlying,oracle,registryToken,vault,market",
     "deploy:production": "yarn deploy:prod_arbitrum && yarn deploy:prod_goerli",
     "deploy:dev": "yarn deploy:dev_arbitrum && yarn deploy:dev_goerli",
     "deploy:prod_arbitrum": "npx hardhat clean && npx hardhat compile && npx hardhat deploy --network prod_arbitrum --tags oracle,vault,market,registry --export ./deployments/prod_arbitrum/prod_arbitrum.json",
@@ -15,7 +16,6 @@
     "verify:dev_goerli": "npx hardhat --network dev_goerli etherscan-verify --solc-input",
     "verify:prod_arbitrum": "npx hardhat --network prod_arbitrum etherscan-verify --solc-input",
     "verify:dev_arbitrum": "npx hardhat --network dev_arbitrum etherscan-verify --solc-input",
-
     "deploy:local": "npx hardhat compile && npx hardhat deploy --network localhost --tags underlying,oracle,registryToken,vault,market --export ./exports/localhost.json",
     "hh:node": "npx hardhat node --hostname localhost",
     "test": "npx hardhat test",
