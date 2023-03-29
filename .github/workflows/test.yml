@@ -8,10 +8,17 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Compile test
+        run: yarn hh:compile
+
       - name: Run unit tests and coverage
         run: |
           export PRIVATE_KEY="0000000000000000000000000000000000000000000000000000000000000001"
-          yarn install
           yarn test
           yarn coverage
