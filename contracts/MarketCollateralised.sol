@@ -90,7 +90,7 @@ abstract contract MarketCollateralised is Market {
 					result
 				);
 				
-				emit CollateralLent(index, result);
+				emit Borrowed(index, result);
 
 				_totalCollateral += result;
 			}

@@ -401,7 +401,7 @@ contract Market is IMarket, Ownable, ERC721 {
 
 			// event for vault rewarded
 			if (recipient == address(_vault)) {
-				emit VaultPaid(recipient, amount);
+				emit Repaid(recipient, amount);
 			}
 
 			IERC20(_vault.asset()).transfer(recipient, amount);
@@ -421,7 +421,7 @@ contract Market is IMarket, Ownable, ERC721 {
 			amount
 		);
 
-		emit CollateralLent(index, amount);
+		emit Borrowed(index, amount);
 
 		return amount;
 	}
@@ -483,12 +483,12 @@ contract Market is IMarket, Ownable, ERC721 {
 		address indexed recipient
 	);
 
-	event CollateralLent(
+	event Borrowed(
 		uint256 index,
 		uint256 amount
 	);
 
-	event VaultPaid(
+	event Repaid(
 		address indexed vault,
 		uint256 amount
 	);
