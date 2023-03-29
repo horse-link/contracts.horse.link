@@ -100,8 +100,8 @@ contract Market is IMarket, Ownable, ERC721 {
 		return _getCount();
 	}
 
-	function _getCount() private view returns (uint256) {
-		return _bets.length;
+	function _getCount() private view returns (uint64) {
+		return uint64(_bets.length);
 	}
 
 	function getTotalExposure() external view returns (uint256) {
@@ -292,20 +292,20 @@ contract Market is IMarket, Ownable, ERC721 {
 		_totalInPlay += wager;
 		_inplayCount++;
 
-		uint256 index = _getCount();
+		uint64 index = _getCount();
 
 		// If the payout for this proposition will be greater than the current max payout for the market)
 		_potentialPayout[propositionId] += payout;
-		_totalExposure += _obtainCollateral(index, wager, payout);
+		_totalExposure += _obtainCollateral(uint256(index), wager, payout);
 
 		_bets.push(
 			Bet(propositionId, marketId, wager, payout, end, block.timestamp, false)
 		);
 		_marketBets[marketId].push(index);
-		_mint(_msgSender(), index);
+		_mint(_msgSender(), uint256(index));
 
 		emit Placed(
-			index,
+			uint256(index),
 			propositionId,
 			marketId,
 			wager,
