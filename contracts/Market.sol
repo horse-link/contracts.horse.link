@@ -329,6 +329,8 @@ contract Market is IMarket, Ownable, ERC721 {
 	function _settle(uint64 index) internal {
 		Bet memory bet = _bets[index];
 
+		_bets[index].settled = true;
+
 		uint8 result;
 		address recipient;
 
@@ -349,8 +351,6 @@ contract Market is IMarket, Ownable, ERC721 {
 			_totalInPlay -= _bets[index].amount;
 			_inplayCount--;
 		}
-
-		_bets[index].settled = true;
 
 		emit Settled(index, _bets[index].payout, result, recipient);
 
