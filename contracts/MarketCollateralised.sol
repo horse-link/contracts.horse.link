@@ -90,7 +90,7 @@ abstract contract MarketCollateralised is Market {
 					result
 				);
 				
-				emit BetCovered(index, result);
+				emit CollateralLent(index, result);
 
 				_totalCollateral += result;
 			}
