@@ -100,8 +100,8 @@ contract Market is IMarket, Ownable, ERC721 {
 		return _getCount();
 	}
 
-	function _getCount() private view returns (uint64) {
-		return uint64(_bets.length);
+	function _getCount() private view returns (uint256) {
+		return _bets.length;
 	}
 
 	function getTotalExposure() external view returns (uint256) {
@@ -292,19 +292,20 @@ contract Market is IMarket, Ownable, ERC721 {
 		_totalInPlay += wager;
 		_inplayCount++;
 
+		uint256 index = _getCount();
+
 		// If the payout for this proposition will be greater than the current max payout for the market)
 		_potentialPayout[propositionId] += payout;
-		_totalExposure += _obtainCollateral(marketId, propositionId, wager, payout);
+		_totalExposure += _obtainCollateral(index, wager, payout);
 
-		uint64 index = _getCount();
 		_bets.push(
 			Bet(propositionId, marketId, wager, payout, end, block.timestamp, false)
 		);
 		_marketBets[marketId].push(index);
-		_mint(_msgSender(), uint256(index));
+		_mint(_msgSender(), index);
 
 		emit Placed(
-			uint256(index),
+			index,
 			propositionId,
 			marketId,
 			wager,
@@ -399,13 +400,17 @@ contract Market is IMarket, Ownable, ERC721 {
 	// Allow the Vault to provide cover for this market
 	// Standard implementation is to request cover for each and every bet
 	// marketId and propositionId are not required in this implementation, as every bet is given its own collateral based on the wager and payout
-	function _obtainCollateral(bytes16 /*marketId*/, bytes16 /*propositionId*/, uint256 wager, uint256 payout) internal virtual returns (uint256) {
+	function _obtainCollateral(uint256 index, uint256 wager, uint256 payout) internal virtual returns (uint256) {
 		uint256 amount = payout - wager;
+
 		IERC20(_vault.asset()).transferFrom(
 			address(_vault),
 			_self,
 			amount
 		);
+
+		emit BetCovered(index, amount);
+
 		return amount;
 	}
 
@@ -464,5 +469,10 @@ contract Market is IMarket, Ownable, ERC721 {
 		uint256 payout,
 		uint8 result,
 		address indexed recipient
+	);
+
+	event BetCovered(
+		uint256 index,
+		uint256 amount
 	);
 }
