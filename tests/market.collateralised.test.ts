@@ -23,9 +23,10 @@ import {
 	TestMarket
 } from "./utils";
 import { formatBytes16String } from "../scripts/utils";
+import { latest } from "@nomicfoundation/hardhat-network-helpers/dist/src/helpers/time";
 
 chai.use(solidity);
-describe("Collateralised Market: play through", function () {
+describe.only("Collateralised Market: play through", function () {
 	let underlying: Token;
 	let tokenDecimals: number;
 	let vault: Vault;
@@ -99,6 +100,20 @@ describe("Collateralised Market: play through", function () {
 				runner: Markets.RedRacetrack.runners[2],
 				amount: 1,
 				odds: 10,
+				bettor: bob
+			},
+			Five: {
+				market: Markets.GreenRace,
+				runner: Markets.GreenRace.runners[0],
+				amount: 2,
+				odds: 2,
+				bettor: bob
+			},
+			Six: {
+				market: Markets.GreenRace,
+				runner: Markets.GreenRace.runners[1],
+				amount: 2,
+				odds: 2,
 				bettor: bob
 			}
 		};
@@ -587,5 +602,85 @@ describe("Collateralised Market: play through", function () {
 		// 		tokenDecimals
 		// 	)})`
 		// ).to.equal(marketBalance);
+	});
+	it("After all bets are settled, there should be no exposure", async () => {
+		const exposure = await market.getTotalExposure();
+		expect(exposure, "There should be no exposure").to.equal(BigNumber.from(0));
+		// There should be some spare collateral
+		const marketBalance = await underlying.balanceOf(market.address);
+		console.log(
+			`Market balance: ${ethers.utils.formatUnits(
+				marketBalance,
+				tokenDecimals
+			)}`
+		);
+		expect(marketBalance, "Market should have some assets").to.not.equal(
+			BigNumber.from(0)
+		);
+	});
+
+	it("Bet 5: If there is extra collateral in the market, new bets should use it instead of taking additional cover from the vault", async () => {
+		const spareCollateral = await underlying.balanceOf(market.address);
+		console.log(
+			"Spare collateral: " +
+				ethers.utils.formatUnits(spareCollateral, tokenDecimals)
+		);
+		const bet = Bets.Five;
+
+		const wager = ethers.utils.parseUnits(bet.amount.toString(), USDT_DECIMALS);
+
+		const originalStats = await getMarketStats(
+			bet.market.marketId,
+			market,
+			underlying,
+			vault
+		);
+		// Get current time from chain via hre
+
+		const now = await latest();
+		const newStats = await makeBet(underlying, market, vault, bet, owner, now);
+
+		//Expect the total wagers to have gone up by the wager amount
+		expect(
+			newStats.marketTotal,
+			"Total wagers should have gone up by the wager amount"
+		).to.equal(originalStats.marketTotal.add(wager));
+
+		expect(newStats.inPlay, "In play has gone up by the bet amount").to.equal(
+			originalStats.inPlay.add(wager)
+		);
+
+		expect(
+			newStats.vaultBalance,
+			"Vault should not have covered the bet"
+		).to.equal(originalStats.vaultBalance);
+	});
+
+	it("Bet 6: If there was extra collateral used in a previous bet on the same market, it should be included in the collateral for that market. A less expensive proposition should not fetch additional collateral from the vault", async () => {
+		const bet = Bets.Six;
+		const wager = ethers.utils.parseUnits(bet.amount.toString(), USDT_DECIMALS);
+		const originalStats = await getMarketStats(
+			bet.market.marketId,
+			market,
+			underlying,
+			vault
+		);
+		const now = await latest();
+		const newStats = await makeBet(underlying, market, vault, bet, owner, now);
+
+		//Expect the total wagers to have gone up by the wager amount
+		expect(
+			newStats.marketTotal,
+			"Total wagers should have gone up by the wager amount"
+		).to.equal(originalStats.marketTotal.add(wager));
+
+		expect(newStats.inPlay, "In play has gone up by the bet amount").to.equal(
+			originalStats.inPlay.add(wager)
+		);
+
+		expect(
+			newStats.vaultBalance,
+			"Vault should not have covered the bet"
+		).to.equal(originalStats.vaultBalance);
 	});
 });

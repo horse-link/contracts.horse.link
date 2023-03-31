@@ -13,6 +13,8 @@ import "./IOracle.sol";
 import "./SignatureLib.sol";
 import "./OddsLib.sol";
 
+import "hardhat/console.sol";
+
 // Put these in the ERC721 contract
 struct Bet {
 	bytes16 propositionId;
