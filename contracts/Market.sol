@@ -292,11 +292,12 @@ contract Market is IMarket, Ownable, ERC721 {
 		_totalInPlay += wager;
 		_inplayCount++;
 
+		uint64 index = _getCount();
+
 		// If the payout for this proposition will be greater than the current max payout for the market)
 		_potentialPayout[propositionId] += payout;
-		_totalExposure += _obtainCollateral(marketId, propositionId, wager, payout);
+		_totalExposure += _obtainCollateral(uint256(index), wager, payout);
 
-		uint64 index = _getCount();
 		_bets.push(
 			Bet(propositionId, marketId, wager, payout, end, block.timestamp, false)
 		);
@@ -327,9 +328,12 @@ contract Market is IMarket, Ownable, ERC721 {
 
 	function _settle(uint64 index) internal {
 		Bet memory bet = _bets[index];
+
 		_bets[index].settled = true;
+
 		uint8 result;
 		address recipient;
+
 		if (block.timestamp > _getExpiry(index)) {
 			result = WINNER;
 			recipient = ownerOf(index);
@@ -347,7 +351,9 @@ contract Market is IMarket, Ownable, ERC721 {
 			_totalInPlay -= _bets[index].amount;
 			_inplayCount--;
 		}
+
 		emit Settled(index, _bets[index].payout, result, recipient);
+
 		_burn(index);
 	}
 
@@ -391,21 +397,32 @@ contract Market is IMarket, Ownable, ERC721 {
 			IERC20(_vault.asset()).transfer(address(_vault), lay);
 		} else {
 			address recipient = result == WINNER ? ownerOf(index) : address(_vault);
-			IERC20(_vault.asset()).transfer(recipient, _bets[index].payout);
+			uint256 amount = _bets[index].payout;
+
+			// event for vault rewarded
+			if (recipient == address(_vault)) {
+				emit Repaid(recipient, amount);
+			}
+
+			IERC20(_vault.asset()).transfer(recipient, amount);
 		}
 		_totalExposure -= _bets[index].payout - _bets[index].amount;
 	}
-
+	
 	// Allow the Vault to provide cover for this market
 	// Standard implementation is to request cover for each and every bet
 	// marketId and propositionId are not required in this implementation, as every bet is given its own collateral based on the wager and payout
-	function _obtainCollateral(bytes16 /*marketId*/, bytes16 /*propositionId*/, uint256 wager, uint256 payout) internal virtual returns (uint256) {
+	function _obtainCollateral(uint256 index, uint256 wager, uint256 payout) internal virtual returns (uint256) {
 		uint256 amount = payout - wager;
+
 		IERC20(_vault.asset()).transferFrom(
 			address(_vault),
 			_self,
 			amount
 		);
+
+		emit Borrowed(index, amount);
+
 		return amount;
 	}
 
@@ -464,5 +481,15 @@ contract Market is IMarket, Ownable, ERC721 {
 		uint256 payout,
 		uint8 result,
 		address indexed recipient
+	);
+
+	event Borrowed(
+		uint256 index,
+		uint256 amount
+	);
+
+	event Repaid(
+		address indexed vault,
+		uint256 amount
 	);
 }
