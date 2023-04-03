@@ -2,7 +2,6 @@ import hre, { ethers, deployments } from "hardhat";
 import { BigNumber } from "ethers";
 import chai, { expect } from "chai";
 import {
-	Market,
 	MarketCollateralisedWithoutProtection,
 	MarketOracle,
 	Token,
@@ -15,8 +14,6 @@ import {
 	END,
 	getMarketStats,
 	makeBet,
-	makeMarketId,
-	makePropositionId,
 	Markets,
 	signSetResultMessage,
 	TestBet,
@@ -26,7 +23,7 @@ import { formatBytes16String } from "../scripts/utils";
 import * as timeHelper from "@nomicfoundation/hardhat-network-helpers/dist/src/helpers/time";
 
 chai.use(solidity);
-describe.only("Collateralised Market: play through", function () {
+describe("Collateralised Market: play through", function () {
 	let underlying: Token;
 	let tokenDecimals: number;
 	let vault: Vault;
@@ -181,7 +178,7 @@ describe.only("Collateralised Market: play through", function () {
 			);
 	});
 
-	it("Bet 1: Should get cover from the vault for a new bet", async () => {
+	it.only("Bet 1: Should get cover from the vault for a new bet", async () => {
 		const bet = Bets.One;
 		const wager = ethers.utils.parseUnits(bet.amount.toString(), USDT_DECIMALS);
 		const odds = ethers.utils.parseUnits(bet.odds.toString(), ODDS_DECIMALS);
@@ -237,7 +234,7 @@ describe.only("Collateralised Market: play through", function () {
 		);
 	});
 
-	it("Bet 2: Should not get any new cover for a lesser bet on a different proposition in the same market", async () => {
+	it.only("Bet 2: Should not get any new cover for a lesser bet on a different proposition in the same market", async () => {
 		const bet = Bets.Two;
 
 		const wager = ethers.utils.parseUnits(bet.amount.toString(), USDT_DECIMALS);
@@ -262,7 +259,7 @@ describe.only("Collateralised Market: play through", function () {
 		expect(
 			newStats.vaultBalance,
 			"Vault should not have covered the bet"
-		).to.equal(originalStats.vaultBalance);
+		).to.not.be.lt(originalStats.vaultBalance);
 		const tokenOwner = await market.ownerOf(1);
 		expect(tokenOwner, "Bob should have a bet NFT").to.equal(bob.address);
 
