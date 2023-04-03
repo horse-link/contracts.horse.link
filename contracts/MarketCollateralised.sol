@@ -126,11 +126,11 @@ abstract contract MarketCollateralised is Market {
 	// Return any unused collateral to the Vault
 	function refundCollateral() external onlyOwner {
 		require(_totalCollateral > _totalExposure, "refundCollateral: No collateral to refund");
-		
+
+		_totalCollateral = _totalExposure;
 		IERC20(_vault.asset()).transfer(
 			address(_vault),
 			_totalCollateral - _totalExposure
-		);
-		_totalCollateral = _totalExposure;
+		);	
 	}
 }
