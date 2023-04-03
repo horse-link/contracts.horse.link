@@ -110,7 +110,7 @@ abstract contract MarketCollateralised is Market {
 		}
 
 		// Store the amount of exposure that this bet added. This will be deducted from the total exposure when the bet is paid out
-		_betExposure[_bets.length] = amountToObtain;
+		_betExposure[index] = amountToObtain;
 
 		// Add to the market collateral						
 		_marketCollateral[marketId] += amountToObtain;
