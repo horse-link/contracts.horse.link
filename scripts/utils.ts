@@ -3,7 +3,7 @@ import path from "path";
 import axios from "axios";
 import rlp from "rlp";
 import keccak from "keccak";
-import { ethers } from "ethers";
+import { ethers, Wallet } from "ethers";
 import { concat, hexlify, isHexString, toUtf8Bytes } from "ethers/lib/utils";
 import { LedgerSigner } from "@ethersproject/hardware-wallets";
 import * as dotenv from "dotenv";
@@ -12,9 +12,13 @@ import type { BigNumberish } from "ethers";
 // load .env into process.env
 dotenv.config();
 
-export const node = process.env.GOERLI_URL;
+export const node = process.env["PROVIDER_URL_ENVVAR"];
 export const provider: ethers.providers.Provider =
 	new ethers.providers.JsonRpcProvider(node);
+export const oracleWallet: Wallet = new Wallet(
+	process.env["PRIVATE_KEY_ENVVAR"],
+	provider
+);
 
 const configPath = path.resolve(__dirname, "../contracts.json");
 
@@ -61,9 +65,7 @@ export async function loadOracle(): Promise<ethers.Contract> {
 		"https://raw.githubusercontent.com/horse-link/contracts.horse.link/main/deployments/goerli/MarketOracle.json"
 	);
 	const data = response.data;
-	return new ethers.Contract(address, data.abi, provider).connect(
-		new ethers.Wallet(process.env.SETTLE_PRIVATE_KEY, provider)
-	);
+	return new ethers.Contract(address, data.abi, provider).connect(oracleWallet);
 }
 
 export async function loadMarket(address: string): Promise<ethers.Contract> {
@@ -72,9 +74,7 @@ export async function loadMarket(address: string): Promise<ethers.Contract> {
 		`https://raw.githubusercontent.com/horse-link/contracts.horse.link/main/deployments/goerli/UsdtMarket.json`
 	);
 	const data = response?.data;
-	return new ethers.Contract(address, data.abi, provider).connect(
-		new ethers.Wallet(process.env.SETTLE_PRIVATE_KEY, provider)
-	);
+	return new ethers.Contract(address, data.abi, provider).connect(oracleWallet);
 }
 
 export function bytes16HexToString(hex: DataHexString): string {
