@@ -23,7 +23,7 @@ import { formatBytes16String } from "../scripts/utils";
 import * as timeHelper from "@nomicfoundation/hardhat-network-helpers/dist/src/helpers/time";
 
 chai.use(solidity);
-describe.only("Collateralised Market: play through", function () {
+describe("Collateralised Market: play through", function () {
 	let underlying: Token;
 	let tokenDecimals: number;
 	let vault: Vault;
