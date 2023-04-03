@@ -115,7 +115,7 @@ abstract contract MarketCollateralised is Market {
 		}
 		// Store the amount of exposure that this bet added. This will be deducted from the total exposure when the bet is paid out
 		_betExposure[_bets.length] = result;
-		return result; // To be added to total exposure
+		return result; // Amount of exposure added by this bet
 	}
 
 	function getTotalCollateral() external view returns (uint256) {
