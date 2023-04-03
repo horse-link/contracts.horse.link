@@ -66,7 +66,7 @@ abstract contract MarketCollateralised is Market {
 		uint256 index,
 		bytes16 marketId,
 		bytes16 propositionId
-	) internal virtual returns (uint256) {
+	) internal returns (uint256) {
 		uint256 result;
 		uint256 internalCollateralToUse;
 		uint256 existingCollateral = _marketCollateral[marketId] + _marketTotal[marketId];
