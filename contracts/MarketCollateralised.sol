@@ -37,7 +37,6 @@ abstract contract MarketCollateralised is Market {
 		address underlying = _vault.asset();
 		if (result == WINNER) {
 			// Send the payout to the NFT owner
-			//_totalCollateral -= _bets[index].payout - _bets[index].amount; //WRONG!
 			_totalCollateral -= _betExposure[index];
 			IERC20(underlying).transfer(ownerOf(index), _bets[index].payout);
 		} else {
