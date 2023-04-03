@@ -58,7 +58,7 @@ export async function getOracle(): Promise<string> {
 export async function loadOracle(): Promise<ethers.Contract> {
 	const address = await getOracle();
 	const response = await axios.get(
-		"https://raw.githubusercontent.com/horse-link/contracts.horse.link/main/deployments/goerli_prod/MarketOracle.json"
+		"https://raw.githubusercontent.com/horse-link/contracts.horse.link/blob/main/deployments/prod_goerli/MarketOracle.json"
 	);
 	const data = response.data;
 	return new ethers.Contract(address, data.abi, provider).connect(
@@ -69,7 +69,7 @@ export async function loadOracle(): Promise<ethers.Contract> {
 export async function loadMarket(address: string): Promise<ethers.Contract> {
 	// All the markets are the same, so we'll just the Usdt for now
 	const response = await axios.get(
-		`https://raw.githubusercontent.com/horse-link/contracts.horse.link/main/deployments/goerli_prod/UsdtMarket.json`
+		"https://github.com/horse-link/contracts.horse.link/blob/main/deployments/prod_goerli/UsdtMarket.json"
 	);
 	const data = response?.data;
 	return new ethers.Contract(address, data.abi, provider).connect(
