@@ -198,7 +198,7 @@ contract Market is IMarket, Ownable, ERC721 {
 			return 1;
 		}
 
-		pool -= _potentialPayout[propositionId]; //TODO: Should be _totalExposure;
+		pool -= _potentialPayout[propositionId];
 
 		// Calculate the new odds
 		uint256 adjustedOdds = _getAdjustedOdds(wager, odds, pool);

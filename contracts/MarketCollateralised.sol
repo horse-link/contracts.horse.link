@@ -37,7 +37,8 @@ abstract contract MarketCollateralised is Market {
 		address underlying = _vault.asset();
 		if (result == WINNER) {
 			// Send the payout to the NFT owner
-			_totalCollateral -= _bets[index].payout - _bets[index].amount;
+			//_totalCollateral -= _bets[index].payout - _bets[index].amount; //WRONG!
+			_totalCollateral -= _betExposure[index];
 			IERC20(underlying).transfer(ownerOf(index), _bets[index].payout);
 		} else {
 			// Else, the bet was a loser
@@ -73,53 +74,32 @@ abstract contract MarketCollateralised is Market {
 		
 		// The collateral reserved for this race
 		uint256 existingCollateral = _marketCollateral[marketId] + _marketTotal[marketId];
-
-		console.log("_obtainCollateral");
-		console.log("existingCollateral", existingCollateral);
-		console.log("_potentialPayout[propositionId]", _potentialPayout[propositionId]);
 		
 		if (_potentialPayout[propositionId] > existingCollateral) {
-
-			console.log("We don't have enough existing collateral");
 
 			// Get any additional collateral we need for this race
 			_mostExpensivePropositionId[marketId] = propositionId;
 			
 			// The amount to borrow starts as the difference between the potential payout and the existing collateral on this race
 			result = _potentialPayout[propositionId] - existingCollateral;
-
-
-			console.log("_potentialPayout[propositionId]", _potentialPayout[propositionId]);
-			console.log("existingCollateral", existingCollateral);
 			
 			// If the total amount of collateral in the contracts is greater than the amount backing bets, we can use some
 			if (_totalCollateral > _totalExposure) {
 				// We have some collateral available to use (from previous bets
-				console.log(" We have some collateral available to use (from previous bets");
-
-				// So the amount of collateral available to use is the total collateral minus the total exposure
+				// The amount of collateral available to use is the total collateral minus the total exposure
 				uint256 internallyAvailableCollateral = _totalCollateral - _totalExposure;
-				console.log("internallyAvailableCollateral", internallyAvailableCollateral);
 
 				// We can only use the amount of collateral that is available
 				internalCollateralToUse = Math.min(result, internallyAvailableCollateral);
-				console.log("internalCollateralToUse", internalCollateralToUse);
 				
-				// Add that to the total exposure, because that's now backing a bet
-				_totalExposure += internalCollateralToUse;
-
-				//_marketCollateral[marketId] += internalCollateralToUse; // THIS LINE WAS MISSING!
-				console.log("_totalExposure is now", _totalExposure);
+				// Add that to market collateral, because that's now allocated to this market
+				_marketCollateral[marketId] += internalCollateralToUse;
 			}
-			//console.log("result is now", result);
-			//console.log("internalCollateralToUse is now", internalCollateralToUse);
 
 			// If the amount we need to borrow is greater than the amount of collateral we can use, we need to get more collateral from the Vault
 			if (internalCollateralToUse < result) {
 				// We need to get more collateral from the Vault
-				console.log("We need to get more collateral from the Vault");
 				result = result - internalCollateralToUse;
-				console.log("We are going to get", result, "from the Vault");
 				IERC20(_vault.asset()).transferFrom(
 					address(_vault),
 					_self,
@@ -127,20 +107,18 @@ abstract contract MarketCollateralised is Market {
 				);
 				// Add the amount we borrowed to the total collateral
 				_totalCollateral += result;
-				console.log("_totalCollateral is now", _totalCollateral);
 			}
 			// Add the amount we borrowed to the race collateral
 			_marketCollateral[marketId] += result;
-			console.log("_marketCollateral[marketId] is now", _marketCollateral[marketId]);
 		}
 		// Store the amount of exposure that this bet added. This will be deducted from the total exposure when the bet is paid out
 		_betExposure[_bets.length] = result;
 		return result; // To be added to total exposure
 	}
 
-	/*function getTotalCollateral() external view returns (uint256) {
+	function getTotalCollateral() external view returns (uint256) {
 		return _totalCollateral;
-	}*/
+	}
 
 	// Return any unused collateral to the Vault
 	function refundCollateral() external onlyOwner {
