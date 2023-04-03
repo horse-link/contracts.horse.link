@@ -243,7 +243,8 @@ export async function makeBet(
 	marketContract: Market,
 	vault: Vault,
 	bet: TestBet,
-	owner: SignerWithAddress
+	owner: SignerWithAddress,
+	now?: number
 ): Promise<MarketStats> {
 	const tokenDecimals = await token.decimals();
 	await token
@@ -254,8 +255,8 @@ export async function makeBet(
 		);
 
 	const nonce = "1";
-	const close = END;
-	const end = END;
+	const close = (now ?? 0) + END;
+	const end = (now ?? 0) + END;
 	const wager = ethers.utils.parseUnits(bet.amount.toString(), tokenDecimals);
 	const odds = ethers.utils.parseUnits(bet.odds.toString(), 6);
 	const b16Nonce = formatBytes16String(nonce);
@@ -303,6 +304,8 @@ export function printMarketStats(marketId: string, stats: MarketStats) {
 	console.log("Vault Balance: ", stats.vaultBalance.toString());
 }
 
+const MS_DELAY = 7200 * 1000;
+
 export const Markets: { [key: string]: TestMarket } = {
 	RedRacetrack: {
 		name: "Red Racetrack",
@@ -311,7 +314,16 @@ export const Markets: { [key: string]: TestMarket } = {
 	},
 	BlueDogs: {
 		name: "Blue Dogs",
-		marketId: makeMarketId(new Date(), "BLUE", "1"),
+		marketId: makeMarketId(new Date(), "BLU", "1"),
+		runners: []
+	},
+	GreenRace: {
+		name: "Green Race",
+		marketId: makeMarketId(
+			new Date(new Date().getTime() + MS_DELAY),
+			"GRN",
+			"1"
+		),
 		runners: []
 	}
 };
@@ -342,6 +354,18 @@ Markets.BlueDogs.runners = [
 		runnerNumber: 2,
 		name: "Blue 2",
 		propositionId: makePropositionId(Markets.BlueDogs.marketId, 2)
+	}
+];
+Markets.GreenRace.runners = [
+	{
+		runnerNumber: 1,
+		name: "Green 1",
+		propositionId: makePropositionId(Markets.GreenRace.marketId, 1)
+	},
+	{
+		runnerNumber: 2,
+		name: "Green 2",
+		propositionId: makePropositionId(Markets.GreenRace.marketId, 2)
 	}
 ];
 
