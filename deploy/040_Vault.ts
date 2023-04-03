@@ -14,6 +14,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	const namedAccounts = await getNamedAccounts();
 	const deployer = namedAccounts.deployer;
 
+	console.log(`Deployer: ${deployer}`);
+
 	// Get tokens we are using for the current network
 	const underlyingTokens = UnderlyingTokens.filter((details) => {
 		return details.networks.includes(network.name);
@@ -57,6 +59,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 		);
 
 		if (deployResult.newlyDeployed && !network.tags.testing) {
+			// Don't add to registry if running unit tests
 			console.log("Adding vault to registry: ", tokenDetails.vaultName);
 			// Add vaultTimeLock to registry
 			try {
@@ -69,7 +72,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 			} catch (error) {
 				console.log("Error adding vault to registry: ", error);
 			}
-
+		}
+		if (network.live) {
 			// Verify
 			// Wait 10 seconds
 			setTimeout(async () => {
@@ -78,6 +82,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 					constructorArguments
 				});
 			}, 10000);
+			console.log(
+				`Minted ${tokenDetails.mintAmount} ${tokenDetails.symbol} to deployer`
+			);
 		}
 	}
 };

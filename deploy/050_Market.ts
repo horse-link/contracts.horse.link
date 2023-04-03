@@ -100,7 +100,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 					"addMarket",
 					marketDeployment.address
 				);
-
+			}
+			if (network.live) {
 				// Wait 10 seconds before verifying
 				setTimeout(async () => {
 					await hre.run("verify:verify", {
@@ -111,6 +112,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 			}
 		}
 
+		// Deposit some tokens into the vault
 		if (!network.tags.production && !network.tags.testing) {
 			const token: Token = await ethers.getContractAt("Token", tokenAddress);
 
@@ -137,7 +139,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 			);
 		}
 	}
-	if (!network.tags.testing) {
+	if (network.live) {
 		await hre.run("verify:verify", {
 			address: oddsLib.address,
 			constructorArguments: []
