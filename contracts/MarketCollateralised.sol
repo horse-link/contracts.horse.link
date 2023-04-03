@@ -3,6 +3,7 @@ pragma solidity =0.8.15;
 pragma abicoder v2;
 
 import "./Market.sol";
+import "hardhat/console.sol";
 
 
 abstract contract MarketCollateralised is Market {
@@ -47,14 +48,14 @@ abstract contract MarketCollateralised is Market {
 		}
 	}
 
-	function _isMostExpensiveProposition(
+	/*function _isMostExpensiveProposition(
 		bytes16 propositionId,
 		bytes16 marketId
 	) internal view returns (bool) {
 		return
 			keccak256(abi.encodePacked(propositionId)) ==
 			keccak256(abi.encodePacked(_mostExpensivePropositionId[marketId]));
-	}
+	}*/
 
 	// Overidden to make this "collateralised" - it will hold on to the collateral amounts for future bets
 	// If the payout for this proposition will be greater than the amount of collateral set aside for the market
@@ -68,20 +69,25 @@ abstract contract MarketCollateralised is Market {
 		bytes16 marketId,
 		bytes16 propositionId
 	) internal virtual returns (uint256) {
+		console.log("MarketCollateralised._obtainCollateral");
 		uint256 result;
 
 		uint256 internalCollateralToUse;
 		
 		// The collateral reserved for this race
 		uint256 existingCollateral = _marketCollateral[marketId] + _marketTotal[marketId];
+		console.log("_marketCollateral[marketId]", _marketCollateral[marketId]);
+		console.log("_marketTotal[marketId]", _marketTotal[marketId]);
+		console.log("_potetntialPayout[propositionId]", _potentialPayout[propositionId]);
 		
 		if (_potentialPayout[propositionId] > existingCollateral) {
+			console.log("Collateral required for this bet", _potentialPayout[propositionId] - existingCollateral);
 
 			// Get any additional collateral we need for this race
 			_mostExpensivePropositionId[marketId] = propositionId;
 			
 			// The amount to borrow starts as the difference between the potential payout and the existing collateral on this race
-			result = _potentialPayout[propositionId] - existingCollateral;
+			uint256 amountToBorrow = _potentialPayout[propositionId] - existingCollateral;
 			
 			// If the total amount of collateral in the contracts is greater than the amount backing bets, we can use some
 			if (_totalCollateral > _totalExposure) {
@@ -90,28 +96,26 @@ abstract contract MarketCollateralised is Market {
 				uint256 internallyAvailableCollateral = _totalCollateral - _totalExposure;
 
 				// We can only use the amount of collateral that is available
-				internalCollateralToUse = Math.min(result, internallyAvailableCollateral);
-				
-				// Add that to market collateral, because that's now allocated to this market
-				_marketCollateral[marketId] += internalCollateralToUse;
+				internalCollateralToUse = Math.min(result, internallyAvailableCollateral);			
 			}
 
 			// If the amount we need to borrow is greater than the amount of collateral we can use, we need to get more collateral from the Vault
-			if (internalCollateralToUse < result) {
+			if (internalCollateralToUse < amountToBorrow) {
 				// We need to get more collateral from the Vault
-				result = result - internalCollateralToUse;
+				//result = result - internalCollateralToUse;
+				amountToBorrow -= internalCollateralToUse;
 				IERC20(_vault.asset()).transferFrom(
 					address(_vault),
 					_self,
-					result
+					amountToBorrow
 				);
 
 				// Add the amount we borrowed to the total collateral				
-				emit Borrowed(index, result);
-				_totalCollateral += result;
+				emit Borrowed(index, amountToBorrow);
+				_totalCollateral += amountToBorrow;
 			}
-			// Add the amount we borrowed to the race collateral
-			_marketCollateral[marketId] += result;
+			// Add to the race collateral							
+			_marketCollateral[marketId] += amountToBorrow + internalCollateralToUse;
 		}
 		// Store the amount of exposure that this bet added. This will be deducted from the total exposure when the bet is paid out
 		_betExposure[_bets.length] = result;
