@@ -65,8 +65,10 @@ abstract contract MarketCollateralised is Market {
 	function _obtainCollateral(
 		uint256 index,
 		bytes16 marketId,
-		bytes16 propositionId
-	) internal virtual returns (uint256) {
+		bytes16 propositionId,
+		uint256 /* wager */, 
+		uint256 /* payout */
+	) internal override returns (uint256) {
 		uint256 result;
 		uint256 internalCollateralToUse;
 		uint256 existingCollateral = _marketCollateral[marketId] + _marketTotal[marketId];

@@ -296,7 +296,7 @@ contract Market is IMarket, Ownable, ERC721 {
 
 		// If the payout for this proposition will be greater than the current max payout for the market)
 		_potentialPayout[propositionId] += payout;
-		_totalExposure += _obtainCollateral(uint256(index), wager, payout);
+		_totalExposure += _obtainCollateral(uint256(index), marketId, propositionId, wager, payout);
 
 		_bets.push(
 			Bet(propositionId, marketId, wager, payout, end, block.timestamp, false)
@@ -411,8 +411,8 @@ contract Market is IMarket, Ownable, ERC721 {
 	
 	// Allow the Vault to provide cover for this market
 	// Standard implementation is to request cover for each and every bet
-	// marketId and propositionId are not required in this implementation, as every bet is given its own collateral based on the wager and payout
-	function _obtainCollateral(uint256 index, uint256 wager, uint256 payout) internal virtual returns (uint256) {
+	// marketId and propositionId are not required here but ARE used in CollateralisedMarket, which inherits this contract
+	function _obtainCollateral(uint256 index, bytes16 /*marketId*/, bytes16 /*propositionId*/, uint256 wager, uint256 payout) internal virtual returns (uint256) {
 		uint256 amount = payout - wager;
 
 		IERC20(_vault.asset()).transferFrom(
