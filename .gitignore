@@ -38,3 +38,5 @@ coverage/
 .deps/
 
 venv/
+
+out/

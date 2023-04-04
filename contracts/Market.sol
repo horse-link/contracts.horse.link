@@ -76,13 +76,16 @@ contract Market is IMarket, Ownable, ERC721 {
 		_margin = margin;
 		_oracle = IOracle(oracle);
 		_signers[owner()] = true;
-
 		timeout = timeoutDays * 1 days;
 	}
 
 	function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
         return string(abi.encodePacked(baseURI, Strings.toHexString(uint256(uint160(_self)), 20), "/", tokenId.toString()));
     }
+
+	function getOwner() external view returns (address) {
+		return owner();
+	}
 
 	function getMargin() external view returns (uint8) {
 		return _margin;
@@ -119,7 +122,6 @@ contract Market is IMarket, Ownable, ERC721 {
 	function getExpiry(uint64 index) external view returns (uint256) {
 		return _getExpiry(index);
 	}
-
 
 	function getMarketTotal(bytes16 marketId)
 		external
