@@ -112,4 +112,28 @@ describe("Registry", () => {
 		const vault_count2 = await registry.vaultCount();
 		expect(vault_count2, "Should have 1 vault").to.equal(1);
 	});
+
+	it("Should be able to remove a market", async () => {
+		await registry.addMarket(market.address);
+
+		let market_count = await registry.marketCount();
+		expect(market_count, "Should have 1 market").to.equal(1);
+
+		await registry.removeMarket(0, market.address);
+
+		market_count = await registry.marketCount();
+		expect(market_count, "Should have no markets").to.equal(0);
+	});
+
+	it("Should be able to remove a vault", async () => {
+		await registry.addVault(vault.address);
+
+		let vault_count = await registry.vaultCount();
+		expect(vault_count, "Should have 1 vault").to.equal(1);
+
+		await registry.removeVault(0, vault.address);
+
+		vault_count = await registry.vaultCount();
+		expect(vault_count, "Should have no vaults").to.equal(0);
+	});
 });

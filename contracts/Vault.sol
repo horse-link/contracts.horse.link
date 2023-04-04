@@ -105,7 +105,7 @@ contract Vault is ERC4626Metadata, Ownable {
     modifier withMarket() {
         require(
             _market != address(0),
-            "deposit: Not allowed until market is set"
+            "withMarket: Not allowed until market is set"
         );
         _;
     }

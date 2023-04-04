@@ -47,7 +47,7 @@ contract Registry {
             vaults[i] = vaults[i+1];
         }
 
-        // vaults.length--;
+        vaults.pop();
 
         delete _vaultByAsset[vault];
         emit VaultRemoved(vault);
@@ -70,7 +70,7 @@ contract Registry {
             markets[i] = markets[i+1];
         }
 
-        // markets.length--;
+        markets.pop();
 
         delete _markets[market];
         emit MarketRemoved(market);
