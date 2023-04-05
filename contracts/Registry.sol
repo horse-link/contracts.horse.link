@@ -40,6 +40,19 @@ contract Registry {
         emit VaultAdded(vault);
     }
 
+    function removeVault(uint256 index, address vault) external onlyVaultOwner(vault) {
+        if (index >= vaults.length) return;
+
+        for (uint256 i = index; i < vaults.length - 1; i++){
+            vaults[i] = vaults[i+1];
+        }
+
+        vaults.pop();
+
+        delete _vaultByAsset[vault];
+        emit VaultRemoved(vault);
+    }
+
     function addMarket(address market) external onlyTokenHolders {
         require(
             _markets[market] == address(0),
@@ -50,10 +63,39 @@ contract Registry {
         emit MarketAdded(market);
     }
 
+    function removeMarket(uint256 index, address market) external onlyMarketOwner(market) {
+        if (index >= markets.length) return;
+
+        for (uint256 i = index; i < markets.length - 1; i++){
+            markets[i] = markets[i+1];
+        }
+
+        markets.pop();
+
+        delete _markets[market];
+        emit MarketRemoved(market);
+    }
+
     function setThreshold(uint256 threshold) external onlyOwner {
         require(threshold != _threshold, "setThreshold: Threshold already set");
         _threshold = threshold;
         emit ThresholdUpdated(threshold);
+    }
+
+    modifier onlyMarketOwner(address market) {
+        require(
+            IMarket(_markets[market]).getOwner() == msg.sender,
+            "onlyMarketOwner: Caller is not the market owner"
+        );
+        _;
+    }
+
+    modifier onlyVaultOwner(address vault) {
+        require(
+            IVault(vault).getOwner() == msg.sender,
+            "onlyVaultOwner: Caller is not the vault owner"
+        );
+        _;
     }
 
     modifier onlyTokenHolders() {
@@ -73,6 +115,8 @@ contract Registry {
     }
 
     event MarketAdded(address indexed market);
+    event MarketRemoved(address indexed market);
     event ThresholdUpdated(uint256 threshold);
     event VaultAdded(address indexed vault);
+    event VaultRemoved(address indexed vault);
 }

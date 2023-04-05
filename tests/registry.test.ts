@@ -8,6 +8,7 @@ import {
 	Market__factory,
 	Registry,
 	Token,
+	Token__factory,
 	Vault,
 	Vault__factory
 } from "../build/typechain";
@@ -21,9 +22,10 @@ describe("Registry", () => {
 	let underlying: Token;
 	let owner: SignerWithAddress;
 	let nonTokenHolders: SignerWithAddress;
+	let fixture: any;
 
 	beforeEach(async () => {
-		const fixture = await deployments.fixture([
+		fixture = await deployments.fixture([
 			"registry",
 			"vault",
 			"market",
@@ -111,5 +113,108 @@ describe("Registry", () => {
 		await registry.addVault(vault.address);
 		const vault_count2 = await registry.vaultCount();
 		expect(vault_count2, "Should have 1 vault").to.equal(1);
+	});
+
+	it("Should be able to remove a market", async () => {
+		const mockToken1 = await new Token__factory(owner).deploy(
+			"Mock Token 1",
+			"MTK1",
+			18
+		);
+		const mockToken2 = await new Token__factory(owner).deploy(
+			"Mock Token 2",
+			"MTK2",
+			18
+		);
+		const mockToken3 = await new Token__factory(owner).deploy(
+			"Mock Token 3",
+			"MTK3",
+			18
+		);
+
+		const mockVault1 = await new Vault__factory(owner).deploy(
+			mockToken1.address
+		);
+		const mockVault2 = await new Vault__factory(owner).deploy(
+			mockToken2.address
+		);
+		const mockVault3 = await new Vault__factory(owner).deploy(
+			mockToken3.address
+		);
+
+		const marketFactory = await ethers.getContractFactory("Market", {
+			signer: owner,
+			libraries: {
+				SignatureLib: fixture.SignatureLib.address,
+				OddsLib: fixture.OddsLib.address
+			}
+		});
+
+		const args1 = [mockVault1.address, 1, 1, ethers.constants.AddressZero];
+		const mockMarket1 = (await marketFactory.deploy(...args1)) as Market;
+
+		const args2 = [mockVault2.address, 1, 1, ethers.constants.AddressZero];
+		const mockMarket2 = (await marketFactory.deploy(...args2)) as Market;
+
+		const args3 = [mockVault3.address, 1, 1, ethers.constants.AddressZero];
+		const mockMarket3 = (await marketFactory.deploy(...args3)) as Market;
+
+		await registry.addMarket(mockMarket1.address);
+		await registry.addMarket(mockMarket2.address);
+		await registry.addMarket(mockMarket3.address);
+
+		let market_count = await registry.marketCount();
+		expect(market_count, "Should have 3 markets").to.equal(3);
+
+		await registry.removeMarket(1, mockMarket2.address);
+
+		market_count = await registry.marketCount();
+		expect(market_count, "Should have 2 markets").to.equal(2);
+
+		const market2 = await registry.markets(1);
+		expect(market2, "Should have market 3").to.equal(mockMarket3.address);
+	});
+
+	it("Should be able to remove a vault", async () => {
+		const mockToken1 = await new Token__factory(owner).deploy(
+			"Mock Token 1",
+			"MTK1",
+			18
+		);
+		const mockToken2 = await new Token__factory(owner).deploy(
+			"Mock Token 2",
+			"MTK2",
+			18
+		);
+		const mockToken3 = await new Token__factory(owner).deploy(
+			"Mock Token 3",
+			"MTK3",
+			18
+		);
+
+		const mockVault1 = await new Vault__factory(owner).deploy(
+			mockToken1.address
+		);
+		const mockVault2 = await new Vault__factory(owner).deploy(
+			mockToken2.address
+		);
+		const mockVault3 = await new Vault__factory(owner).deploy(
+			mockToken3.address
+		);
+
+		await registry.addVault(mockVault1.address);
+		await registry.addVault(mockVault2.address);
+		await registry.addVault(mockVault3.address);
+
+		let vault_count = await registry.vaultCount();
+		expect(vault_count, "Should have 3 vaults").to.equal(3);
+
+		await registry.removeVault(1, vault.address);
+
+		vault_count = await registry.vaultCount();
+		expect(vault_count, "Should have 2 vaults").to.equal(2);
+
+		const market2 = await registry.vaults(1);
+		expect(market2, "Should have vault 3").to.equal(mockVault3.address);
 	});
 });
