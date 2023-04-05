@@ -39,6 +39,7 @@ contract Vault is ERC4626Metadata, Ownable {
 
     function setMarket(address market, uint256 max, uint256 rate) public onlyOwner {
         require(_market == address(0), "setMarket: Market already set");
+        require(rate => 100_000, "setMarket: Rate must be greater than 100,000")
         _market = market;
         _rate = rate;
         IERC20(asset()).approve(_market, max);
@@ -60,7 +61,7 @@ contract Vault is ERC4626Metadata, Ownable {
         return 0;
     }
 
-    function getRate() external view returns (uint256);
+    function getRate() external view returns (uint256) {
         return _rate;
     }
 
