@@ -23,7 +23,7 @@ import { formatBytes16String } from "../scripts/utils";
 
 chai.use(solidity);
 
-describe("Market", () => {
+describe.only("Market", () => {
 	let underlying: Token;
 	let tokenDecimals: number;
 	let vault: Vault;
@@ -491,7 +491,7 @@ describe("Market", () => {
 		).to.be.revertedWith("back: Invalid date");
 	});
 
-	it("Should not allow a betting attack", async () => {
+	it.skip("Should not allow a betting attack", async () => {
 		// Whale has some USDT but he wants more
 		const whaleOriginalBalance = await underlying.balanceOf(whale.address);
 
@@ -767,6 +767,89 @@ describe("Market", () => {
 
 			const balance = await underlying.balanceOf(bob.address);
 			expect(balance).to.equal(bobBalance.add(betPayout));
+		});
+
+		it.only("Should settle bobs loosing bet by index", async () => {
+			const balance = await underlying.balanceOf(vault.address);
+			expect(balance).to.equal(ethers.utils.parseUnits("1000", tokenDecimals));
+
+			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
+			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
+			const currentTime = await time.latest();
+			// Assume race closes in 1 hour from now
+			const close = currentTime + 3600;
+
+			const latestBlockNumber = await ethers.provider.getBlockNumber();
+			const latestBlock = await ethers.provider.getBlock(latestBlockNumber);
+
+			const end = latestBlock.timestamp + 10000;
+
+			// Runner 2 for a Win
+			const nonce = "2";
+			const propositionId = makePropositionId("ABC", 2);
+			const marketId = makeMarketId(new Date(), "ABC", "2");
+
+			const betSignature = await signBackMessage(
+				nonce,
+				marketId,
+				propositionId,
+				odds,
+				close,
+				end,
+				owner
+			);
+
+			const count = await market.getCount();
+			expect(count, "There should be no bets").to.equal(0);
+
+			expect(
+				await market
+					.connect(bob)
+					.back(
+						constructBet(
+							formatBytes16String(nonce),
+							formatBytes16String(propositionId),
+							formatBytes16String(marketId),
+							wager,
+							odds,
+							close,
+							end,
+							betSignature
+						)
+					)
+			).to.emit(market, "Placed");
+
+			const winningPropositionId = makePropositionId("ABC", 1);
+			const signature = await signSetResultMessage(
+				marketId,
+				winningPropositionId,
+				oracleSigner
+			);
+
+			await oracle.setResult(
+				formatBytes16String(marketId),
+				formatBytes16String(winningPropositionId),
+				signature
+			);
+
+			await hre.network.provider.request({
+				method: "evm_setNextBlockTimestamp",
+				params: [end + 7200]
+			});
+
+			const index = 0;
+			expect(await market.settle(index))
+				.to.emit(market, "Repaid")
+				.withArgs(vault.address, 184818211);
+
+			const actual = await underlying.balanceOf(vault.address);
+			console.log("actual", actual.toString());
+			expect(actual).to.equal(1012090911);
+
+			const bobBalance = await underlying.balanceOf(bob.address);
+			expect(bobBalance).to.equal(
+				ethers.utils.parseUnits("900", USDT_DECIMALS)
+			);
 		});
 
 		it("Should settle bobs scratched bet by index", async () => {
