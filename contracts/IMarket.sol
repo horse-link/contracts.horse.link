@@ -14,10 +14,12 @@ interface IMarket {
 		uint256 end;
 		SignatureLib.Signature signature;
 	}
-	function getMargin() external view returns (uint8);
+
 	function getCount() external view returns (uint64);
-	function getTotalInPlay() external view returns (uint256);
 	function getInPlayCount() external view returns (uint256);
+	function getMargin() external view returns (uint8);
+	function getOwner() external view returns (address);
+	function getTotalInPlay() external view returns (uint256);
 	function getTotalExposure() external view returns (uint256);
 
 	function getBetByIndex(uint64 index)

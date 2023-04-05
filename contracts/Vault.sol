@@ -33,10 +33,9 @@ contract Vault is ERC4626Metadata, Ownable {
         _self = address(this);
     }
 
-    // Override decimals to be the same as the underlying asset
-    /*function decimals() public view override returns (uint8) {
-        return _decimals;
-    }*/
+    function getOwner() external view returns (address) {
+		return owner();
+	}
 
     function setMarket(address market, uint256 max, uint256 rate) public onlyOwner {
         require(_market == address(0), "setMarket: Market already set");
@@ -112,7 +111,7 @@ contract Vault is ERC4626Metadata, Ownable {
     modifier withMarket() {
         require(
             _market != address(0),
-            "deposit: Not allowed until market is set"
+            "withMarket: Not allowed until market is set"
         );
         _;
     }
