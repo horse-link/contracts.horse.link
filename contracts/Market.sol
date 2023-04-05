@@ -389,26 +389,34 @@ contract Market is IMarket, Ownable, ERC721 {
 		return _bets[index].payout;
 	}
 
-
 	function _payout(uint256 index, uint8 result) internal virtual {
+		uint256 payout = _bets[index].payout;
+		uint256 amount = _bets[index].amount;
+
 		if (result == SCRATCHED) {
-			uint256 lay = _bets[index].payout - _bets[index].amount;
+			uint256 lay = payout - amount;
+			assert(lay > 0);
+			
 			// Transfer the bet amount to the owner of the NFT
-			IERC20(_vault.asset()).transfer(ownerOf(index), _bets[index].amount);
-			// Transfer the lay back to the vault
+			IERC20(_vault.asset()).transfer(ownerOf(index), amount);
+			// Transfer the lay amount back to the vault
 			IERC20(_vault.asset()).transfer(address(_vault), lay);
-		} else {
-			address recipient = result == WINNER ? ownerOf(index) : address(_vault);
-			uint256 amount = _bets[index].payout;
-
-			// event for vault rewarded
-			if (recipient == address(_vault)) {
-				emit Repaid(recipient, amount);
-			}
-
-			IERC20(_vault.asset()).transfer(recipient, amount);
 		}
-		_totalExposure -= _bets[index].payout - _bets[index].amount;
+
+		if (result == WINNER) {
+			// Transfer the payout to the owner of the NFT
+			IERC20(_vault.asset()).transfer(ownerOf(index), payout);
+		}
+			
+		if (result == LOSER) {
+			// Transfer the bet amount plus interest to the vault
+			uint256 repayment = payout * _vault.getRate() / 100_000;
+			emit Repaid(address(_vault), repayment);
+
+			// Transfer the rest to the market owner
+			// TODO
+		}
+		_totalExposure -= (payout + amount);
 	}
 	
 	// Allow the Vault to provide cover for this market

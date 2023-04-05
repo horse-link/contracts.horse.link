@@ -85,7 +85,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 				{ from: deployer, log: true },
 				"setMarket",
 				marketDeployment.address,
-				ethers.constants.MaxUint256
+				ethers.constants.MaxUint256,
+				107000 // 107% interest rate
 			);
 			await execute(
 				marketName,
