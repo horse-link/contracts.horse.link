@@ -18,8 +18,9 @@ contract MarketWithRisk is Market {
         IVault vault,
         uint8 fee,
 		uint8 timeoutDays,
-        address oracle
-    ) Market(vault, fee, timeoutDays, oracle) {
+        address oracle,
+		string memory baseMetadataURI
+	) Market(vault, fee, timeoutDays, oracle, baseMetadataURI) {
     }
 
 	function getOddsWithRisk(

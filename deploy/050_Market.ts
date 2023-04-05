@@ -32,6 +32,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 		skipIfAlreadyDeployed: true
 	});
 
+	const registryDeployment = await deployments.get("Registry");
+
 	const collateralised = true;
 
 	// Get tokens we are using for the current network
@@ -48,7 +50,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 			vaultDeployment.address,
 			0,
 			timeoutDays,
-			oracle.address
+			oracle.address,
+			`${tokenDetails.nftBaseUri}/${hre.network.name}/${registryDeployment.address}/${tokenDetails.symbol}/` // This is enough to allow us to derive the correct market contract and return useful metadata
 		];
 
 		// If the token has a named account, use that, otherwise get the address from the deployment
@@ -109,6 +112,15 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 						constructorArguments
 					});
 				}, 10000);
+
+				if (namedAccounts[tokenDetails.owner]) {
+					await execute(
+						marketName,
+						{ from: deployer, log: true },
+						"transferOwnership",
+						[namedAccounts[tokenDetails.owner]]
+					);
+				}
 			}
 		}
 

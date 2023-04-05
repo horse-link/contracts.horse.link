@@ -134,6 +134,9 @@ export default {
 		externalArtifacts: ["externalArtifacts/*.json"]
 	},
 	namedAccounts: {
+		lucas_cullen: {
+			default: ""
+		},
 		deployer: {
 			default: 0,
 			dev_goerli: `privatekey://${process.env.GOERLI_DEPLOYER}`,
@@ -149,6 +152,12 @@ export default {
 			prod_arbitrum: "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8",
 			dev_arbitrum: "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8"
 		},
+		Usdt: {
+			prod_arbitrum: "0x7E141940932E3D13bfa54B224cb4a16510519308",
+			dev_arbitrum: "0x7E141940932E3D13bfa54B224cb4a16510519308",
+			prod_goerli: "0xF9F36C66854010D61e8F46F9Cc46F9ed55996229", //Mock
+			dev_goerli: "0xF9F36C66854010D61e8F46F9Cc46F9ed55996229" //Mock
+		},
 		fxAud: {
 			prod_arbitrum: "0x7E141940932E3D13bfa54B224cb4a16510519308",
 			dev_arbitrum: "0x7E141940932E3D13bfa54B224cb4a16510519308"
@@ -158,16 +167,16 @@ export default {
 			dev_arbitrum: "0x8616E8EA83f048ab9A5eC513c9412Dd2993bcE3F"
 		},
 		HorseLink: {
-			prod_arbitrum: "0x06d0164b1bFb040D667a82C64De870dDeac38b86"
+			prod_arbitrum: "0x06d0164b1bFb040D667a82C64De870dDeac38b86",
+			dev_arbitrum: "0x06d0164b1bFb040D667a82C64De870dDeac38b86",
+			prod_goerli: "0xb8ff864683c2Bc75558B3F38257Cd05eE1CDB8F7", //Mock
+			dev_goerli: "0xb8ff864683c2Bc75558B3F38257Cd05eE1CDB8F7" //Mock
 		},
 		Dai: {
-			prod_goerli: "0x8D9A084b37E826d02040479911375Dc79C266684",
-			dev_goerli: "0x8D9A084b37E826d02040479911375Dc79C266684"
+			prod_goerli: "0x8D9A084b37E826d02040479911375Dc79C266684", //Mock
+			dev_goerli: "0x8D9A084b37E826d02040479911375Dc79C266684" //Mock
 		},
-		Usdt: {
-			prod_goerli: "0xF9F36C66854010D61e8F46F9Cc46F9ed55996229",
-			dev_goerli: "0xF9F36C66854010D61e8F46F9Cc46F9ed55996229"
-		},
+
 		MarketSigner: {
 			default: 1,
 			prod_goerli: "0xF33b9A4efA380Df3B435f755DD2C2AF7fE53C2d1", // key in bitwarden
