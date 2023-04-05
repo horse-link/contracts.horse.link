@@ -115,7 +115,7 @@ describe("Registry", () => {
 		expect(vault_count2, "Should have 1 vault").to.equal(1);
 	});
 
-	it.only("Should be able to remove a market", async () => {
+	it("Should be able to remove a market", async () => {
 		const mockToken1 = await new Token__factory(owner).deploy(
 			"Mock Token 1",
 			"MTK1",
@@ -156,7 +156,7 @@ describe("Registry", () => {
 		const args2 = [mockVault2.address, 1, 1, ethers.constants.AddressZero];
 		const mockMarket2 = (await marketFactory.deploy(...args2)) as Market;
 
-		const args3 = [mockVault1.address, 1, 1, ethers.constants.AddressZero];
+		const args3 = [mockVault3.address, 1, 1, ethers.constants.AddressZero];
 		const mockMarket3 = (await marketFactory.deploy(...args3)) as Market;
 
 		await registry.addMarket(mockMarket1.address);
@@ -170,9 +170,12 @@ describe("Registry", () => {
 
 		market_count = await registry.marketCount();
 		expect(market_count, "Should have 2 markets").to.equal(2);
+
+		const market2 = await registry.markets(1);
+		expect(market2, "Should have market 3").to.equal(mockMarket3.address);
 	});
 
-	it.only("Should be able to remove a vault", async () => {
+	it("Should be able to remove a vault", async () => {
 		const mockToken1 = await new Token__factory(owner).deploy(
 			"Mock Token 1",
 			"MTK1",
@@ -210,5 +213,8 @@ describe("Registry", () => {
 
 		vault_count = await registry.vaultCount();
 		expect(vault_count, "Should have 2 vaults").to.equal(2);
+
+		const market2 = await registry.vaults(1);
+		expect(market2, "Should have vault 3").to.equal(mockVault3.address);
 	});
 });
