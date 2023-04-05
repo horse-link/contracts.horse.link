@@ -150,14 +150,6 @@ describe("Registry", () => {
 			}
 		});
 
-		// const marketFactory = await new Market__factory(owner).deploy( {
-		// 	signer: owner,
-		// 	libraries: {
-		// 		SignatureLib: fixture.SignatureLib.address,
-		// 		OddsLib: fixture.OddsLib.address
-		// 	}
-		// });
-
 		const args1 = [mockVault1.address, 1, 1, ethers.constants.AddressZero];
 		const mockMarket1 = (await marketFactory.deploy(...args1)) as Market;
 
@@ -171,13 +163,13 @@ describe("Registry", () => {
 		await registry.addMarket(mockMarket2.address);
 		await registry.addMarket(mockMarket3.address);
 
-		const market_count = await registry.marketCount();
+		let market_count = await registry.marketCount();
 		expect(market_count, "Should have 3 markets").to.equal(3);
 
-		// await registry.removeMarket(0, market.address);
+		await registry.removeMarket(1, mockMarket2.address);
 
-		// market_count = await registry.marketCount();
-		// expect(market_count, "Should have no markets").to.equal(0);
+		market_count = await registry.marketCount();
+		expect(market_count, "Should have 2 markets").to.equal(2);
 	});
 
 	it.only("Should be able to remove a vault", async () => {
