@@ -158,13 +158,21 @@ describe("Registry", () => {
 		// 	}
 		// });
 
-		const args = [vault.address, 1, 1, ethers.constants.AddressZero];
-		const mockMarket = (await marketFactory.deploy(...args)) as Market;
+		const args1 = [mockVault1.address, 1, 1, ethers.constants.AddressZero];
+		const mockMarket1 = (await marketFactory.deploy(...args1)) as Market;
 
-		await registry.addMarket(mockMarket.address);
+		const args2 = [mockVault2.address, 1, 1, ethers.constants.AddressZero];
+		const mockMarket2 = (await marketFactory.deploy(...args2)) as Market;
 
-		// let market_count = await registry.marketCount();
-		// expect(market_count, "Should have 1 market").to.equal(1);
+		const args3 = [mockVault1.address, 1, 1, ethers.constants.AddressZero];
+		const mockMarket3 = (await marketFactory.deploy(...args3)) as Market;
+
+		await registry.addMarket(mockMarket1.address);
+		await registry.addMarket(mockMarket2.address);
+		await registry.addMarket(mockMarket3.address);
+
+		const market_count = await registry.marketCount();
+		expect(market_count, "Should have 3 markets").to.equal(3);
 
 		// await registry.removeMarket(0, market.address);
 
