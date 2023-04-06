@@ -79,23 +79,30 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 				OddsLib: oddsLib.address
 			}
 		});
+		try {
+			await execute(
+				vaultName,
+				{ from: deployer, log: true },
+				"setMarket",
+				marketDeployment.address,
+				ethers.constants.MaxUint256
+			);
+		} catch (e) {
+			console.warn("Market already set");
+		}
 
-		await execute(
-			vaultName,
-			{ from: deployer, log: true },
-			"setMarket",
-			marketDeployment.address,
-			ethers.constants.MaxUint256
-		);
-		await execute(
-			marketName,
-			{ from: deployer, log: true },
-			"grantSigner",
-			namedAccounts.MarketSigner
-		);
+		try {
+			await execute(
+				marketName,
+				{ from: deployer, log: true },
+				"grantSigner",
+				namedAccounts.MarketSigner
+			);
+		} catch (e) {
+			console.warn("Failed to set signer");
+			console.error(e);
+		}
 		if (!network.tags.testing) {
-			//Check to see if the market has already been added
-			const result = await read("Registry", "getMarket", tokenAddress);
 			try {
 				await execute(
 					"Registry",
@@ -121,12 +128,17 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 			}, 10000);
 
 			if (namedAccounts[tokenDetails.owner]) {
-				await execute(
-					marketName,
-					{ from: deployer, log: true },
-					"transferOwnership",
-					namedAccounts[tokenDetails.owner]
-				);
+				try {
+					await execute(
+						marketName,
+						{ from: deployer, log: true },
+						"transferOwnership",
+						namedAccounts[tokenDetails.owner]
+					);
+				} catch (e) {
+					console.warn("Failed to transfer ownership");
+					console.error(e);
+				}
 			}
 		}
 
