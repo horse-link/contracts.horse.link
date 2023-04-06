@@ -58,7 +58,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 			deployResult.address
 		);
 
-		if (deployResult.newlyDeployed && !network.tags.testing) {
+		if (!network.tags.testing) {
 			// Don't add to registry if running unit tests
 			console.log("Adding vault to registry: ", tokenDetails.vaultName);
 			// Add vaultTimeLock to registry

@@ -58,7 +58,6 @@ export default {
 					apiKey: process.env.ETHERSCAN_API_KEY
 				}
 			},
-			gasMultiplier: 2,
 			tags: ["production"]
 		},
 		prod_arbitrum: {
@@ -135,7 +134,13 @@ export default {
 	},
 	namedAccounts: {
 		lucas_cullen: {
-			default: ""
+			default: "0x9943d42D7a59a0abaE451130CcfC77d758da9cA0"
+		},
+		horse_link: {
+			default: "0x3Ebee18ce417Ac6f725FeB0A3649b2bE672A4448"
+		},
+		handle_fi: {
+			default: "0xf00ccf5328389beb9e6ee63ea2cb303f50d9f42d"
 		},
 		deployer: {
 			default: 0,

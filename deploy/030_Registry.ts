@@ -9,9 +9,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	const { deployments, getNamedAccounts } = hre;
 	const { deploy } = deployments;
 	const { deployer } = await getNamedAccounts();
-	const registryTokenDeployment: Deployment = await deployments.get(
-		"HorseLink"
-	);
+	let registryTokenDeployment: Deployment;
+	try {
+		registryTokenDeployment = await deployments.get("HorseLink");
+	} catch {
+		registryTokenDeployment = await deployments.get("MockHorseLink");
+	}
 
 	console.log(`Deployer: ${deployer}`);
 

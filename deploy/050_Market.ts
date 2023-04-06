@@ -10,7 +10,7 @@ import { UnderlyingTokens } from "../deployData/settings";
  */
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	const { deployments, getNamedAccounts, network } = hre;
-	const { deploy, execute } = deployments;
+	const { deploy, execute, read } = deployments;
 	const oracle = await deployments.get("MarketOracle");
 	const namedAccounts = await getNamedAccounts();
 	const deployer = namedAccounts.deployer;
@@ -33,8 +33,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	});
 
 	const registryDeployment = await deployments.get("Registry");
-
-	const collateralised = true;
 
 	// Get tokens we are using for the current network
 	const underlyingTokens = UnderlyingTokens.filter((details) => {
@@ -70,7 +68,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 			tokenAddress = tokenDeployment.address;
 		}
 		const marketDeployment = await deploy(marketName, {
-			contract: collateralised ? "MarketCollateralisedLinear" : "Market",
+			contract: tokenDetails.marketType,
 			from: deployer,
 			args: constructorArguments,
 			log: true,
@@ -82,45 +80,53 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 			}
 		});
 
-		if (marketDeployment?.newlyDeployed) {
-			await execute(
-				vaultName,
-				{ from: deployer, log: true },
-				"setMarket",
-				marketDeployment.address,
-				ethers.constants.MaxUint256
-			);
-			await execute(
-				marketName,
-				{ from: deployer, log: true },
-				"grantSigner",
-				namedAccounts.MarketSigner
-			);
-			if (!network.tags.testing) {
+		await execute(
+			vaultName,
+			{ from: deployer, log: true },
+			"setMarket",
+			marketDeployment.address,
+			ethers.constants.MaxUint256
+		);
+		await execute(
+			marketName,
+			{ from: deployer, log: true },
+			"grantSigner",
+			namedAccounts.MarketSigner
+		);
+		if (!network.tags.testing) {
+			//Check to see if the market has already been added
+			const result = await read("Registry", "getMarket", tokenAddress);
+			try {
 				await execute(
 					"Registry",
 					{ from: deployer, log: true },
 					"addMarket",
 					marketDeployment.address
 				);
+			} catch (e) {
+				console.warn("Market already added");
 			}
-			if (network.live) {
-				// Wait 10 seconds before verifying
-				setTimeout(async () => {
-					await hre.run("verify:verify", {
+		}
+		if (network.live) {
+			// Wait 10 seconds before verifying
+			setTimeout(async () => {
+				hre
+					.run("verify:verify", {
 						address: marketDeployment.address,
 						constructorArguments
+					})
+					.catch((e) => {
+						console.log("Error verifying market: ", e);
 					});
-				}, 10000);
+			}, 10000);
 
-				if (namedAccounts[tokenDetails.owner]) {
-					await execute(
-						marketName,
-						{ from: deployer, log: true },
-						"transferOwnership",
-						[namedAccounts[tokenDetails.owner]]
-					);
-				}
+			if (namedAccounts[tokenDetails.owner]) {
+				await execute(
+					marketName,
+					{ from: deployer, log: true },
+					"transferOwnership",
+					namedAccounts[tokenDetails.owner]
+				);
 			}
 		}
 

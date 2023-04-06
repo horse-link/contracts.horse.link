@@ -12,58 +12,89 @@ export type TokenDeployDetails = {
 	nftBaseUri: string;
 	marketType: MarketType;
 	owner?: string;
+	mock?: boolean;
 };
 
 export enum MarketType {
-	Simple = "Simple",
-	Collateralised = "Collateralised"
+	Simple = "Market",
+	Collateralised = "MarketCollateralisedLinear"
 }
 
 export const mockTokens: TokenDeployDetails[] = [
 	{
-		name: "Mock USDT",
-		symbol: "USDT",
-		deploymentName: "Usdt",
-		vaultName: "UsdtVault",
-		marketName: "UsdtMarket",
-		decimals: 6,
+		name: "Mock HorseLink",
+		symbol: "mHL",
+		deploymentName: "MockHorseLink",
+		vaultName: "MockHorseLinkVault",
+		marketName: "MockHorseLinkMarket",
+		decimals: 18,
 		mintAmount: "1000000000",
-		nftBaseUri: "https://horse.link/api/nft/",
-		marketType: MarketType.Collateralised,
-		owner: "deployer",
-		networks: ["hardhat", "localhost"]
-	},
-	{
-		name: "Mock USDC",
-		symbol: "USDC",
-		deploymentName: "Usdc",
-		vaultName: "UsdcVault",
-		marketName: "UsdcMarket",
-		decimals: 6,
-		mintAmount: "1000000000",
-		nftBaseUri: "https://horse.link/api/nft/",
-		marketType: MarketType.Collateralised,
-		owner: "deployer",
-		networks: ["hardhat", "localhost"]
-	},
-	{
-		name: "Mock fxAud",
-		deploymentName: "fxAud",
-		vaultName: "fxAUD Vault",
-		marketName: "fxAUD Market",
 		nftBaseUri: "https://horse.link/api/nft/",
 		marketType: MarketType.Simple,
 		owner: "deployer",
+		mock: true,
+		networks: [
+			"hardhat",
+			"localhost",
+			"dev_goerli",
+			"prod_goerli",
+			"dev_arbitrum"
+		]
+	},
+	{
+		name: "Mock USDT",
+		symbol: "mUSDT",
+		deploymentName: "MockUsdt",
+		vaultName: "MockUsdtVault",
+		marketName: "MockUsdtMarket",
+		decimals: 6,
+		mintAmount: "1000000000",
+		nftBaseUri: "https://horse.link/api/nft/",
+		marketType: MarketType.Collateralised,
+		owner: "deployer",
+		mock: true,
+		networks: ["hardhat", "localhost", "dev_goerli", "prod_goerli"]
+	},
+	{
+		name: "Mock USDC",
+		symbol: "mUSDC",
+		deploymentName: "MockUsdc",
+		vaultName: "MockUsdcVault",
+		marketName: "MockUsdcMarket",
+		decimals: 6,
+		mintAmount: "1000000000",
+		nftBaseUri: "https://horse.link/api/nft/",
+		marketType: MarketType.Collateralised,
+		owner: "deployer",
+		mock: true,
+		networks: ["hardhat"]
+	},
+	{
+		name: "Mock fxAud",
+		symbol: "mFxAUD",
+		deploymentName: "MockFxAud",
+		vaultName: "MockFxAudVault",
+		marketName: "MockFxAudMarket",
+		decimals: 18,
+		mintAmount: "1000000000",
+		nftBaseUri: "https://horse.link/api/nft/",
+		marketType: MarketType.Simple,
+		owner: "deployer",
+		mock: true,
 		networks: ["hardhat", "localhost"]
 	},
 	{
 		name: "Mock fxUsd",
-		deploymentName: "fxUsd",
-		vaultName: "fxUSD Vault",
-		marketName: "fxUSD Market",
+		symbol: "mFxUSD",
+		deploymentName: "MockFxUsd",
+		vaultName: "MockFxUsdVault",
+		marketName: "MockFxUsdMarket",
+		decimals: 18,
+		mintAmount: "1000000000",
 		nftBaseUri: "https://horse.link/api/nft/",
 		marketType: MarketType.Simple,
 		owner: "deployer",
+		mock: true,
 		networks: ["hardhat", "localhost"]
 	}
 ];
@@ -78,8 +109,8 @@ export const productionTokens: TokenDeployDetails[] = [
 		decimals: 18,
 		nftBaseUri: "https://horse.link/api/nft/",
 		marketType: MarketType.Simple,
-		owner: "lucas_cullen",
-		networks: ["dev_arbitrum", "dev_goerli"]
+		owner: "horse_link",
+		networks: []
 	},
 	{
 		name: "Usdc",
@@ -88,7 +119,7 @@ export const productionTokens: TokenDeployDetails[] = [
 		marketName: "USDC Market",
 		nftBaseUri: "https://horse.link/api/nft/",
 		marketType: MarketType.Simple,
-		owner: "lucas_cullen",
+		owner: "horse_link",
 		networks: ["prod_arbitrum", "dev_arbitrum"]
 	},
 	{
@@ -108,7 +139,7 @@ export const productionTokens: TokenDeployDetails[] = [
 		marketName: "fxAUD Market",
 		nftBaseUri: "https://horse.link/api/nft/",
 		marketType: MarketType.Simple,
-		owner: "lucas_cullen",
+		owner: "handle_fi",
 		networks: ["prod_arbitrum", "dev_arbitrum"]
 	},
 	{
@@ -118,8 +149,8 @@ export const productionTokens: TokenDeployDetails[] = [
 		marketName: "fxUSD Market",
 		nftBaseUri: "https://horse.link/api/nft/",
 		marketType: MarketType.Simple,
-		owner: "lucas_cullen",
-		networks: ["prod_arbitrum", "dev_arbitrum", "prod_goerli"]
+		owner: "handle_fi",
+		networks: ["prod_arbitrum", "dev_arbitrum"]
 	}
 ];
 
