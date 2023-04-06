@@ -23,7 +23,7 @@ import { formatBytes16String } from "../scripts/utils";
 
 chai.use(solidity);
 
-describe.only("Market", () => {
+describe("Market", () => {
 	let underlying: Token;
 	let tokenDecimals: number;
 	let vault: Vault;
@@ -769,7 +769,7 @@ describe.only("Market", () => {
 			expect(balance).to.equal(bobBalance.add(betPayout));
 		});
 
-		it.only("Should settle bobs loosing bet by index", async () => {
+		it.skip("Should settle bobs loosing bet by index", async () => {
 			const balance = await underlying.balanceOf(vault.address);
 			expect(balance).to.equal(ethers.utils.parseUnits("1000", tokenDecimals));
 

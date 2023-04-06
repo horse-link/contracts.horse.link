@@ -394,9 +394,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		uint256 amount = _bets[index].amount;
 		uint256 loan = payout - amount;
 
-		if (result == SCRATCHED) {	
-			assert(loan > 0);
-			
+		if (result == SCRATCHED) {				
 			// Transfer the bet amount to the owner of the NFT
 			IERC20(_vault.asset()).transfer(ownerOf(index), amount);
 			// Transfer the loaned amount back to the vault
@@ -409,6 +407,8 @@ contract Market is IMarket, Ownable, ERC721 {
 		}
 			
 		if (result == LOSER) {
+			assert(_vault.getRate() > 0);
+			
 			// Transfer the bet amount plus interest to the vault
 			uint256 repayment = loan * _vault.getRate() / 100_000;
 			uint256 winnings = payout - repayment;
@@ -422,7 +422,7 @@ contract Market is IMarket, Ownable, ERC721 {
 			IERC20(_vault.asset()).transfer(owner(), winnings);
 		}
 
-		_totalExposure -= payout - amount; // loan
+		_totalExposure -= loan;
 	}
 	
 	// Allow the Vault to provide cover for this market
