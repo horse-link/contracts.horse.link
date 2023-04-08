@@ -1,5 +1,3 @@
-import { Token } from "../build/typechain";
-
 export type TokenDeployDetails = {
 	name: string;
 	symbol?: string;
