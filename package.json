@@ -16,7 +16,7 @@
     "verify:dev_goerli": "npx hardhat --network dev_goerli etherscan-verify --solc-input",
     "verify:prod_arbitrum": "npx hardhat --network prod_arbitrum etherscan-verify --solc-input",
     "verify:dev_arbitrum": "npx hardhat --network dev_arbitrum etherscan-verify --solc-input",
-    "deploy:local": "npx hardhat compile && npx hardhat deploy --network localhost --tags underlying,oracle,registryToken,vault,market --export ./exports/localhost.json",
+    "deploy:local": "npx hardhat compile && npx hardhat deploy --network localhost --tags underlying,oracle,registryToken,vault,market --export ./deployments/localhost/localhost.json",
     "hh:node": "npx hardhat node --hostname localhost",
     "test": "npx hardhat test",
     "coverage": "npx hardhat coverage",
