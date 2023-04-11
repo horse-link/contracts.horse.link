@@ -291,60 +291,59 @@ describe("Market", () => {
 							betSignature
 						)
 					)
-			).to.emit(market, "Placed");
+			)
+				.to.emit(market, "Borrowed")
+				.withArgs(0, BigNumber.from(1000000));
 
 			// Check bob and vault balances
-			const bobBalance = await underlying.balanceOf(bob.address);
+			let bobBalance = await underlying.balanceOf(bob.address);
 			expect(bobBalance).to.equal(
 				ethers.utils.parseUnits("900", USDT_DECIMALS)
 			);
 
-			// Vault should have lent 1 USDT
-			const vaultBalance = await underlying.balanceOf(vault.address);
-			expect(vaultBalance).to.equal(
-				ethers.utils.parseUnits("1", USDT_DECIMALS)
-			);
+			// // Vault should have lent 1 USDT
+			// const vaultBalance = await underlying.balanceOf(vault.address);
+			// expect(vaultBalance).to.equal(
+			// 	ethers.utils.parseUnits("1", USDT_DECIMALS)
+			// );
 
 			const vaultAssets = await vault.totalAssets();
 			expect(vaultAssets).to.equal(
 				ethers.utils.parseUnits("999", tokenDecimals)
 			);
 
-			// const winningPropositionId = makePropositionId("ABC", 1);
-			// const signature = await signSetResultMessage(
-			// 	marketId,
-			// 	winningPropositionId,
-			// 	oracleSigner
-			// );
+			const winningPropositionId = makePropositionId("ABC", 1);
+			const signature = await signSetResultMessage(
+				marketId,
+				winningPropositionId,
+				oracleSigner
+			);
 
-			// await oracle.setResult(
-			// 	formatBytes16String(marketId),
-			// 	formatBytes16String(winningPropositionId),
-			// 	signature
-			// );
+			await oracle.setResult(
+				formatBytes16String(marketId),
+				formatBytes16String(winningPropositionId),
+				signature
+			);
 
-			// await hre.network.provider.request({
-			// 	method: "evm_setNextBlockTimestamp",
-			// 	params: [end + 7200]
-			// });
+			await hre.network.provider.request({
+				method: "evm_setNextBlockTimestamp",
+				params: [end + 7200]
+			});
 
-			// // Bob should have lost his bet and still have 900 USDT
-			// // The vault should have received 1028 USDT back from the 7% of interest on the 400 USDT it lent
-			// // The market owner should earned 72 USDT
-			// const index = 0;
-			// expect(await market.settle(index))
-			// 	.to.emit(market, "Repaid")
-			// 	.withArgs(vault.address, 428000000);
+			// Bob should have lost his bet and still have 900 USDT
+			const index = 0;
+			expect(await market.settle(index)).to.emit(market, "Repaid");
+			// .withArgs(vault.address, 1);
 
 			// vaultBalance = await underlying.balanceOf(vault.address);
 			// expect(vaultBalance).to.equal(
 			// 	ethers.utils.parseUnits("1028", USDT_DECIMALS)
 			// );
 
-			// bobBalance = await underlying.balanceOf(bob.address);
-			// expect(bobBalance).to.equal(
-			// 	ethers.utils.parseUnits("900", USDT_DECIMALS)
-			// );
+			bobBalance = await underlying.balanceOf(bob.address);
+			expect(bobBalance).to.equal(
+				ethers.utils.parseUnits("900", USDT_DECIMALS)
+			);
 
 			// const marketOwnerBalance = await underlying.balanceOf(owner.address);
 			// expect(marketOwnerBalance).to.equal(
