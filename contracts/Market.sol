@@ -369,7 +369,7 @@ contract Market is IMarket, Ownable, ERC721 {
 	function refund(uint64 index, SignatureLib.Signature calldata signature) external {
 		bytes16 REFUND_CMD = 0x726566756e6400000000000000000000; //Bytes for "refund"
 		bytes32 messageHash = keccak256(
-			abi.encodePacked(REFUND_CMD, address(this), index)
+			abi.encodePacked(REFUND_CMD, _self, index)
 		);
 
 		require(
