@@ -25,7 +25,7 @@ abstract contract MarketCollateralised is Market {
 
 		if (result == SCRATCHED) {
 			// Transfer the bet amount to the owner of the NFT
-			IERC20(_underlying).transfer(
+			_underlying.transfer(
 				ownerOf(index),
 				amount
 			);
@@ -42,13 +42,13 @@ abstract contract MarketCollateralised is Market {
 		if (result == WINNER) {
 			// Send the payout to the NFT owner
 			_totalCollateral -= _betExposure[index];
-			IERC20(_underlying).transfer(ownerOf(index), _bets[index].payout);
+			_underlying.transfer(ownerOf(index), _bets[index].payout);
 		} 
 
 		if (result == LOSER) {
 			// Else, the bet was a loser
 			// Send the bet amount to the vault
-			IERC20(_underlying).transfer(address(_vault), _bets[index].amount);
+			_underlying.transfer(address(_vault), _bets[index].amount);
 		}
 	}
 

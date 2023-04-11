@@ -33,7 +33,7 @@ contract Market is IMarket, Ownable, ERC721 {
 
 	uint8 internal immutable _margin;
 	IVault internal immutable _vault;
-	address internal immutable _underlying;
+	IERC20 internal immutable _underlying;
 	address internal immutable _self;
 	IOracle internal immutable _oracle;
 
@@ -74,7 +74,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		assert(address(vault) != address(0));
 		_self = address(this);
 		_vault = vault;
-		_underlying = vault.asset();
+		_underlying = IERC20(vault.asset());
 		_margin = margin;
 		_oracle = IOracle(oracle);
 		_signers[owner()] = true;
@@ -287,7 +287,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		);
 
 		// Escrow the wager
-		IERC20(_underlying).transferFrom(_msgSender(), _self, wager);
+		_underlying.transferFrom(_msgSender(), _self, wager);
 
 		// Add to in play total for this marketId
 		_marketTotal[marketId] += wager;
@@ -395,10 +395,10 @@ contract Market is IMarket, Ownable, ERC721 {
 
 		if (result == SCRATCHED) {				
 			// Transfer the bet amount to the owner of the NFT
-			IERC20(_underlying).transfer(ownerOf(index), amount);
+			_underlying.transfer(ownerOf(index), amount);
 			
 			// Transfer the loaned amount back to the vault
-			IERC20(_underlying).transfer(address(_vault), loan);
+			_underlying.transfer(address(_vault), loan);
 			emit Repaid(address(_vault), loan);
 
 			return;
@@ -412,7 +412,7 @@ contract Market is IMarket, Ownable, ERC721 {
 
 		if (result == WINNER) {
 			// Transfer the payout to the owner of the NFT
-			IERC20(_underlying).transfer(ownerOf(index), payout);
+			_underlying.transfer(ownerOf(index), payout);
 		}
 			
 		if (result == LOSER) {
@@ -423,13 +423,11 @@ contract Market is IMarket, Ownable, ERC721 {
 			uint256 repayment = loan * rate / 100_000;
 			uint256 winnings = payout - repayment;
 
-			// assert(repayment + amount > repayment);
-
-			IERC20(_underlying).transfer(address(_vault), repayment);
+			_underlying.transfer(address(_vault), repayment);
 			emit Repaid(address(_vault), repayment);
 
 			// Transfer the rest to the market owner
-			IERC20(_underlying).transfer(owner(), winnings);
+			_underlying.transfer(owner(), winnings);
 		}
 	}
 	
@@ -439,7 +437,7 @@ contract Market is IMarket, Ownable, ERC721 {
 	function _obtainCollateral(uint256 index, bytes16 /*marketId*/, bytes16 /*propositionId*/, uint256 wager, uint256 payout) internal virtual returns (uint256) {
 		uint256 amount = payout - wager;
 
-		IERC20(_underlying).transferFrom(
+		_underlying.transferFrom(
 			address(_vault),
 			_self,
 			amount
