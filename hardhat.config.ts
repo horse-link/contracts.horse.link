@@ -158,8 +158,8 @@ export default {
 			dev_arbitrum: "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8"
 		},
 		Usdt: {
-			prod_arbitrum: "0x7E141940932E3D13bfa54B224cb4a16510519308",
-			dev_arbitrum: "0x7E141940932E3D13bfa54B224cb4a16510519308",
+			prod_arbitrum: "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
+			dev_arbitrum: "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
 			prod_goerli: "0xF9F36C66854010D61e8F46F9Cc46F9ed55996229", //Mock
 			dev_goerli: "0xF9F36C66854010D61e8F46F9Cc46F9ed55996229" //Mock
 		},
