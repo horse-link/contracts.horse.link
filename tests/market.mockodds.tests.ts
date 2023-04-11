@@ -128,7 +128,7 @@ describe("Market", () => {
 	});
 
 	describe("Fixed odds betting", () => {
-		it("Should settle bobs loosing bet by index", async () => {
+		it("Should settle bobs losing bet by index", async () => {
 			const balance = await underlying.balanceOf(vault.address);
 			expect(balance).to.equal(ethers.utils.parseUnits("1000", tokenDecimals));
 

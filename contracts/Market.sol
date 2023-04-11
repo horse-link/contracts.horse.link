@@ -33,6 +33,7 @@ contract Market is IMarket, Ownable, ERC721 {
 
 	uint8 internal immutable _margin;
 	IVault internal immutable _vault;
+	address internal immutable _underlying;
 	address internal immutable _self;
 	IOracle internal immutable _oracle;
 
@@ -73,6 +74,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		assert(address(vault) != address(0));
 		_self = address(this);
 		_vault = vault;
+		_underlying = vault.asset();
 		_margin = margin;
 		_oracle = IOracle(oracle);
 		_signers[owner()] = true;
@@ -284,10 +286,8 @@ contract Market is IMarket, Ownable, ERC721 {
 			"_back: Oracle result already set for this market"
 		);
 
-		address underlying = _vault.asset();
-
 		// Escrow the wager
-		IERC20(underlying).transferFrom(_msgSender(), _self, wager);
+		IERC20(_underlying).transferFrom(_msgSender(), _self, wager);
 
 		// Add to in play total for this marketId
 		_marketTotal[marketId] += wager;
@@ -321,10 +321,6 @@ contract Market is IMarket, Ownable, ERC721 {
 	function settle(uint64 index) external {
 		Bet memory bet = _bets[index];
 		require(bet.settled == false, "settle: Bet has already settled");
-		/*require(
-			_bets[index].payoutDate < block.timestamp,
-			"_settle: Payout date not reached"
-		);*/
 		_settle(index);
 	}
 
@@ -394,35 +390,47 @@ contract Market is IMarket, Ownable, ERC721 {
 		uint256 amount = _bets[index].amount;
 		uint256 loan = payout - amount;
 
+		// Deduct from total exposure first
+		_totalExposure -= loan;
+
 		if (result == SCRATCHED) {				
 			// Transfer the bet amount to the owner of the NFT
-			IERC20(_vault.asset()).transfer(ownerOf(index), amount);
+			IERC20(_underlying).transfer(ownerOf(index), amount);
+			
 			// Transfer the loaned amount back to the vault
-			IERC20(_vault.asset()).transfer(address(_vault), loan);
+			IERC20(_underlying).transfer(address(_vault), loan);
+			emit Repaid(address(_vault), loan);
+
+			return;
 		}
+
+		// Only allow payouts after the payout date, or if the bet has been scratched
+		require(
+			_bets[index].payoutDate < block.timestamp,
+			"_payout: Payout date not reached"
+		);
 
 		if (result == WINNER) {
 			// Transfer the payout to the owner of the NFT
-			IERC20(_vault.asset()).transfer(ownerOf(index), payout);
+			IERC20(_underlying).transfer(ownerOf(index), payout);
 		}
 			
 		if (result == LOSER) {
-			assert(_vault.getRate() > 0);
+			uint256 rate = _vault.getRate();
+			assert(rate > 100_000);
 			
 			// Transfer the bet amount plus interest to the vault
-			uint256 repayment = loan * _vault.getRate() / 100_000;
+			uint256 repayment = loan * rate / 100_000;
 			uint256 winnings = payout - repayment;
 
 			// assert(repayment + amount > repayment);
 
-			IERC20(_vault.asset()).transfer(address(_vault), repayment);
+			IERC20(_underlying).transfer(address(_vault), repayment);
 			emit Repaid(address(_vault), repayment);
 
 			// Transfer the rest to the market owner
-			IERC20(_vault.asset()).transfer(owner(), winnings);
+			IERC20(_underlying).transfer(owner(), winnings);
 		}
-
-		_totalExposure -= loan;
 	}
 	
 	// Allow the Vault to provide cover for this market
@@ -431,7 +439,7 @@ contract Market is IMarket, Ownable, ERC721 {
 	function _obtainCollateral(uint256 index, bytes16 /*marketId*/, bytes16 /*propositionId*/, uint256 wager, uint256 payout) internal virtual returns (uint256) {
 		uint256 amount = payout - wager;
 
-		IERC20(_vault.asset()).transferFrom(
+		IERC20(_underlying).transferFrom(
 			address(_vault),
 			_self,
 			amount
