@@ -193,7 +193,7 @@ describe("Market", () => {
 			// Vault should have lent 400 USDT and have 600 USDT left
 			let vaultBalance = await underlying.balanceOf(vault.address);
 			expect(vaultBalance).to.equal(
-				ethers.utils.parseUnits("400", USDT_DECIMALS)
+				ethers.utils.parseUnits("600", USDT_DECIMALS)
 			);
 
 			const vaultAssets = await vault.totalAssets();
@@ -243,7 +243,7 @@ describe("Market", () => {
 			);
 		});
 
-		it.only("Should break when odds are less than the rate of 7%", async () => {
+		it("Should break when odds are less than the rate of 7%", async () => {
 			const balance = await underlying.balanceOf(vault.address);
 			expect(balance).to.equal(ethers.utils.parseUnits("1000", tokenDecimals));
 
@@ -332,13 +332,10 @@ describe("Market", () => {
 
 			// Bob should have lost his bet and still have 900 USDT
 			const index = 0;
-			expect(await market.settle(index)).to.emit(market, "Repaid");
-			// .withArgs(vault.address, 1);
-
-			// vaultBalance = await underlying.balanceOf(vault.address);
-			// expect(vaultBalance).to.equal(
-			// 	ethers.utils.parseUnits("1028", USDT_DECIMALS)
-			// );
+			expect(await market.settle(index))
+				.to.emit(market, "Repaid")
+				.withArgs(vault.address, 1070000)
+				.to.emit(market, "Settled");
 
 			bobBalance = await underlying.balanceOf(bob.address);
 			expect(bobBalance).to.equal(
