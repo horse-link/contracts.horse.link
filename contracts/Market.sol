@@ -318,6 +318,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		return index;
 	}
 
+
 	function settle(uint64 index) external {
 		Bet memory bet = _bets[index];
 		require(bet.settled == false, "settle: Bet has already settled");
@@ -329,6 +330,7 @@ contract Market is IMarket, Ownable, ERC721 {
 	}
 
 	function _settle(uint64 index) internal {
+		
 		Bet memory bet = _bets[index];
 
 		_bets[index].settled = true;
@@ -356,7 +358,44 @@ contract Market is IMarket, Ownable, ERC721 {
 
 		emit Settled(index, _bets[index].payout, result, recipient);
 
-		_burn(index);
+		_burn(uint256(index));
+	}
+
+	/* 
+	 * @dev Reverse a bet. Return the stake to the bettor and the loan to the vault
+	 * @param index The index of the bet
+	 * @param signature Signature from market owner
+	 */
+	function refund(uint64 index, SignatureLib.Signature calldata signature) external {
+		bytes16 REFUND_CMD = 0x726566756e6400000000000000000000; //Bytes for "refund"
+		bytes32 messageHash = keccak256(
+			abi.encodePacked(REFUND_CMD, address(this), index)
+		);
+
+		require(
+			isValidSignature(messageHash, signature) == true,
+			"refund: Invalid signature"
+		);
+		_refund(index);
+	}
+
+	function _refund(uint64 index) internal virtual {
+		Bet memory bet = _bets[index];
+		require(bet.settled == false, "refund: Bet has already settled");
+
+		bet.settled = true;
+		uint256 loan = _bets[index].payout - _bets[index].amount;
+		_totalExposure -= loan;
+		_totalInPlay -= _bets[index].amount;
+		_inplayCount --;
+		
+		IERC20(_vault.asset()).transfer(ownerOf(index), bet.amount);
+		IERC20(_vault.asset()).transfer(address(_vault), loan);
+		emit Repaid(_vault.asset(), loan);
+		emit Refunded(index, bet.amount);	
+
+		_burn(uint256(index));
+		
 	}
 
 	function _applyScratchings(uint64 index) internal virtual returns (uint256) {
@@ -492,6 +531,11 @@ contract Market is IMarket, Ownable, ERC721 {
 
 	event Repaid(
 		address indexed vault,
+		uint256 amount
+	);
+
+	event Refunded(
+		uint256 index,
 		uint256 amount
 	);
 }

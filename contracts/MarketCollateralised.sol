@@ -46,14 +46,25 @@ abstract contract MarketCollateralised is Market {
 		}
 	}
 
-	/*function _isMostExpensiveProposition(
-		bytes16 propositionId,
-		bytes16 marketId
-	) internal view returns (bool) {
-		return
-			keccak256(abi.encodePacked(propositionId)) ==
-			keccak256(abi.encodePacked(_mostExpensivePropositionId[marketId]));
-	}*/
+	function _refund(uint64 index) internal override {
+		Bet memory bet = _bets[index];
+		require(bet.settled == false, "refund: Bet has already settled");
+
+		bet.settled = true;
+		uint256 loan = _betExposure[index];
+		_totalExposure -= loan;
+		_totalInPlay -= _bets[index].amount;
+		_inplayCount --;
+
+		IERC20(_vault.asset()).transfer(ownerOf(index), bet.amount);
+		if (loan > 0) {
+			IERC20(_vault.asset()).transfer(address(_vault), loan);
+			emit Repaid(_vault.asset(), loan);
+		}	
+		emit Refunded(index, bet.amount);	
+
+		_burn(uint256(index));
+	}
 
 	// Overidden to make this "collateralised" - it will hold on to the collateral amounts for future bets
 	// If the payout for this proposition will be greater than the amount of collateral set aside for the market

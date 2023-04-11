@@ -89,6 +89,15 @@ export const signBackMessage = async (
 	return await signMessage(message, signer);
 };
 
+export const signRefundMessage = async (
+	marketAddress: string,
+	betIndex: number,
+	signer: SignerWithAddress
+): Promise<Signature> => {
+	const message = makeRefundMessage(marketAddress, betIndex);
+	return await signMessage(message, signer);
+};
+
 export const signMessage = async (
 	message: string,
 	signer: SignerWithAddress
@@ -116,6 +125,18 @@ export const makeSetResultMessage = (
 	const message = ethers.utils.solidityKeccak256(
 		["bytes16", "bytes16"],
 		[b16MarketId, b16PropositionId]
+	);
+	return message;
+};
+
+export const makeRefundMessage = (
+	marketAddress: string,
+	betIndex: BigNumberish
+): string => {
+	const b16Refund = formatBytes16String("refund");
+	const message = ethers.utils.solidityKeccak256(
+		["bytes16", "address", "uint64"],
+		[b16Refund, marketAddress, betIndex]
 	);
 	return message;
 };

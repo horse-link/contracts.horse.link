@@ -59,4 +59,5 @@ interface IMarket {
 
 	function settle(uint64 index) external;
 	function settleMarket(bytes16 marketId) external;
+	function refund(uint64 index, SignatureLib.Signature calldata signature) external;
 }

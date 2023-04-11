@@ -17,7 +17,8 @@ import {
 	makePropositionId,
 	signBackMessage,
 	signSetResultMessage,
-	signSetScratchedMessage
+	signSetScratchedMessage,
+	signRefundMessage
 } from "./utils";
 import { formatBytes16String } from "../scripts/utils";
 
@@ -34,7 +35,6 @@ describe("Market", () => {
 	let bob: SignerWithAddress;
 	let carol: SignerWithAddress;
 	let whale: SignerWithAddress;
-	let marketSigner: SignerWithAddress;
 	let oracleSigner: SignerWithAddress;
 
 	const USDT_DECIMALS = 6;
@@ -46,7 +46,6 @@ describe("Market", () => {
 
 	beforeEach(async () => {
 		[owner, alice, bob, carol, whale] = await ethers.getSigners();
-		marketSigner = alice;
 		oracleSigner = owner;
 		const fixture = await deployments.fixture([
 			"underlying",
@@ -1237,6 +1236,77 @@ describe("Market", () => {
 
 			inPlayCount = await market.getInPlayCount();
 			expect(inPlayCount).to.equal(0);
+		});
+	});
+
+	describe("Refund", () => {
+		it("Should refund a bet", async () => {
+			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
+			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
+			const now = await time.latest();
+			const close = now + 60;
+			const end = now + 60;
+
+			const initialBettorBalance = await underlying.balanceOf(bob.address);
+			const initialVaultBalance = await underlying.balanceOf(vault.address);
+
+			await underlying
+				.connect(bob)
+				.approve(market.address, ethers.utils.parseUnits("100", tokenDecimals));
+
+			const marketId = makeMarketId(new Date(), "ABC", "1");
+			const propositionId = makePropositionId(marketId, 1);
+			const nonce = "1";
+
+			const signature = await signBackMessage(
+				nonce,
+				marketId,
+				propositionId,
+				odds,
+				close,
+				end,
+				owner
+			);
+
+			await market
+				.connect(bob)
+				.back(
+					constructBet(
+						formatBytes16String(nonce),
+						formatBytes16String(propositionId),
+						formatBytes16String(marketId),
+						wager,
+						odds,
+						close,
+						end,
+						signature
+					)
+				);
+			const betIndex = 0;
+			const tokenOwner = await market.ownerOf(betIndex);
+			expect(tokenOwner, "Bob should have a bet NFT").to.equal(bob.address);
+
+			// Refund
+			const refundSignature = await signRefundMessage(
+				market.address,
+				betIndex,
+				owner
+			);
+			expect(
+				await market.connect(bob).refund(betIndex, refundSignature)
+			).to.emit(market, "Refunded");
+
+			// Expect final and initial balances to be the same
+			const finalBettorBalance = await underlying.balanceOf(bob.address);
+			const finalVaultBalance = await underlying.balanceOf(vault.address);
+			expect(
+				finalBettorBalance,
+				"Bob should have been refunded his stake"
+			).to.equal(initialBettorBalance);
+			expect(
+				finalVaultBalance,
+				"Vault should have been refunded the loan"
+			).to.equal(initialVaultBalance);
 		});
 	});
 
