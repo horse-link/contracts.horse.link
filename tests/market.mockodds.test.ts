@@ -243,7 +243,7 @@ describe("Market", () => {
 			);
 		});
 
-		it.only("Should break when odds are less than $1.07", async () => {
+		it.only("Should break when odds are less than the rate of 7%", async () => {
 			const balance = await underlying.balanceOf(vault.address);
 			expect(balance).to.equal(ethers.utils.parseUnits("1000", tokenDecimals));
 
@@ -301,11 +301,11 @@ describe("Market", () => {
 				ethers.utils.parseUnits("900", USDT_DECIMALS)
 			);
 
-			// // Vault should have lent 1 USDT
-			// const vaultBalance = await underlying.balanceOf(vault.address);
-			// expect(vaultBalance).to.equal(
-			// 	ethers.utils.parseUnits("1", USDT_DECIMALS)
-			// );
+			// Vault should have lent 1 USDT
+			const vaultBalance = await underlying.balanceOf(vault.address);
+			expect(vaultBalance).to.equal(
+				ethers.utils.parseUnits("999", USDT_DECIMALS)
+			);
 
 			const vaultAssets = await vault.totalAssets();
 			expect(vaultAssets).to.equal(
@@ -344,11 +344,6 @@ describe("Market", () => {
 			expect(bobBalance).to.equal(
 				ethers.utils.parseUnits("900", USDT_DECIMALS)
 			);
-
-			// const marketOwnerBalance = await underlying.balanceOf(owner.address);
-			// expect(marketOwnerBalance).to.equal(
-			// 	ethers.utils.parseUnits("998999072", USDT_DECIMALS)
-			// );
 		});
 	});
 });
