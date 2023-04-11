@@ -59,8 +59,8 @@ describe("Collateralised Market: play through", function () {
 		]);
 
 		underlying = (await ethers.getContractAt(
-			fixture.Usdt.abi,
-			fixture.Usdt.address
+			fixture.MockUsdt.abi,
+			fixture.MockUsdt.address
 		)) as Token;
 
 		oracle = (await ethers.getContractAt(

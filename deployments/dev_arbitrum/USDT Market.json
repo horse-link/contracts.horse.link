@@ -1238,7 +1238,7 @@
         "type": "t_string_storage"
       },
       {
-        "astId": 11991,
+        "astId": 8514,
         "contract": "contracts/presets/MarketCollateralisedLinear.sol:MarketCollateralisedLinear",
         "label": "_inplayCount",
         "offset": 0,
@@ -1246,7 +1246,7 @@
         "type": "t_uint256"
       },
       {
-        "astId": 11995,
+        "astId": 8518,
         "contract": "contracts/presets/MarketCollateralisedLinear.sol:MarketCollateralisedLinear",
         "label": "_bets",
         "offset": 0,
