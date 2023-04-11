@@ -1,6 +1,5 @@
 import "@nomiclabs/hardhat-ethers";
 import { parseUnits } from "ethers/lib/utils";
-import { network } from "hardhat";
 import "hardhat-deploy";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";

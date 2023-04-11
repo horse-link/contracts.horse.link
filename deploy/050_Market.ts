@@ -10,7 +10,7 @@ import { UnderlyingTokens } from "../deployData/settings";
  */
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	const { deployments, getNamedAccounts, network } = hre;
-	const { deploy, execute, read } = deployments;
+	const { deploy, execute } = deployments;
 	const oracle = await deployments.get("MarketOracle");
 	const namedAccounts = await getNamedAccounts();
 	const deployer = namedAccounts.deployer;
