@@ -723,7 +723,7 @@ describe("Collateralised Market: play through", function () {
 		const refundSignature = await signRefundMessage(market.address, 5, owner);
 
 		const betIndex = 5;
-		expect(await market.refund(betIndex, refundSignature)).to.emit(
+		expect(await market.refundWithSignature(betIndex, refundSignature)).to.emit(
 			market,
 			"Refunded"
 		);
