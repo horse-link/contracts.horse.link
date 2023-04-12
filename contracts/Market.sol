@@ -322,7 +322,6 @@ contract Market is IMarket, Ownable, ERC721 {
 		return index;
 	}
 
-
 	function settle(uint64 index) external {
 		Bet memory bet = _bets[index];
 		require(bet.settled == false, "settle: Bet has already settled");
@@ -330,9 +329,7 @@ contract Market is IMarket, Ownable, ERC721 {
 	}
 
 	function _settle(uint64 index) internal {
-		
 		Bet memory bet = _bets[index];
-
 		_bets[index].settled = true;
 
 		uint8 result;
@@ -353,7 +350,7 @@ contract Market is IMarket, Ownable, ERC721 {
 			}
 			_payout(index, result);
 			_totalInPlay -= _bets[index].amount;
-			_inplayCount--;
+			_inplayCount --;
 		}
 
 		emit Settled(index, _bets[index].payout, result, recipient);
@@ -361,21 +358,9 @@ contract Market is IMarket, Ownable, ERC721 {
 		_burn(uint256(index));
 	}
 
-	/* 
-	 * @dev Reverse a bet. Return the stake to the bettor and the loan to the vault
-	 * @param index The index of the bet
-	 * @param signature Signature from market owner
-	 */
-	function refundWithSignature(uint64 index, SignatureLib.Signature calldata signature) external {
-		bytes16 REFUND_CMD = 0x726566756e6400000000000000000000; //Bytes for "refund"
-		bytes32 messageHash = keccak256(
-			abi.encodePacked(REFUND_CMD, _self, index)
-		);
-
-		require(
-			isValidSignature(messageHash, signature) == true,
-			"refund: Invalid signature"
-		);
+	function scratchAndRefund(uint64 index, bytes16 marketId, bytes16 propositionId, uint256 odds, SignatureLib.Signature calldata signature) external {
+		require(_bets[index].propositionId == propositionId, "scratchAndRefund: propositionId does not match bet");
+		_oracle.setScratchedResult(marketId, propositionId, odds, signature);
 		_refund(index);
 	}
 
@@ -399,7 +384,7 @@ contract Market is IMarket, Ownable, ERC721 {
 
 	function _refund(uint64 index) internal virtual {
 		Bet memory bet = _bets[index];
-		require(bet.settled == false, "refund: Bet has already settled");
+		require(bet.settled == false, "_refund: Bet has already settled");
 
 		bet.settled = true;
 		uint256 loan = _bets[index].payout - _bets[index].amount;
@@ -407,13 +392,12 @@ contract Market is IMarket, Ownable, ERC721 {
 		_totalInPlay -= _bets[index].amount;
 		_inplayCount --;
 		
-		IERC20(_vault.asset()).transfer(ownerOf(index), bet.amount);
-		IERC20(_vault.asset()).transfer(address(_vault), loan);
-		emit Repaid(_vault.asset(), loan);
-		emit Refunded(index, bet.amount);	
+		_underlying.transfer(ownerOf(index), bet.amount);
+		_underlying.transfer(address(_vault), loan);
+		emit Repaid(address(_vault), loan);
+		emit Refunded(index, bet.amount);
 
 		_burn(uint256(index));
-		
 	}
 
 	function _applyScratchings(uint64 index) internal virtual returns (uint256) {

@@ -81,10 +81,9 @@ contract MarketOracle is IOracle {
 		bytes16 marketId,
 		bytes16 scratchedPropositionId,
 		uint256 odds,
-        uint256 totalOdds,
 		SignatureLib.Signature calldata signature
 	) external {
-		bytes32 messageHash = keccak256(abi.encodePacked(marketId, scratchedPropositionId, odds, totalOdds));
+		bytes32 messageHash = keccak256(abi.encodePacked(marketId, scratchedPropositionId, odds));
 		require(
 			isValidSignature(messageHash, signature),
 			"setScratchedResult: Invalid signature"
@@ -105,8 +104,7 @@ contract MarketOracle is IOracle {
 			Scratched(
 				scratchedPropositionId,
 				block.timestamp,
-				odds,
-				totalOdds
+				odds
 		));
 
 		emit ScratchedSet(marketId, scratchedPropositionId);

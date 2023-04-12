@@ -11,13 +11,11 @@ interface IOracle {
         uint256 timestamp;
         // Odds of the scratched proposition at time of scratching
         uint256 odds;
-        // Total odds of all runners at time of scratching
-        uint256 totalOdds;
     }
 
     struct Result {
         bytes16 winningPropositionId;
-        Scratched [] scratched;
+        Scratched[] scratched;
 	}
 
     function checkResult(
@@ -35,9 +33,8 @@ interface IOracle {
 
 	function setScratchedResult(
 		bytes16 marketId,
-		bytes16 scratchedPropositionId,
+		bytes16 propositionId,
         uint256 odds,
-        uint256 totalOdds,
 		SignatureLib.Signature calldata signature
 	) external;
 

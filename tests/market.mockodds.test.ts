@@ -50,16 +50,16 @@ describe("Market", () => {
 		]);
 
 		underlying = (await ethers.getContractAt(
-			fixture.Usdt.abi,
-			fixture.Usdt.address
+			fixture.MockUsdt.abi,
+			fixture.MockUsdt.address
 		)) as Token;
 		vault = (await ethers.getContractAt(
-			fixture.UsdtVault.abi,
-			fixture.UsdtVault.address
+			fixture.MockUsdtVault.abi,
+			fixture.MockUsdtVault.address
 		)) as Vault;
 		market = (await ethers.getContractAt(
-			fixture.UsdtMarket.abi,
-			fixture.UsdtMarket.address
+			fixture.MockUsdtMarket.abi,
+			fixture.MockUsdtMarket.address
 		)) as Market;
 		oracle = (await ethers.getContractAt(
 			fixture.MarketOracle.abi,

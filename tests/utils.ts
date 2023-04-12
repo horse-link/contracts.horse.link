@@ -89,15 +89,6 @@ export const signBackMessage = async (
 	return await signMessage(message, signer);
 };
 
-export const signRefundMessage = async (
-	marketAddress: string,
-	betIndex: number,
-	signer: SignerWithAddress
-): Promise<Signature> => {
-	const message = makeRefundMessage(marketAddress, betIndex);
-	return await signMessage(message, signer);
-};
-
 export const signMessage = async (
 	message: string,
 	signer: SignerWithAddress
@@ -185,14 +176,13 @@ export const signBackMessageWithRisk = async (
 export const makeSetScratchMessage = (
 	marketId: string,
 	propositionId: string,
-	odds: BigNumber,
-	totalOdds: BigNumber
+	odds: BigNumber
 ): string => {
 	const b16MarketId = formatBytes16String(marketId);
 	const b16PropositionId = formatBytes16String(propositionId);
 	const message = ethers.utils.solidityKeccak256(
-		["bytes16", "bytes16", "uint256", "uint256"],
-		[b16MarketId, b16PropositionId, odds, totalOdds]
+		["bytes16", "bytes16", "uint256"],
+		[b16MarketId, b16PropositionId, odds]
 	);
 	return message;
 };
@@ -201,15 +191,9 @@ export const signSetScratchedMessage = async (
 	marketId: string,
 	propositionId: string,
 	odds: BigNumber,
-	totalOdds: BigNumber,
 	signer: SignerWithAddress
 ): Promise<Signature> => {
-	const settleMessage = makeSetScratchMessage(
-		marketId,
-		propositionId,
-		odds,
-		totalOdds
-	);
+	const settleMessage = makeSetScratchMessage(marketId, propositionId, odds);
 	return await signMessage(settleMessage, signer);
 };
 

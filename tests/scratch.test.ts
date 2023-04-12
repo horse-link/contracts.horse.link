@@ -1,5 +1,4 @@
 import hre, { ethers, deployments } from "hardhat";
-import { BigNumber } from "ethers";
 import chai, { expect } from "chai";
 import {
 	MarketCollateralisedWithoutProtection,
@@ -157,14 +156,12 @@ describe("Late scratched", () => {
 			marketId,
 			scratchedPropositionId,
 			scratchedOdds,
-			BigNumber.from(0),
 			oracleSigner
 		);
 		await oracle.setScratchedResult(
 			formatBytes16String(marketId),
 			formatBytes16String(scratchedPropositionId),
 			scratchedOdds,
-			0,
 			scratchedSig
 		);
 
