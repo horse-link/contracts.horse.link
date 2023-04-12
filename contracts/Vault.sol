@@ -16,6 +16,7 @@ contract Vault is ERC4626Metadata, Ownable {
     // These will change to allow multiple markets
     address private _market;
     address private _self;
+    uint256 private _rate;
 
     constructor(IERC20Metadata asset_)
     ERC4626Metadata(
@@ -36,9 +37,11 @@ contract Vault is ERC4626Metadata, Ownable {
 		return owner();
 	}
 
-    function setMarket(address market, uint256 max) public onlyOwner {
+    function setMarket(address market, uint256 max, uint256 rate) public onlyOwner {
         require(_market == address(0), "setMarket: Market already set");
+        require(rate >= 100_000, "setMarket: Rate must be greater than 100,000");
         _market = market;
+        _rate = rate;
         IERC20(asset()).approve(_market, max);
     }
 
@@ -56,6 +59,10 @@ contract Vault is ERC4626Metadata, Ownable {
             return (totalSupply() * 100) / underlyingBalance;
 
         return 0;
+    }
+
+    function getRate() external view returns (uint256) {
+        return _rate;
     }
 
     // If receiver is omitted, use the sender
