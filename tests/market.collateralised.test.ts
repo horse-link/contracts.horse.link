@@ -149,7 +149,7 @@ describe("Collateralised Market: play through", function () {
 			...args
 		)) as MarketCollateralisedWithoutProtection;
 
-		await vault.setMarket(market.address, ethers.constants.MaxUint256);
+		await vault.setMarket(market.address, ethers.constants.MaxUint256, 107000);
 		await underlying
 			.connect(alice)
 			.approve(vault.address, ethers.constants.MaxUint256);
