@@ -136,7 +136,13 @@ describe.skip("Collateralised Market: catch 505", function () {
 
 		// https://www.npmjs.com/package/hardhat-deploy?activeTab=readme#handling-contract-using-libraries
 		// https://stackoverflow.com/questions/71389974/how-can-i-link-library-and-contract-in-one-file
-		const args = [vault.address, MARGIN, 1, oracle.address];
+		const args = [
+			vault.address,
+			MARGIN,
+			1,
+			oracle.address,
+			"https://example.org/"
+		];
 		market = (await marketFactory.deploy(
 			...args
 		)) as MarketCollateralisedWithoutProtection;

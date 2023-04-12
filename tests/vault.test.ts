@@ -29,23 +29,23 @@ describe("Vault", () => {
 		[owner, alice, bob] = await ethers.getSigners();
 
 		underlying = (await ethers.getContractAt(
-			fixture.Usdt.abi,
-			fixture.Usdt.address
+			fixture.MockUsdt.abi,
+			fixture.MockUsdt.address
 		)) as Token;
 
 		vault = (await ethers.getContractAt(
-			fixture.UsdtVault.abi,
-			fixture.UsdtVault.address
+			fixture.MockUsdtVault.abi,
+			fixture.MockUsdtVault.address
 		)) as Vault;
 
 		vaultTimeLock = (await ethers.getContractAt(
-			fixture.UsdtVault.abi,
-			fixture.UsdtVault.address
+			fixture.MockUsdtVault.abi,
+			fixture.MockUsdtVault.address
 		)) as VaultTimeLock;
 
 		market = (await ethers.getContractAt(
-			fixture.UsdtMarket.abi,
-			fixture.UsdtMarket.address
+			fixture.MockUsdtMarket.abi,
+			fixture.MockUsdtMarket.address
 		)) as Market;
 
 		underlyingDecimals = await underlying.decimals();
@@ -65,7 +65,7 @@ describe("Vault", () => {
 	});
 
 	it("Should return the correct symbol", async () => {
-		expect(await underlying.symbol()).to.equal("USDT");
+		expect(await underlying.symbol()).to.equal("mUSDT");
 	});
 
 	it("Should set properties on deploy", async () => {

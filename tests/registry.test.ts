@@ -38,16 +38,16 @@ describe("Registry", () => {
 			fixture.Registry.address
 		)) as Registry;
 		vault = (await ethers.getContractAt(
-			fixture.UsdtVault.abi,
-			fixture.UsdtVault.address
+			fixture.MockUsdtVault.abi,
+			fixture.MockUsdtVault.address
 		)) as Vault;
 		market = (await ethers.getContractAt(
-			fixture.UsdtMarket.abi,
-			fixture.UsdtMarket.address
+			fixture.MockUsdtMarket.abi,
+			fixture.MockUsdtMarket.address
 		)) as Market;
 		underlying = (await ethers.getContractAt(
-			fixture.Usdt.abi,
-			fixture.Usdt.address
+			fixture.MockUsdt.abi,
+			fixture.MockUsdt.address
 		)) as Token;
 	});
 
@@ -150,13 +150,13 @@ describe("Registry", () => {
 			}
 		});
 
-		const args1 = [mockVault1.address, 1, 1, ethers.constants.AddressZero];
+		const args1 = [mockVault1.address, 1, 1, ethers.constants.AddressZero, ""];
 		const mockMarket1 = (await marketFactory.deploy(...args1)) as Market;
 
-		const args2 = [mockVault2.address, 1, 1, ethers.constants.AddressZero];
+		const args2 = [mockVault2.address, 1, 1, ethers.constants.AddressZero, ""];
 		const mockMarket2 = (await marketFactory.deploy(...args2)) as Market;
 
-		const args3 = [mockVault3.address, 1, 1, ethers.constants.AddressZero];
+		const args3 = [mockVault3.address, 1, 1, ethers.constants.AddressZero, ""];
 		const mockMarket3 = (await marketFactory.deploy(...args3)) as Market;
 
 		await registry.addMarket(mockMarket1.address);

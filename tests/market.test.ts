@@ -43,6 +43,7 @@ describe("Market", () => {
 	const TIMEOUT_DAYS = 5;
 	const WINNER = 0x01;
 	const SCRATCHED = 0x03;
+	const NFT_BASE_URI = "https://example.org/";
 
 	beforeEach(async () => {
 		[owner, alice, bob, carol, whale] = await ethers.getSigners();
@@ -56,16 +57,16 @@ describe("Market", () => {
 		]);
 
 		underlying = (await ethers.getContractAt(
-			fixture.Usdt.abi,
-			fixture.Usdt.address
+			fixture.MockUsdt.abi,
+			fixture.MockUsdt.address
 		)) as Token;
 		vault = (await ethers.getContractAt(
-			fixture.UsdtVault.abi,
-			fixture.UsdtVault.address
+			fixture.MockUsdtVault.abi,
+			fixture.MockUsdtVault.address
 		)) as Vault;
 		market = (await ethers.getContractAt(
-			fixture.UsdtMarket.abi,
-			fixture.UsdtMarket.address
+			fixture.MockUsdtMarket.abi,
+			fixture.MockUsdtMarket.address
 		)) as Market;
 		oracle = (await ethers.getContractAt(
 			fixture.MarketOracle.abi,
@@ -116,7 +117,13 @@ describe("Market", () => {
 
 		// https://www.npmjs.com/package/hardhat-deploy?activeTab=readme#handling-contract-using-libraries
 		// https://stackoverflow.com/questions/71389974/how-can-i-link-library-and-contract-in-one-file
-		const args = [vault.address, MARGIN, TIMEOUT_DAYS, oracle.address];
+		const args = [
+			vault.address,
+			MARGIN,
+			TIMEOUT_DAYS,
+			oracle.address,
+			NFT_BASE_URI
+		];
 		market = (await marketFactory.deploy(...args)) as Market;
 
 		await vault.setMarket(market.address, ethers.constants.MaxUint256, 107000);
@@ -725,9 +732,7 @@ describe("Market", () => {
 			const nftBalance = await market.balanceOf(bob.address);
 			expect(nftBalance).to.equal(1, "Bob should have 1 NFT");
 			const nftMetaDataURI = await market.tokenURI(0);
-			expect(nftMetaDataURI.toLowerCase()).to.equal(
-				`https://alpha.horse.link/api/bets/${market.address.toLowerCase()}/0`
-			);
+			expect(nftMetaDataURI.toLowerCase()).to.equal(`${NFT_BASE_URI}0`);
 
 			const signature = await signSetResultMessage(
 				marketId,

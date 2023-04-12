@@ -32,7 +32,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 		skipIfAlreadyDeployed: true
 	});
 
-	const collateralised = true;
+	const registryDeployment = await deployments.get("Registry");
 
 	// Get tokens we are using for the current network
 	const underlyingTokens = UnderlyingTokens.filter((details) => {
@@ -48,7 +48,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 			vaultDeployment.address,
 			0,
 			timeoutDays,
-			oracle.address
+			oracle.address,
+			`${tokenDetails.nftBaseUri}/${hre.network.name}/${registryDeployment.address}/${tokenDetails.symbol}/` // This is enough to allow us to derive the correct market contract and return useful metadata
 		];
 
 		// If the token has a named account, use that, otherwise get the address from the deployment
@@ -67,7 +68,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 			tokenAddress = tokenDeployment.address;
 		}
 		const marketDeployment = await deploy(marketName, {
-			contract: collateralised ? "MarketCollateralisedLinear" : "Market",
+			contract: tokenDetails.marketType,
 			from: deployer,
 			args: constructorArguments,
 			log: true,
@@ -78,8 +79,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 				OddsLib: oddsLib.address
 			}
 		});
-
-		if (marketDeployment?.newlyDeployed) {
+		try {
 			await execute(
 				vaultName,
 				{ from: deployer, log: true },
@@ -88,28 +88,58 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 				ethers.constants.MaxUint256,
 				107000 // 7% interest rate
 			);
+		} catch (e) {
+			console.warn("Market already set");
+		}
+
+		try {
 			await execute(
 				marketName,
 				{ from: deployer, log: true },
 				"grantSigner",
 				namedAccounts.MarketSigner
 			);
-			if (!network.tags.testing) {
+		} catch (e) {
+			console.warn("Failed to set signer");
+			console.error(e);
+		}
+		if (!network.tags.testing) {
+			try {
 				await execute(
 					"Registry",
 					{ from: deployer, log: true },
 					"addMarket",
 					marketDeployment.address
 				);
+			} catch (e) {
+				console.warn("Market already added");
 			}
-			if (network.live) {
-				// Wait 10 seconds before verifying
-				setTimeout(async () => {
-					await hre.run("verify:verify", {
+		}
+		if (network.live) {
+			// Wait 10 seconds before verifying
+			setTimeout(async () => {
+				hre
+					.run("verify:verify", {
 						address: marketDeployment.address,
 						constructorArguments
+					})
+					.catch((e) => {
+						console.log("Error verifying market: ", e);
 					});
-				}, 10000);
+			}, 10000);
+
+			if (namedAccounts[tokenDetails.owner]) {
+				try {
+					await execute(
+						marketName,
+						{ from: deployer, log: true },
+						"transferOwnership",
+						namedAccounts[tokenDetails.owner]
+					);
+				} catch (e) {
+					console.warn("Failed to transfer ownership");
+					console.error(e);
+				}
 			}
 		}
 

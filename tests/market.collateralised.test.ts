@@ -60,8 +60,8 @@ describe("Collateralised Market: play through", function () {
 		]);
 
 		underlying = (await ethers.getContractAt(
-			fixture.Usdt.abi,
-			fixture.Usdt.address
+			fixture.MockUsdt.abi,
+			fixture.MockUsdt.address
 		)) as Token;
 
 		oracle = (await ethers.getContractAt(
@@ -145,7 +145,13 @@ describe("Collateralised Market: play through", function () {
 
 		// https://www.npmjs.com/package/hardhat-deploy?activeTab=readme#handling-contract-using-libraries
 		// https://stackoverflow.com/questions/71389974/how-can-i-link-library-and-contract-in-one-file
-		const args = [vault.address, MARGIN, 1, oracle.address];
+		const args = [
+			vault.address,
+			MARGIN,
+			1,
+			oracle.address,
+			"https://example.org"
+		];
 		market = (await marketFactory.deploy(
 			...args
 		)) as MarketCollateralisedWithoutProtection;

@@ -7,38 +7,93 @@ export type TokenDeployDetails = {
 	marketName: string;
 	mintAmount?: string;
 	networks: string[];
+	nftBaseUri: string;
+	marketType: MarketType;
+	owner?: string;
+	mock?: boolean;
 };
+
+export enum MarketType {
+	Simple = "Market",
+	Collateralised = "MarketCollateralisedLinear"
+}
 
 export const mockTokens: TokenDeployDetails[] = [
 	{
+		name: "Mock HorseLink",
+		symbol: "mHL",
+		deploymentName: "MockHorseLink",
+		vaultName: "MockHorseLinkVault",
+		marketName: "MockHorseLinkMarket",
+		decimals: 18,
+		mintAmount: "1000000000",
+		nftBaseUri: "https://horse.link/api/nft/",
+		marketType: MarketType.Simple,
+		owner: "deployer",
+		mock: true,
+		networks: [
+			"hardhat",
+			"localhost",
+			"dev_goerli",
+			"prod_goerli",
+			"dev_arbitrum"
+		]
+	},
+	{
 		name: "Mock USDT",
-		symbol: "USDT",
-		deploymentName: "Usdt",
-		vaultName: "UsdtVault",
-		marketName: "UsdtMarket",
+		symbol: "mUSDT",
+		deploymentName: "MockUsdt",
+		vaultName: "MockUsdtVault",
+		marketName: "MockUsdtMarket",
 		decimals: 6,
 		mintAmount: "1000000000",
-		networks: ["hardhat", "localhost", "dev_goerli"]
+		nftBaseUri: "https://horse.link/api/nft/",
+		marketType: MarketType.Collateralised,
+		owner: "deployer",
+		mock: true,
+		networks: ["hardhat", "localhost", "dev_goerli", "prod_goerli"]
 	},
 	{
-		name: "Mock DAI",
-		symbol: "DAI",
-		deploymentName: "Dai",
-		vaultName: "DaiVault",
-		marketName: "DaiMarket",
-		decimals: 18,
+		name: "Mock USDC",
+		symbol: "mUSDC",
+		deploymentName: "MockUsdc",
+		vaultName: "MockUsdcVault",
+		marketName: "MockUsdcMarket",
+		decimals: 6,
 		mintAmount: "1000000000",
-		networks: ["hardhat", "localhost", "dev_goerli"]
+		nftBaseUri: "https://horse.link/api/nft/",
+		marketType: MarketType.Collateralised,
+		owner: "deployer",
+		mock: true,
+		networks: ["hardhat"]
 	},
 	{
-		name: "Mock HorseLink",
-		symbol: "HL",
-		deploymentName: "HorseLink",
-		vaultName: "HorseLinkVault",
-		marketName: "HorseLinkMarket",
+		name: "Mock fxAud",
+		symbol: "mFxAUD",
+		deploymentName: "MockFxAud",
+		vaultName: "MockFxAudVault",
+		marketName: "MockFxAudMarket",
 		decimals: 18,
 		mintAmount: "1000000000",
-		networks: ["hardhat", "localhost", "dev_goerli", "dev_arbitrum"]
+		nftBaseUri: "https://horse.link/api/nft/",
+		marketType: MarketType.Simple,
+		owner: "deployer",
+		mock: true,
+		networks: ["hardhat", "localhost"]
+	},
+	{
+		name: "Mock fxUsd",
+		symbol: "mFxUSD",
+		deploymentName: "MockFxUsd",
+		vaultName: "MockFxUsdVault",
+		marketName: "MockFxUsdMarket",
+		decimals: 18,
+		mintAmount: "1000000000",
+		nftBaseUri: "https://horse.link/api/nft/",
+		marketType: MarketType.Simple,
+		owner: "deployer",
+		mock: true,
+		networks: ["hardhat", "localhost"]
 	}
 ];
 
@@ -50,28 +105,50 @@ export const productionTokens: TokenDeployDetails[] = [
 		vaultName: "HorseLinkVault",
 		marketName: "HorseLinkMarket",
 		decimals: 18,
-		networks: ["prod_arbitrum", "prod_goerli"]
+		nftBaseUri: "https://horse.link/api/nft/",
+		marketType: MarketType.Simple,
+		owner: "horse_link",
+		networks: []
 	},
 	{
 		name: "Usdc",
 		deploymentName: "Usdc",
 		vaultName: "USDC Vault",
 		marketName: "USDC Market",
-		networks: ["prod_arbitrum", "dev_arbitrum", "prod_goerli"]
+		nftBaseUri: "https://horse.link/api/nft/",
+		marketType: MarketType.Simple,
+		owner: "horse_link",
+		networks: ["prod_arbitrum", "dev_arbitrum"]
+	},
+	{
+		name: "Usdt",
+		deploymentName: "Usdt",
+		vaultName: "USDT Vault",
+		marketName: "USDT Market",
+		nftBaseUri: "https://horse.link/api/nft/",
+		marketType: MarketType.Collateralised,
+		owner: "lucas_cullen",
+		networks: ["prod_arbitrum", "dev_arbitrum"]
 	},
 	{
 		name: "fxAud",
 		deploymentName: "fxAud",
 		vaultName: "fxAUD Vault",
 		marketName: "fxAUD Market",
-		networks: ["prod_arbitrum", "dev_arbitrum", "prod_goerli"]
+		nftBaseUri: "https://horse.link/api/nft/",
+		marketType: MarketType.Simple,
+		owner: "handle_fi",
+		networks: ["prod_arbitrum", "dev_arbitrum"]
 	},
 	{
 		name: "fxUsd",
 		deploymentName: "fxUsd",
 		vaultName: "fxUSD Vault",
 		marketName: "fxUSD Market",
-		networks: ["prod_arbitrum", "dev_arbitrum", "prod_goerli"]
+		nftBaseUri: "https://horse.link/api/nft/",
+		marketType: MarketType.Simple,
+		owner: "handle_fi",
+		networks: ["prod_arbitrum", "dev_arbitrum"]
 	}
 ];
 

@@ -13,10 +13,7 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {
 	END,
 	makeBet,
-	makeMarketId,
-	makePropositionId,
 	Markets,
-	signBackMessage,
 	signSetResultMessage,
 	signSetScratchedMessage,
 	TestBet
@@ -55,8 +52,8 @@ describe("Late scratched", () => {
 		]);
 
 		underlying = (await ethers.getContractAt(
-			fixture.Usdt.abi,
-			fixture.Usdt.address
+			fixture.MockUsdt.abi,
+			fixture.MockUsdt.address
 		)) as Token;
 
 		oracle = (await ethers.getContractAt(
@@ -97,7 +94,13 @@ describe("Late scratched", () => {
 		vault = await new Vault__factory(owner).deploy(underlying.address);
 		await vault.deployed();
 
-		const args = [vault.address, MARGIN, 1, oracle.address];
+		const args = [
+			vault.address,
+			MARGIN,
+			1,
+			oracle.address,
+			"https://example.org/"
+		];
 		market = (await marketFactory.deploy(
 			...args
 		)) as MarketCollateralisedWithoutProtection;
