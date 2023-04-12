@@ -366,7 +366,7 @@ contract Market is IMarket, Ownable, ERC721 {
 	 * @param index The index of the bet
 	 * @param signature Signature from market owner
 	 */
-	function refund(uint64 index, SignatureLib.Signature calldata signature) external {
+	function refundWithSignature(uint64 index, SignatureLib.Signature calldata signature) external {
 		bytes16 REFUND_CMD = 0x726566756e6400000000000000000000; //Bytes for "refund"
 		bytes32 messageHash = keccak256(
 			abi.encodePacked(REFUND_CMD, address(this), index)
@@ -377,6 +377,24 @@ contract Market is IMarket, Ownable, ERC721 {
 			"refund: Invalid signature"
 		);
 		_refund(index);
+	}
+
+	/*
+	 * @dev Reverse a bet on a scratched runner. If the bet was on a scratched runner, return the stake to the bettor and the loan to the vault
+	 * @param index The index of the bet
+	 */
+	function refund(uint64 index) external {
+		bytes16 marketId = _bets[index].marketId;
+		IOracle.Result memory result = IOracle(_oracle).getResult(marketId);
+		// Iterate through scratchings to see if the bet was on a scratched runner
+		for (uint256 i = 0; i < result.scratched.length; i++) {
+			if (result.scratched[i].scratchedPropositionId == _bets[index].propositionId) {
+				_refund(index);
+				return;
+			}
+		}
+		// Not scratched, so revert
+		revert("refund: Not eligible for refund");	
 	}
 
 	function _refund(uint64 index) internal virtual {
