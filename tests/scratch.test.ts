@@ -105,7 +105,7 @@ describe("Late scratched", () => {
 			...args
 		)) as MarketCollateralisedWithoutProtection;
 
-		await vault.setMarket(market.address, ethers.constants.MaxUint256);
+		await vault.setMarket(market.address, ethers.constants.MaxUint256, 107000);
 
 		await underlying
 			.connect(alice)

@@ -18,31 +18,37 @@ abstract contract MarketCollateralised is Market {
 	}
 
 	function _payout(uint256 index, uint8 result) internal override {
+		uint256 amount = _bets[index].amount;
+
+		// Deduct from total exposure first
+		_totalExposure -= _betExposure[index];
+
+		if (result == SCRATCHED) {
+			// Transfer the bet amount to the owner of the NFT
+			_underlying.transfer(
+				ownerOf(index),
+				amount
+			);
+
+			return;
+		}
+		
+		// Only allow payouts after the payout date, or if the bet has been scratched
 		require(
 			_bets[index].payoutDate < block.timestamp,
 			"_payout: Payout date not reached"
 		);
 
-		// Deduct from total exposure
-		_totalExposure -= _betExposure[index];
-
-		if (result == SCRATCHED) {
-			// Transfer the bet amount to the owner of the NFT
-			IERC20(_vault.asset()).transfer(
-				ownerOf(index),
-				_bets[index].amount
-			);
-		} 
-		
-		address underlying = _vault.asset();
 		if (result == WINNER) {
 			// Send the payout to the NFT owner
 			_totalCollateral -= _betExposure[index];
-			IERC20(underlying).transfer(ownerOf(index), _bets[index].payout);
-		} else {
+			_underlying.transfer(ownerOf(index), _bets[index].payout);
+		} 
+
+		if (result == LOSER) {
 			// Else, the bet was a loser
 			// Send the bet amount to the vault
-			IERC20(underlying).transfer(address(_vault), _bets[index].amount);
+			_underlying.transfer(address(_vault), _bets[index].amount);
 		}
 	}
 

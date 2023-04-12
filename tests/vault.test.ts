@@ -109,7 +109,7 @@ describe("Vault", () => {
 	it("Should not be able set market twice", async () => {
 		const ONE_HUNDRED = ethers.utils.parseUnits("100", underlyingDecimals);
 		await expect(
-			vault.connect(owner).setMarket(market.address, ONE_HUNDRED)
+			vault.connect(owner).setMarket(market.address, ONE_HUNDRED, 107000)
 		).to.be.revertedWith("setMarket: Market already set");
 	});
 
