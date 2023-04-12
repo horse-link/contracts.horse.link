@@ -29,7 +29,7 @@ uint256 constant MARGIN = 1500000;
 contract Market is IMarket, Ownable, ERC721 {
 	using Strings for uint256;
 
-	string public constant baseURI = "https://alpha.horse.link/api/bets/";
+	string internal _metadataBaseURI;
 
 	uint8 internal immutable _margin;
 	IVault internal immutable _vault;
@@ -69,7 +69,8 @@ contract Market is IMarket, Ownable, ERC721 {
 		IVault vault,
 		uint8 margin,
 		uint8 timeoutDays,
-		address oracle
+		address oracle,
+		string memory metadataBaseURI
 	) ERC721("Horse Link Bet Slip", "HL-BET") {
 		assert(address(vault) != address(0));
 		_self = address(this);
@@ -78,11 +79,14 @@ contract Market is IMarket, Ownable, ERC721 {
 		_margin = margin;
 		_oracle = IOracle(oracle);
 		_signers[owner()] = true;
+		_metadataBaseURI = metadataBaseURI;
+
 		timeout = timeoutDays * 1 days;
 	}
 
-	function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
-        return string(abi.encodePacked(baseURI, Strings.toHexString(uint256(uint160(_self)), 20), "/", tokenId.toString()));
+	// Override of ERC721Metadata. Use base URI specified in contructor
+	function _baseURI() internal view override returns (string memory) {
+        return _metadataBaseURI;
     }
 
 	function getOwner() external view returns (address) {
