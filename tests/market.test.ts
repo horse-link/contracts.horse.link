@@ -34,7 +34,6 @@ describe("Market", () => {
 	let bob: SignerWithAddress;
 	let carol: SignerWithAddress;
 	let whale: SignerWithAddress;
-	let marketSigner: SignerWithAddress;
 	let oracleSigner: SignerWithAddress;
 
 	const USDT_DECIMALS = 6;
@@ -47,7 +46,6 @@ describe("Market", () => {
 
 	beforeEach(async () => {
 		[owner, alice, bob, carol, whale] = await ethers.getSigners();
-		marketSigner = alice;
 		oracleSigner = owner;
 		const fixture = await deployments.fixture([
 			"underlying",
@@ -854,7 +852,6 @@ describe("Market", () => {
 				marketId,
 				propositionId,
 				odds,
-				totalOdds,
 				oracleSigner
 			);
 			const oracleOwner = await oracle.getOwner();
@@ -863,7 +860,6 @@ describe("Market", () => {
 				formatBytes16String(marketId),
 				formatBytes16String(propositionId),
 				odds,
-				totalOdds,
 				signature
 			);
 			const index = 0;
@@ -1242,6 +1238,191 @@ describe("Market", () => {
 
 			inPlayCount = await market.getInPlayCount();
 			expect(inPlayCount).to.equal(0);
+		});
+	});
+
+	describe("Refund", () => {
+		it("Should scratch and refund a bet", async () => {
+			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
+			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
+			const now = await time.latest();
+			const close = now + 60;
+			const end = now + 60;
+
+			let bobBalance = ethers.utils.parseUnits("1000", tokenDecimals);
+
+			expect(await underlying.balanceOf(bob.address)).to.equal(bobBalance);
+
+			const initialVaultBalance = await underlying.balanceOf(vault.address);
+
+			await underlying
+				.connect(bob)
+				.approve(market.address, ethers.utils.parseUnits("100", tokenDecimals));
+
+			const marketId = makeMarketId(new Date(), "ABC", "1");
+			const propositionId = makePropositionId(marketId, 1);
+			const nonce = "1";
+
+			const signature = await signBackMessage(
+				nonce,
+				marketId,
+				propositionId,
+				odds,
+				close,
+				end,
+				owner
+			);
+
+			await market
+				.connect(bob)
+				.back(
+					constructBet(
+						formatBytes16String(nonce),
+						formatBytes16String(propositionId),
+						formatBytes16String(marketId),
+						wager,
+						odds,
+						close,
+						end,
+						signature
+					)
+				);
+
+			const betIndex = 0;
+			const tokenOwner = await market.ownerOf(betIndex);
+			expect(tokenOwner, "Bob should have a bet NFT").to.equal(bob.address);
+			bobBalance = await underlying.balanceOf(bob.address);
+			expect(bobBalance, "Bob should have 900 USDT").to.equal(
+				ethers.utils.parseUnits("900", tokenDecimals)
+			);
+
+			// Refund
+			const scratchSignature = await signSetScratchedMessage(
+				marketId,
+				propositionId,
+				odds,
+				owner
+			);
+
+			await expect(
+				market
+					.connect(bob)
+					.scratchAndRefund(
+						betIndex,
+						formatBytes16String(marketId),
+						formatBytes16String(propositionId),
+						odds,
+						scratchSignature
+					)
+			)
+				.to.emit(market, "Refunded")
+				.withArgs(betIndex, wager);
+
+			// Expect final and initial balances to be the same
+			bobBalance = await underlying.balanceOf(bob.address);
+			expect(bobBalance, "Bob should have 1000 USDT").to.equal(
+				ethers.utils.parseUnits("1000", tokenDecimals)
+			);
+
+			const finalVaultBalance = await underlying.balanceOf(vault.address);
+
+			expect(
+				finalVaultBalance,
+				"Vault should have been refunded the loan"
+			).to.equal(initialVaultBalance);
+
+			// Check total exposure
+			const totalExposure = await market.getTotalExposure();
+			expect(totalExposure).to.equal(0, "Total exposure should be 0");
+
+			// Check total in play
+			const inPlayCount = await market.getInPlayCount();
+			expect(inPlayCount).to.equal(0, "In play count should be 0");
+		});
+
+		it("Should refund a bet on a scratched runner", async () => {
+			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
+			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
+			const now = await time.latest();
+			const close = now + 60;
+			const end = now + 60;
+
+			const initialBettorBalance = await underlying.balanceOf(bob.address);
+			const initialVaultBalance = await underlying.balanceOf(vault.address);
+
+			await underlying
+				.connect(bob)
+				.approve(market.address, ethers.utils.parseUnits("100", tokenDecimals));
+
+			const marketId = makeMarketId(new Date(), "ABC", "1");
+			const propositionId = makePropositionId(marketId, 1);
+			const nonce = "1";
+
+			const backSignature = await signBackMessage(
+				nonce,
+				marketId,
+				propositionId,
+				odds,
+				close,
+				end,
+				owner
+			);
+
+			await market
+				.connect(bob)
+				.back(
+					constructBet(
+						formatBytes16String(nonce),
+						formatBytes16String(propositionId),
+						formatBytes16String(marketId),
+						wager,
+						odds,
+						close,
+						end,
+						backSignature
+					)
+				);
+			const betIndex = 0;
+			const tokenOwner = await market.ownerOf(betIndex);
+			expect(tokenOwner, "Bob should have a bet NFT").to.equal(bob.address);
+
+			await expect(
+				market.connect(bob).refund(betIndex),
+				"Should not allow a refund if proposition not scratched"
+			).to.be.revertedWith("refund: Not eligible for refund");
+
+			// Scratch the proposition
+			const scratchSignature = await signSetScratchedMessage(
+				marketId,
+				propositionId,
+				odds,
+				oracleSigner
+			);
+			const oracleOwner = await oracle.getOwner();
+			expect(oracleOwner).to.equal(oracleSigner.address);
+			await oracle.setScratchedResult(
+				formatBytes16String(marketId),
+				formatBytes16String(propositionId),
+				odds,
+				scratchSignature
+			);
+
+			// Refund
+			await expect(market.connect(bob).refund(betIndex))
+				.to.emit(market, "Refunded")
+				.withArgs(betIndex, wager);
+
+			// Expect final and initial balances to be the same
+			const finalBettorBalance = await underlying.balanceOf(bob.address);
+			const finalVaultBalance = await underlying.balanceOf(vault.address);
+			expect(
+				finalBettorBalance,
+				"Bob should have been refunded his stake"
+			).to.equal(initialBettorBalance);
+			expect(
+				finalVaultBalance,
+				"Vault should have been refunded the loan"
+			).to.equal(initialVaultBalance);
 		});
 	});
 

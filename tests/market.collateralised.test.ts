@@ -15,14 +15,15 @@ import {
 	getMarketStats,
 	makeBet,
 	Markets,
+	signRefundMessage,
 	signSetResultMessage,
-	TestBet,
-	TestMarket
+	TestBet
 } from "./utils";
 import { formatBytes16String } from "../scripts/utils";
 import * as timeHelper from "@nomicfoundation/hardhat-network-helpers/dist/src/helpers/time";
 
 chai.use(solidity);
+
 describe("Collateralised Market: play through", function () {
 	let underlying: Token;
 	let tokenDecimals: number;

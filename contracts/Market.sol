@@ -330,7 +330,6 @@ contract Market is IMarket, Ownable, ERC721 {
 
 	function _settle(uint64 index) internal {
 		Bet memory bet = _bets[index];
-
 		_bets[index].settled = true;
 
 		uint8 result;
@@ -351,12 +350,54 @@ contract Market is IMarket, Ownable, ERC721 {
 			}
 			_payout(index, result);
 			_totalInPlay -= _bets[index].amount;
-			_inplayCount--;
+			_inplayCount --;
 		}
 
 		emit Settled(index, _bets[index].payout, result, recipient);
 
-		_burn(index);
+		_burn(uint256(index));
+	}
+
+	function scratchAndRefund(uint64 index, bytes16 marketId, bytes16 propositionId, uint256 odds, SignatureLib.Signature calldata signature) external {
+		require(_bets[index].propositionId == propositionId, "scratchAndRefund: propositionId does not match bet");
+		_oracle.setScratchedResult(marketId, propositionId, odds, signature);
+		_refund(index);
+	}
+
+	/*
+	 * @dev Reverse a bet on a scratched runner. If the bet was on a scratched runner, return the stake to the bettor and the loan to the vault
+	 * @param index The index of the bet
+	 */
+	function refund(uint64 index) external {
+		bytes16 marketId = _bets[index].marketId;
+		IOracle.Result memory result = IOracle(_oracle).getResult(marketId);
+		// Iterate through scratchings to see if the bet was on a scratched runner
+		for (uint256 i = 0; i < result.scratched.length; i++) {
+			if (result.scratched[i].scratchedPropositionId == _bets[index].propositionId) {
+				_refund(index);
+				return;
+			}
+		}
+		// Not scratched, so revert
+		revert("refund: Not eligible for refund");	
+	}
+
+	function _refund(uint64 index) internal virtual {
+		Bet memory bet = _bets[index];
+		require(bet.settled == false, "_refund: Bet has already settled");
+
+		bet.settled = true;
+		uint256 loan = _bets[index].payout - _bets[index].amount;
+		_totalExposure -= loan;
+		_totalInPlay -= _bets[index].amount;
+		_inplayCount --;
+		
+		_underlying.transfer(ownerOf(index), bet.amount);
+		_underlying.transfer(address(_vault), loan);
+		emit Repaid(address(_vault), loan);
+		emit Refunded(index, bet.amount);
+
+		_burn(uint256(index));
 	}
 
 	function _applyScratchings(uint64 index) internal virtual returns (uint256) {
@@ -516,6 +557,11 @@ contract Market is IMarket, Ownable, ERC721 {
 
 	event Repaid(
 		address indexed vault,
+		uint256 amount
+	);
+
+	event Refunded(
+		uint256 index,
 		uint256 amount
 	);
 }

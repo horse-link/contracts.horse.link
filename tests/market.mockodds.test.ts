@@ -50,16 +50,16 @@ describe("Market", () => {
 		]);
 
 		underlying = (await ethers.getContractAt(
-			fixture.Usdt.abi,
-			fixture.Usdt.address
+			fixture.MockUsdt.abi,
+			fixture.MockUsdt.address
 		)) as Token;
 		vault = (await ethers.getContractAt(
-			fixture.UsdtVault.abi,
-			fixture.UsdtVault.address
+			fixture.MockUsdtVault.abi,
+			fixture.MockUsdtVault.address
 		)) as Vault;
 		market = (await ethers.getContractAt(
-			fixture.UsdtMarket.abi,
-			fixture.UsdtMarket.address
+			fixture.MockUsdtMarket.abi,
+			fixture.MockUsdtMarket.address
 		)) as Market;
 		oracle = (await ethers.getContractAt(
 			fixture.MarketOracle.abi,
@@ -102,7 +102,13 @@ describe("Market", () => {
 
 		// https://www.npmjs.com/package/hardhat-deploy?activeTab=readme#handling-contract-using-libraries
 		// https://stackoverflow.com/questions/71389974/how-can-i-link-library-and-contract-in-one-file
-		const args = [vault.address, MARGIN, TIMEOUT_DAYS, oracle.address];
+		const args = [
+			vault.address,
+			MARGIN,
+			TIMEOUT_DAYS,
+			oracle.address,
+			"https://example.org/"
+		];
 		market = (await marketFactory.deploy(...args)) as Market;
 
 		await vault.setMarket(market.address, ethers.constants.MaxUint256, 107000); // 7% interest rate
