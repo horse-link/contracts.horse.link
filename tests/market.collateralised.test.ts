@@ -719,19 +719,4 @@ describe("Collateralised Market: play through", function () {
 			"Total collateral should go down by the amount taken from spare collateral"
 		).to.equal(ethers.utils.parseUnits("4", tokenDecimals));
 	});
-
-	// it("Bet 6: Refund", async () => {
-	// 	const bet = Bets.Six;
-	// 	const wager = ethers.utils.parseUnits(bet.amount.toString(), USDT_DECIMALS);
-
-	// 	const now = await timeHelper.latest();
-	// 	await makeBet(underlying, market, vault, bet, owner, now);
-	// 	const refundSignature = await signRefundMessage(market.address, 5, owner);
-
-	// 	const betIndex = 5;
-	// 	expect(await market.refundWithSignature(betIndex, refundSignature)).to.emit(
-	// 		market,
-	// 		"Refunded"
-	// 	);
-	// });
 });

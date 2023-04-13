@@ -23,7 +23,7 @@ import { formatBytes16String } from "../scripts/utils";
 
 chai.use(solidity);
 
-describe.only("Market", () => {
+describe("Market", () => {
 	let underlying: Token;
 	let tokenDecimals: number;
 	let vault: Vault;
