@@ -102,7 +102,13 @@ describe("Market", () => {
 
 		// https://www.npmjs.com/package/hardhat-deploy?activeTab=readme#handling-contract-using-libraries
 		// https://stackoverflow.com/questions/71389974/how-can-i-link-library-and-contract-in-one-file
-		const args = [vault.address, MARGIN, TIMEOUT_DAYS, oracle.address];
+		const args = [
+			vault.address,
+			MARGIN,
+			TIMEOUT_DAYS,
+			oracle.address,
+			"https://example.org/"
+		];
 		market = (await marketFactory.deploy(...args)) as Market;
 
 		await vault.setMarket(market.address, ethers.constants.MaxUint256, 107000); // 7% interest rate
