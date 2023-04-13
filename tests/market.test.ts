@@ -1242,7 +1242,7 @@ describe.only("Market", () => {
 	});
 
 	describe("Refund", () => {
-		it("Should refund a bet via signature", async () => {
+		it("Should scratch and refund a bet", async () => {
 			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
 			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
 			const now = await time.latest();
