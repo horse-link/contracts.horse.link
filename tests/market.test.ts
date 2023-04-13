@@ -1250,10 +1250,10 @@ describe("Market", () => {
 			const close = now + 60;
 			const end = now + 60;
 
-			const initialBettorBalance = ethers.utils.parseUnits(
-				"900",
-				tokenDecimals
-			);
+			let bobBalance = ethers.utils.parseUnits("1000", tokenDecimals);
+
+			expect(await underlying.balanceOf(bob.address)).to.equal(bobBalance);
+
 			const initialVaultBalance = await underlying.balanceOf(vault.address);
 
 			await underlying
@@ -1288,9 +1288,14 @@ describe("Market", () => {
 						signature
 					)
 				);
+
 			const betIndex = 0;
 			const tokenOwner = await market.ownerOf(betIndex);
 			expect(tokenOwner, "Bob should have a bet NFT").to.equal(bob.address);
+			bobBalance = await underlying.balanceOf(bob.address);
+			expect(bobBalance, "Bob should have 900 USDT").to.equal(
+				ethers.utils.parseUnits("900", tokenDecimals)
+			);
 
 			// Refund
 			const scratchSignature = await signSetScratchedMessage(
@@ -1299,40 +1304,41 @@ describe("Market", () => {
 				odds,
 				owner
 			);
+
 			await expect(
 				market
 					.connect(bob)
 					.scratchAndRefund(
 						betIndex,
-						marketId,
-						propositionId,
+						formatBytes16String(marketId),
+						formatBytes16String(propositionId),
 						odds,
 						scratchSignature
 					)
-			);
-			// 	.to.emit(market, "Refunded")
-			// 	.withArgs(betIndex, wager);
+			)
+				.to.emit(market, "Refunded")
+				.withArgs(betIndex, wager);
 
 			// Expect final and initial balances to be the same
-			const finalBettorBalance = await underlying.balanceOf(bob.address);
+			bobBalance = await underlying.balanceOf(bob.address);
+			expect(bobBalance, "Bob should have 1000 USDT").to.equal(
+				ethers.utils.parseUnits("1000", tokenDecimals)
+			);
+
 			const finalVaultBalance = await underlying.balanceOf(vault.address);
 
 			expect(
-				finalBettorBalance,
-				"Bob should have been refunded his stake"
-			).to.equal(initialBettorBalance);
-			// expect(
-			// 	finalVaultBalance,
-			// 	"Vault should have been refunded the loan"
-			// ).to.equal(initialVaultBalance);
+				finalVaultBalance,
+				"Vault should have been refunded the loan"
+			).to.equal(initialVaultBalance);
 
-			// // Check total exposure
-			// const totalExposure = await market.getTotalExposure();
-			// expect(totalExposure).to.equal(0, "Total exposure should be 0");
+			// Check total exposure
+			const totalExposure = await market.getTotalExposure();
+			expect(totalExposure).to.equal(0, "Total exposure should be 0");
 
-			// // Check total in play
-			// const inPlayCount = await market.getInPlayCount();
-			// expect(inPlayCount).to.equal(0, "In play count should be 0");
+			// Check total in play
+			const inPlayCount = await market.getInPlayCount();
+			expect(inPlayCount).to.equal(0, "In play count should be 0");
 		});
 
 		it("Should refund a bet on a scratched runner", async () => {

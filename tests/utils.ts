@@ -193,8 +193,8 @@ export const signSetScratchedMessage = async (
 	odds: BigNumber,
 	signer: SignerWithAddress
 ): Promise<Signature> => {
-	const settleMessage = makeSetScratchMessage(marketId, propositionId, odds);
-	return await signMessage(settleMessage, signer);
+	const scratchedMessage = makeSetScratchMessage(marketId, propositionId, odds);
+	return await signMessage(scratchedMessage, signer);
 };
 
 type MarketStats = {
