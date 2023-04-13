@@ -17,14 +17,13 @@ import {
 	makePropositionId,
 	signBackMessage,
 	signSetResultMessage,
-	signSetScratchedMessage,
-	signRefundMessage
+	signSetScratchedMessage
 } from "./utils";
 import { formatBytes16String } from "../scripts/utils";
 
 chai.use(solidity);
 
-describe("Market", () => {
+describe.only("Market", () => {
 	let underlying: Token;
 	let tokenDecimals: number;
 	let vault: Vault;
@@ -1243,7 +1242,7 @@ describe("Market", () => {
 	});
 
 	describe("Refund", () => {
-		it.only("Should refund a bet via signature", async () => {
+		it("Should refund a bet via signature", async () => {
 			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
 			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
 			const now = await time.latest();
