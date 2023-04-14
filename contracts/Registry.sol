@@ -5,7 +5,7 @@ import "./IMarket.sol";
 import "./IVault.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
-contract Registry {
+contract Registry is IContractsRegistry {
     address[] public markets;
     address[] public vaults;
 
@@ -16,6 +16,8 @@ contract Registry {
     IERC20Metadata private immutable _token;
     uint256 private _threshold;
 
+    mapping (string => address) private _contracts;
+
     function marketCount() external view returns (uint256) {
         return markets.length;
     }
@@ -24,13 +26,37 @@ contract Registry {
         return vaults.length;
     }
 
+    function getContract(string memory name) external view returns (address) {
+        return _contracts[name];
+    }
+
+    function hasContract(string memory name) external view returns (bool) {
+        return _contracts[name] != address(0);
+    }
+
+    function getImplementation(string memory name) external view returns (address) {
+        return _contracts[name];
+    }
+
     constructor(IERC20Metadata token) {
         _owner = msg.sender;
         _token = token;
     }
 
+    function upgradeContract(string memory name, address newImplementation) external {
+        require(
+            IOwnable(_contract).getOwner() == msg.sender,
+            "upgradeContract: Only owner can upgrade contracts"
+        );
+
+        require(_contracts[name] != address(0), "upgradeContract: Contract not found");
+        require(newImplementation != address(0), "upgradeContract: New implementation address is invalid");
+        _contracts[name] = newImplementation;
+        emit ContractUpgraded(name, newImplementation);
+    }
+
     function addVault(address vault) external onlyTokenHolders {
-        assert(vault != address(0));
+        require(vault != address(0), "addVault: Vault address is invalid");
         address assetAddress = IVault(vault).asset();
         require(_vaultByAsset[assetAddress] == address(0), "addVault: Vault with this asset token already added");
 
@@ -63,7 +89,7 @@ contract Registry {
         emit MarketAdded(market);
     }
 
-    function removeMarket(uint256 index, address market) external onlyMarketOwner(market) {
+    function removeMarket(uint256 index, address market) external onlyContractOwner(market) {
         if (index >= markets.length) return;
 
         for (uint256 i = index; i < markets.length - 1; i++){
@@ -82,18 +108,18 @@ contract Registry {
         emit ThresholdUpdated(threshold);
     }
 
-    modifier onlyMarketOwner(address market) {
-        require(
-            IMarket(_markets[market]).getOwner() == msg.sender,
-            "onlyMarketOwner: Caller is not the market owner"
-        );
-        _;
-    }
+    // modifier onlyMarketOwner(address market) {
+    //     require(
+    //         IMarket(_markets[market]).getOwner() == msg.sender,
+    //         "onlyMarketOwner: Caller is not the market owner"
+    //     );
+    //     _;
+    // }
 
-    modifier onlyVaultOwner(address vault) {
+    modifier onlyContractOwner(address _contract) {
         require(
-            IVault(vault).getOwner() == msg.sender,
-            "onlyVaultOwner: Caller is not the vault owner"
+            IOwnable(_contract).getOwner() == msg.sender,
+            "onlyContractOwner: Caller is not the contract owner"
         );
         _;
     }
@@ -114,9 +140,9 @@ contract Registry {
         _;
     }
 
-    event MarketAdded(address indexed market);
-    event MarketRemoved(address indexed market);
+    // event MarketAdded(address indexed market);
+    // event MarketRemoved(address indexed market);
     event ThresholdUpdated(uint256 threshold);
-    event VaultAdded(address indexed vault);
-    event VaultRemoved(address indexed vault);
+    // event VaultAdded(address indexed vault);
+    // event VaultRemoved(address indexed vault);
 }

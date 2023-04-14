@@ -9,6 +9,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 
 import "./IVault.sol";
 import "./IMarket.sol";
+import "./IOwnable.sol";
 import "./IOracle.sol";
 import "./SignatureLib.sol";
 import "./OddsLib.sol";

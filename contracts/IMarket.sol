@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity =0.8.15;
 
+import "./IOwnable.sol";
 import "./SignatureLib.sol";
 
-interface IMarket {
+interface IMarket is IOwnable {
 	struct Back {
 		bytes16 nonce;
 		bytes16 propositionId;
