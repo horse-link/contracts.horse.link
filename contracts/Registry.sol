@@ -2,6 +2,7 @@
 pragma solidity =0.8.15;
 
 import "./IMarket.sol";
+import "./IOwnable.sol";
 import "./IVault.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
@@ -84,7 +85,7 @@ contract Registry {
 
     modifier onlyMarketOwner(address market) {
         require(
-            IMarket(_markets[market]).getOwner() == msg.sender,
+            IOwnable(_markets[market]).getOwner() == msg.sender,
             "onlyMarketOwner: Caller is not the market owner"
         );
         _;
@@ -92,7 +93,7 @@ contract Registry {
 
     modifier onlyVaultOwner(address vault) {
         require(
-            IVault(vault).getOwner() == msg.sender,
+            IOwnable(vault).getOwner() == msg.sender,
             "onlyVaultOwner: Caller is not the vault owner"
         );
         _;
