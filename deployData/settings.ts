@@ -137,7 +137,7 @@ export const productionTokens: TokenDeployDetails[] = [
 		marketName: "fxAUD Market",
 		nftBaseUri: "https://horse.link/api/nft/",
 		marketType: MarketType.Simple,
-		owner: "handle_fi",
+		owner: "horse_link",
 		networks: ["prod_arbitrum", "dev_arbitrum"]
 	},
 	{
