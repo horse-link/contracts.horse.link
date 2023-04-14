@@ -1,6 +1,6 @@
 import "@nomiclabs/hardhat-ethers";
 import "hardhat-deploy";
-import { DeployFunction, Deployment } from "hardhat-deploy/types";
+import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 /*
  * Deploy a Registry
@@ -8,19 +8,16 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	const { deployments, getNamedAccounts } = hre;
 	const { deploy } = deployments;
-	const { deployer } = await getNamedAccounts();
-	let registryTokenDeployment: Deployment;
-	try {
-		registryTokenDeployment = await deployments.get("HorseLink");
-	} catch {
-		registryTokenDeployment = await deployments.get("MockHorseLink");
-	}
+	const namedAccounts = await getNamedAccounts();
+	const deployer = namedAccounts.deployer;
+	const registryTokenAddress =
+		namedAccounts.HorseLink ?? namedAccounts.MockHorseLink;
 
 	console.log(`Deployer: ${deployer}`);
 
 	const deployment = await deploy("Registry", {
 		from: deployer,
-		args: [registryTokenDeployment.address],
+		args: [registryTokenAddress],
 		log: true,
 		autoMine: true,
 		skipIfAlreadyDeployed: false
@@ -31,7 +28,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 		setTimeout(async () => {
 			await hre.run("verify:verify", {
 				address: deployment.address,
-				constructorArguments: [registryTokenDeployment.address]
+				constructorArguments: [registryTokenAddress]
 			});
 		}, 20000);
 	}
