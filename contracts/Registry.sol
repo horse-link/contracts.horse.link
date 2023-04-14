@@ -56,6 +56,10 @@ contract Registry is IContractsRegistry {
     }
 
     function addVault(address vault) external onlyTokenHolders {
+        _addVault(vault);
+    }
+
+    function _addVault(address vault) private {
         require(vault != address(0), "addVault: Vault address is invalid");
         address assetAddress = IVault(vault).asset();
         require(_vaultByAsset[assetAddress] == address(0), "addVault: Vault with this asset token already added");
