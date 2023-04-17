@@ -64,14 +64,13 @@ contract MarketWithRisk is Market {
 			risk
 		));
 
-		require(isValidSignature(messageHash, signature) == true, "back: Invalid signature");
+		require(isValidSignature(messageHash, signature) == true, "backWithRisk: Invalid signature");
 
 		uint256 payout = wager * _getOddsWithRisk(wager, odds, propositionId, marketId, risk);
 		return _back(
 			propositionId,
 			marketId,
 			wager,
-			close,
 			end,
 			payout
 		);

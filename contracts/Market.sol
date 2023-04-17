@@ -279,14 +279,13 @@ contract Market is IMarket, Ownable, ERC721 {
 		uint256 payout = _getPayout(backData.propositionId, backData.marketId, backData.wager, backData.odds);
 		assert(payout > 0);
 
-		return _back(backData.propositionId, backData.marketId, backData.wager, backData.close, backData.end, payout);
+		return _back(backData.propositionId, backData.marketId, backData.wager, backData.end, payout);
 	}
 
 	function _back(
 		bytes16 propositionId,
 		bytes16 marketId,
 		uint256 wager,
-		uint256 close,
 		uint256 end,
 		uint256 payout
 	) internal returns (uint256) {
@@ -340,7 +339,7 @@ contract Market is IMarket, Ownable, ERC721 {
 			recipient = ownerOf(index);
 			_payout(index, WINNER);
 		} else {
-			require(IOracle(_oracle).hasResult(bet.marketId) == true, "_settle: Oracle not set");
+			require(IOracle(_oracle).hasResult(bet.marketId) == true, "_settle: Oracle does not have a result");
 			result = IOracle(_oracle).checkResult(
 				bet.marketId,
 				bet.propositionId

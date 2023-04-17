@@ -159,7 +159,7 @@ describe.only("Market Oracle", () => {
 			);
 		});
 
-		it.only("should not settle market if proposition is not set", async () => {
+		it("should not settle market if proposition is not set", async () => {
 			const marketId = makeMarketId(new Date(), "ABC", "1");
 			const propositionId1 = makePropositionId(marketId, 1);
 			const propositionId2 = makePropositionId(marketId, 2);
@@ -234,7 +234,7 @@ describe.only("Market Oracle", () => {
 			// NOTE:  THIS SHOULD THROW AN ERROR
 			// Settle proposition 2 as winner
 			await expect(market.settle(1)).to.be.revertedWith(
-				"_settle: Oracle not set"
+				"_settle: Oracle does not have a result"
 			); // 1 the index of proposition 2
 
 			// Add proposition 2 to oracle as winner
@@ -250,7 +250,14 @@ describe.only("Market Oracle", () => {
 				signature
 			);
 
-			// UnExpected: Proposition 2 is a looser
+			// Settle proposition 2
+			await market.settle(1);
+
+			// Settle proposition 1
+			await market.settle(0);
+
+			const count = await market.getInPlayCount();
+			expect(count).to.equal(0);
 		});
 	});
 });
