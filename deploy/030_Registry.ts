@@ -10,8 +10,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	const { deploy } = deployments;
 	const namedAccounts = await getNamedAccounts();
 	const deployer = namedAccounts.deployer;
-	const registryTokenAddress =
-		namedAccounts.HorseLink ?? namedAccounts.MockHorseLink;
+	const registryTokenAddress = hre.network.live
+		? namedAccounts.HorseLink ?? namedAccounts.MockHorseLink
+		: (await hre.deployments.get("MockHorseLink")).address;
 
 	console.log(`Deployer: ${deployer}`);
 
