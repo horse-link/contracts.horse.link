@@ -132,7 +132,12 @@ describe.only("Market Oracle", () => {
 	});
 
 	describe.only("Adding oracle results", () => {
-		it("Should add new proposition to orcale", async () => {
+		it("should get owner address", async () => {
+			const ownerAddress = await oracle.getOwner();
+			expect(ownerAddress).to.equal(owner.address);
+		});
+
+		it("should add set and get proposition to orcale", async () => {
 			const marketId = makeMarketId(new Date(), "RED", "1");
 			const propositionId = makePropositionId(marketId, 1);
 
@@ -149,7 +154,6 @@ describe.only("Market Oracle", () => {
 			);
 
 			const actual = await oracle.getResult(formatBytes16String(marketId));
-			console.log(actual);
 			expect(bytes16HexToString(actual.winningPropositionId)).to.equal(
 				propositionId
 			);
