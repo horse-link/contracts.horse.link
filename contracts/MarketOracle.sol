@@ -36,6 +36,7 @@ contract MarketOracle is IOracle {
 		if (_results[marketId].winningPropositionId == propositionId) {
 			return WINNER;
 		}
+		
 		uint256 totalScratched = _results[marketId].scratched.length;
 		for (uint256 i = 0; i < totalScratched ; i++) {
 			if (_results[marketId].scratched[i].scratchedPropositionId == propositionId) {
