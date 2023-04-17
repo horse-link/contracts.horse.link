@@ -263,6 +263,18 @@ contract Market is IMarket, Ownable, ERC721 {
 			"back: Invalid signature"
 		);
 
+		// Note: Now that we are checking the close time, this is not strictly necessary
+		require(
+			backData.end > block.timestamp && backData.close > block.timestamp,
+			"back: Invalid date"
+		);
+
+		// Do not allow a bet placed if we know the result
+		require(
+			IOracle(_oracle).hasResult(backData.marketId) == false,
+			"back: Oracle result already set for this market"
+		);
+
 		// add underlying to the market
 		uint256 payout = _getPayout(backData.propositionId, backData.marketId, backData.wager, backData.odds);
 		assert(payout > 0);
@@ -278,18 +290,6 @@ contract Market is IMarket, Ownable, ERC721 {
 		uint256 end,
 		uint256 payout
 	) internal returns (uint256) {
-		require(
-			end > block.timestamp && close > block.timestamp,
-			"_back: Invalid date"
-		);
-
-		// Do not allow a bet placed if we know the result
-		// Note: Now that we are checking the close time, this is not strictly necessary
-		require(
-			IOracle(_oracle).checkResult(marketId, propositionId) == 0x02,
-			"_back: Oracle result already set for this market"
-		);
-
 		// Escrow the wager
 		_underlying.transferFrom(_msgSender(), _self, wager);
 
@@ -340,6 +340,7 @@ contract Market is IMarket, Ownable, ERC721 {
 			recipient = ownerOf(index);
 			_payout(index, WINNER);
 		} else {
+			require(IOracle(_oracle).hasResult(bet.marketId) == true, "_settle: Oracle not set");
 			result = IOracle(_oracle).checkResult(
 				bet.marketId,
 				bet.propositionId

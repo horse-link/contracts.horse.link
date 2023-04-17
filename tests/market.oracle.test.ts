@@ -158,5 +158,97 @@ describe.only("Market Oracle", () => {
 				propositionId
 			);
 		});
+
+		it.only("should not settle market if proposition is not set", async () => {
+			const marketId = makeMarketId(new Date(), "ABC", "1");
+			const propositionId1 = makePropositionId(marketId, 1);
+			const propositionId2 = makePropositionId(marketId, 2);
+
+			const nonce = "1";
+			const currentTime = await time.latest();
+			// Assume race closes in 1 hour from now
+			const close = currentTime + 3600;
+			const end = 1000000000000;
+
+			// Bet on proposition 1 (looser)
+			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
+			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
+
+			const signature1 = await signBackMessage(
+				nonce,
+				marketId,
+				propositionId1,
+				odds,
+				close,
+				end,
+				owner
+			);
+
+			await market
+				.connect(bob)
+				.back(
+					constructBet(
+						formatBytes16String(nonce),
+						formatBytes16String(propositionId1),
+						formatBytes16String(marketId),
+						wager,
+						odds,
+						close,
+						end,
+						signature1
+					)
+				);
+
+			const signature2 = await signBackMessage(
+				nonce,
+				marketId,
+				propositionId2,
+				odds,
+				close,
+				end,
+				owner
+			);
+
+			// Bet on proposition 2 (winner)
+			await market
+				.connect(bob)
+				.back(
+					constructBet(
+						formatBytes16String(nonce),
+						formatBytes16String(propositionId2),
+						formatBytes16String(marketId),
+						wager,
+						odds,
+						close,
+						end,
+						signature2
+					)
+				);
+
+			// Fast forward
+			await hre.network.provider.request({
+				method: "evm_setNextBlockTimestamp",
+				params: [end + 7200]
+			});
+
+			// NOTE:  THIS SHOULD THROW AN ERROR
+			// Settle proposition 2 as winner
+			await market.settle(1); // 1 the index of proposition 2
+
+			// Add proposition 2 to oracle as winner
+			const signature = await signSetResultMessage(
+				marketId,
+				propositionId2,
+				oracleSigner
+			);
+
+			await oracle.setResult(
+				formatBytes16String(marketId),
+				formatBytes16String(propositionId2),
+				signature
+			);
+
+			// UnExpected: Proposition 2 is a looser
+		});
 	});
 });

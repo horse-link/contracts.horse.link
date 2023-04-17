@@ -18,6 +18,8 @@ interface IOracle {
         Scratched[] scratched;
 	}
 
+    function hasResult(bytes16 marketId) external view returns (bool);
+
     function checkResult(
         bytes16 marketId,
         bytes16 propositionId

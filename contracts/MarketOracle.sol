@@ -11,6 +11,7 @@ contract MarketOracle is IOracle {
 	address private immutable _owner;
 
 	// Race result constants
+	uint8 public constant NULL = 0x00;
     uint8 public constant WINNER = 0x01;
     uint8 public constant LOSER = 0x02;
     uint8 public constant SCRATCHED = 0x03;
@@ -21,6 +22,10 @@ contract MarketOracle is IOracle {
 
 	function getOwner() external view returns (address) {
 		return _owner;
+	}
+
+	function hasResult(bytes16 marketId) external view returns (bool) {
+		return _results[marketId].winningPropositionId != bytes16(0);
 	}
 
 	// Change to return one of the constants
@@ -44,7 +49,11 @@ contract MarketOracle is IOracle {
 			}
 		}
 
-		return LOSER;
+		if (_results[marketId].winningPropositionId == propositionId && _results[marketId].winningPropositionId != bytes16(0)) {
+			return WINNER;
+		}
+
+		return NULL;
 	}
 
 	function getResult(bytes16 marketId) external view returns (Result memory) {
@@ -52,6 +61,10 @@ contract MarketOracle is IOracle {
 			marketId != bytes16(0),
 			"getResult: Invalid propositionId"
 		);
+		return _getResult(marketId);
+	}
+
+	function _getResult(bytes16 marketId) private view returns (Result memory) {
 		return _results[marketId];
 	}
 
