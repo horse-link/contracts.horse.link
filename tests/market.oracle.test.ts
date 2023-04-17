@@ -22,7 +22,7 @@ import { bytes16HexToString, formatBytes16String } from "../scripts/utils";
 
 chai.use(solidity);
 
-describe.only("Market Oracle", () => {
+describe("Market Oracle", () => {
 	let underlying: Token;
 	let tokenDecimals: number;
 	let vault: Vault;
@@ -131,7 +131,7 @@ describe.only("Market Oracle", () => {
 			.deposit(ethers.utils.parseUnits("1000", tokenDecimals), alice.address);
 	});
 
-	describe.only("Adding oracle results", () => {
+	describe("Adding oracle results", () => {
 		it("should get owner address", async () => {
 			const ownerAddress = await oracle.getOwner();
 			expect(ownerAddress).to.equal(owner.address);
