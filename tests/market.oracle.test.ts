@@ -233,7 +233,9 @@ describe.only("Market Oracle", () => {
 
 			// NOTE:  THIS SHOULD THROW AN ERROR
 			// Settle proposition 2 as winner
-			await market.settle(1); // 1 the index of proposition 2
+			await expect(market.settle(1)).to.be.revertedWith(
+				"_settle: Oracle not set"
+			); // 1 the index of proposition 2
 
 			// Add proposition 2 to oracle as winner
 			const signature = await signSetResultMessage(
