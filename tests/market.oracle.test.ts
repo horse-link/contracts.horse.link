@@ -18,7 +18,7 @@ import {
 	signBackMessage,
 	signSetResultMessage
 } from "./utils";
-import { formatBytes16String } from "../scripts/utils";
+import { bytes16HexToString, formatBytes16String } from "../scripts/utils";
 
 chai.use(solidity);
 
@@ -131,13 +131,28 @@ describe.only("Market Oracle", () => {
 			.deposit(ethers.utils.parseUnits("1000", tokenDecimals), alice.address);
 	});
 
-	describe("Adding oracle results", () => {
+	describe.only("Adding oracle results", () => {
 		it("Should add new proposition to orcale", async () => {
 			const marketId = makeMarketId(new Date(), "RED", "1");
 			const propositionId = makePropositionId(marketId, 1);
 
-			const actual = await oracle.getResult(propositionId);
-			expect(actual).to.equal(propositionId);
+			const signature = await signSetResultMessage(
+				marketId,
+				propositionId,
+				oracleSigner
+			);
+
+			await oracle.setResult(
+				formatBytes16String(marketId),
+				formatBytes16String(propositionId),
+				signature
+			);
+
+			const actual = await oracle.getResult(formatBytes16String(marketId));
+			console.log(actual);
+			expect(bytes16HexToString(actual.winningPropositionId)).to.equal(
+				propositionId
+			);
 		});
 	});
 });
