@@ -397,7 +397,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		_underlying.transfer(recipient, bet.amount);
 		_underlying.transfer(address(_vault), loan);
 		emit Repaid(address(_vault), loan);
-		emit Refunded(index, bet.amount,recipient);
+		emit Refunded(index, bet.amount, recipient);
 
 		_burn(uint256(index));
 	}
