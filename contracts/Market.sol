@@ -391,11 +391,13 @@ contract Market is IMarket, Ownable, ERC721 {
 		_totalExposure -= loan;
 		_totalInPlay -= _bets[index].amount;
 		_inplayCount --;
+
+		address recipient = ownerOf(index);
 		
-		_underlying.transfer(ownerOf(index), bet.amount);
+		_underlying.transfer(recipient, bet.amount);
 		_underlying.transfer(address(_vault), loan);
 		emit Repaid(address(_vault), loan);
-		emit Refunded(index, bet.amount);
+		emit Refunded(index, bet.amount, recipient);
 
 		_burn(uint256(index));
 	}
@@ -562,6 +564,7 @@ contract Market is IMarket, Ownable, ERC721 {
 
 	event Refunded(
 		uint256 index,
-		uint256 amount
+		uint256 amount,
+		address indexed recipient
 	);
 }
