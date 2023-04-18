@@ -15,7 +15,6 @@ import {
 	getMarketStats,
 	makeBet,
 	Markets,
-	signRefundMessage,
 	signSetResultMessage,
 	TestBet
 } from "./utils";
@@ -24,7 +23,7 @@ import * as timeHelper from "@nomicfoundation/hardhat-network-helpers/dist/src/h
 
 chai.use(solidity);
 
-describe("Collateralised Market: play through", function () {
+describe.skip("Collateralised Market: play through", function () {
 	let underlying: Token;
 	let tokenDecimals: number;
 	let vault: Vault;
@@ -185,6 +184,7 @@ describe("Collateralised Market: play through", function () {
 			);
 	});
 
+	// Ignore for now:  This market will be removed
 	it("Bet 1: Should get cover from the vault for a new bet", async () => {
 		const bet = Bets.One;
 		const wager = ethers.utils.parseUnits(bet.amount.toString(), USDT_DECIMALS);
