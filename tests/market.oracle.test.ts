@@ -1,6 +1,5 @@
 import hre, { ethers, deployments } from "hardhat";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
-import { BigNumber } from "ethers";
 import chai, { expect } from "chai";
 import {
 	Market,
@@ -137,7 +136,7 @@ describe("Market Oracle", () => {
 			expect(ownerAddress).to.equal(owner.address);
 		});
 
-		it("should add set and get proposition to orcale", async () => {
+		it("should add set and get proposition to oracle", async () => {
 			const marketId = makeMarketId(new Date(), "RED", "1");
 			const propositionId = makePropositionId(marketId, 1);
 

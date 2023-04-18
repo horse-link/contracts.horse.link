@@ -61,9 +61,10 @@ contract Market is IMarket, Ownable, ERC721 {
 	mapping(address => bool) private _signers;
 
 	// Race result constants
-    uint8 internal constant WINNER = 0x01;
-    uint8 internal constant LOSER = 0x02;
-    uint8 internal constant SCRATCHED = 0x03;
+	uint8 public constant NULL = 0x00;
+    uint8 public constant WINNER = 0x01;
+    uint8 public constant LOSER = 0x02;
+    uint8 public constant SCRATCHED = 0x03;
 
 	constructor(
 		IVault vault,
@@ -339,15 +340,20 @@ contract Market is IMarket, Ownable, ERC721 {
 			recipient = ownerOf(index);
 			_payout(index, WINNER);
 		} else {
-			require(IOracle(_oracle).hasResult(bet.marketId) == true, "_settle: Oracle does not have a result");
 			result = IOracle(_oracle).checkResult(
 				bet.marketId,
 				bet.propositionId
 			);
-			recipient = result != LOSER ? ownerOf(index) : address(_vault);
-			if (result == WINNER) {
-				_applyScratchings(index);
+
+			require(result != NULL, "_settle: Oracle does not have a result");
+
+			if (result == SCRATCHED) {
+				_refund(index);
+				return;
 			}
+
+			recipient = result != LOSER ? ownerOf(index) : address(_vault);
+
 			_payout(index, result);
 			_totalInPlay -= _bets[index].amount;
 			_inplayCount --;
@@ -372,8 +378,9 @@ contract Market is IMarket, Ownable, ERC721 {
 		bytes16 marketId = _bets[index].marketId;
 		IOracle.Result memory result = IOracle(_oracle).getResult(marketId);
 		// Iterate through scratchings to see if the bet was on a scratched runner
-		for (uint256 i = 0; i < result.scratched.length; i++) {
-			if (result.scratched[i].scratchedPropositionId == _bets[index].propositionId) {
+		uint256 count = result.scratched.length;
+		for (uint256 i = 0; i < count; i++) {
+			if (result.scratched[i].propositionId == _bets[index].propositionId) {
 				_refund(index);
 				return;
 			}
@@ -394,6 +401,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		
 		_underlying.transfer(ownerOf(index), bet.amount);
 		_underlying.transfer(address(_vault), loan);
+		
 		emit Repaid(address(_vault), loan);
 		emit Refunded(index, bet.amount);
 
@@ -410,8 +418,9 @@ contract Market is IMarket, Ownable, ERC721 {
 		// Loop through scratchings
 		uint256 scratchedOdds;
 		uint256 betCreated = _bets[index].created;
-		uint256 scratchedCount = result.scratched.length;
-		for (uint256 i = 0; i < scratchedCount; i++) {
+		uint256 count = result.scratched.length;
+
+		for (uint256 i = 0; i < count; i++) {
 			// If the timestamp of the scratching is after the bet
 			if (result.scratched[i].timestamp > betCreated) {
 				// Sum the odds
@@ -495,9 +504,9 @@ contract Market is IMarket, Ownable, ERC721 {
 
 	function settleMarket(bytes16 marketId) external {
 		uint64[] memory bets = _marketBets[marketId];
-		uint256 total = bets.length;
+		uint256 count = bets.length;
 
-		for (uint64 i = 0; i < total; i++) {
+		for (uint64 i = 0; i < count; i++) {
 			uint64 index = bets[i];
 
 			Bet memory bet = _bets[index];
@@ -534,6 +543,11 @@ contract Market is IMarket, Ownable, ERC721 {
 		return _isSigner(signer);
 	}
 
+	event Borrowed(
+		uint256 index,
+		uint256 amount
+	);
+
 	event Placed(
 		uint256 index,
 		bytes16 propositionId,
@@ -541,18 +555,6 @@ contract Market is IMarket, Ownable, ERC721 {
 		uint256 amount,
 		uint256 payout,
 		address indexed owner
-	);
-
-	event Settled(
-		uint256 index,
-		uint256 payout,
-		uint8 result,
-		address indexed recipient
-	);
-
-	event Borrowed(
-		uint256 index,
-		uint256 amount
 	);
 
 	event Repaid(
@@ -563,5 +565,12 @@ contract Market is IMarket, Ownable, ERC721 {
 	event Refunded(
 		uint256 index,
 		uint256 amount
+	);
+
+	event Settled(
+		uint256 index,
+		uint256 payout,
+		uint8 result,
+		address indexed recipient
 	);
 }

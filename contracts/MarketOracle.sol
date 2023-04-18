@@ -28,7 +28,6 @@ contract MarketOracle is IOracle {
 		return _results[marketId].winningPropositionId != bytes16(0);
 	}
 
-	// Change to return one of the constants
 	function checkResult(
 		bytes16 marketId,
 		bytes16 propositionId
@@ -44,7 +43,7 @@ contract MarketOracle is IOracle {
 		
 		uint256 totalScratched = _results[marketId].scratched.length;
 		for (uint256 i = 0; i < totalScratched ; i++) {
-			if (_results[marketId].scratched[i].scratchedPropositionId == propositionId) {
+			if (_results[marketId].scratched[i].propositionId == propositionId) {
 				return SCRATCHED;
 			}
 		}
@@ -109,7 +108,7 @@ contract MarketOracle is IOracle {
 
 		uint256 totalScratched = _results[marketId].scratched.length;
 		for (uint256 i = 0; i < totalScratched ; i++) {
-			if (_results[marketId].scratched[i].scratchedPropositionId == scratchedPropositionId) {
+			if (_results[marketId].scratched[i].propositionId == scratchedPropositionId) {
 				revert("setScratchedResult: Result already set");
 			}
 		}

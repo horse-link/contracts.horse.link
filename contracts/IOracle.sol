@@ -6,7 +6,7 @@ import "./SignatureLib.sol";
 // Oracle
 interface IOracle {
     struct Scratched {
-        bytes16 scratchedPropositionId;
+        bytes16 propositionId;
         // Timestamp of when the result was scratched
         uint256 timestamp;
         // Odds of the scratched proposition at time of scratching
