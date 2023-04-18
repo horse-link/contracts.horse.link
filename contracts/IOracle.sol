@@ -6,7 +6,7 @@ import "./SignatureLib.sol";
 // Oracle
 interface IOracle {
     struct Scratched {
-        bytes16 scratchedPropositionId;
+        bytes16 propositionId;
         // Timestamp of when the result was scratched
         uint256 timestamp;
         // Odds of the scratched proposition at time of scratching
@@ -17,6 +17,8 @@ interface IOracle {
         bytes16 winningPropositionId;
         Scratched[] scratched;
 	}
+
+    function hasResult(bytes16 marketId) external view returns (bool);
 
     function checkResult(
         bytes16 marketId,
