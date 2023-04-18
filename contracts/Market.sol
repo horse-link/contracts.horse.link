@@ -488,7 +488,7 @@ contract Market is IMarket, Ownable, ERC721 {
 			amount
 		);
 
-		emit Borrowed(address(_vault),index, amount);
+		emit Borrowed(address(_vault), index, amount);
 
 		return amount;
 	}
