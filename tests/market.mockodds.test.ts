@@ -157,8 +157,8 @@ describe("Market", () => {
 
 			// Runner 2 for a Win
 			const nonce = "2";
-			const propositionId = makePropositionId("ABC", 2);
 			const marketId = makeMarketId(new Date(), "ABC", "2");
+			const propositionId = makePropositionId(marketId, 2);
 
 			const betSignature = await signBackMessage(
 				nonce,
@@ -266,8 +266,8 @@ describe("Market", () => {
 
 			// Runner 2 for a Win
 			const nonce = "2";
-			const propositionId = makePropositionId("ABC", 2);
 			const marketId = makeMarketId(new Date(), "ABC", "2");
+			const propositionId = makePropositionId(marketId, 2);
 
 			const betSignature = await signBackMessage(
 				nonce,
@@ -299,7 +299,7 @@ describe("Market", () => {
 					)
 			)
 				.to.emit(market, "Borrowed")
-				.withArgs(0, BigNumber.from(1000000));
+				.withArgs(vault.address, 0, BigNumber.from(1000000));
 
 			// Check bob and vault balances
 			let bobBalance = await underlying.balanceOf(bob.address);

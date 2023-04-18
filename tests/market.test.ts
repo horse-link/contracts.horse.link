@@ -1328,7 +1328,7 @@ describe("Market", () => {
 					)
 			)
 				.to.emit(market, "Refunded")
-				.withArgs(betIndex, wager);
+				.withArgs(betIndex, wager, bob.address);
 
 			// Expect final and initial balances to be the same
 			bobBalance = await underlying.balanceOf(bob.address);
@@ -1422,7 +1422,7 @@ describe("Market", () => {
 			// Refund
 			await expect(market.connect(bob).refund(betIndex))
 				.to.emit(market, "Refunded")
-				.withArgs(betIndex, wager);
+				.withArgs(betIndex, wager, bob.address);
 
 			// Expect final and initial balances to be the same
 			const finalBettorBalance = await underlying.balanceOf(bob.address);

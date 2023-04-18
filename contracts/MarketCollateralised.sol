@@ -54,7 +54,7 @@ abstract contract MarketCollateralised is Market {
 
 	function _refund(uint64 index) internal override {
 		Bet memory bet = _bets[index];
-		require(bet.settled == false, "refund: Bet has already settled");
+		require(bet.settled == false, "_refund: Bet has already settled");
 
 		bet.settled = true;
 		uint256 loan = _betExposure[index];
@@ -62,12 +62,13 @@ abstract contract MarketCollateralised is Market {
 		_totalInPlay -= _bets[index].amount;
 		_inplayCount --;
 
-		IERC20(_vault.asset()).transfer(ownerOf(index), bet.amount);
+		address recipient = ownerOf(index);
+		IERC20(_vault.asset()).transfer(recipient, bet.amount);
 		if (loan > 0) {
 			IERC20(_vault.asset()).transfer(address(_vault), loan);
 			emit Repaid(_vault.asset(), loan);
 		}	
-		emit Refunded(index, bet.amount);	
+		emit Refunded(index, bet.amount, recipient);
 
 		_burn(uint256(index));
 	}
@@ -122,7 +123,7 @@ abstract contract MarketCollateralised is Market {
 			);
 
 			// Add the amount we borrowed to the total collateral				
-			emit Borrowed(index, amountToBorrow);
+			emit Borrowed(address(_vault), index, amountToBorrow);
 			_totalCollateral += amountToBorrow;
 		}
 
