@@ -835,13 +835,13 @@ describe("Market", () => {
 			const inPlayCount = await market.getInPlayCount();
 			expect(inPlayCount, "In play count should be 1").to.equal(1);
 
-			const exposure = await market.getTotalExposure();
+			let exposure = await market.getTotalExposure();
 			expect(
 				exposure,
 				"Exposure should be equal to the payout less the wager"
 			).to.equal(betPayout.sub(wager));
 
-			const inPlay = await market.getTotalInPlay();
+			let inPlay = await market.getTotalInPlay();
 			expect(inPlay).to.equal(ethers.utils.parseUnits("100", USDT_DECIMALS));
 
 			const nftBalance = await market.balanceOf(bob.address);
@@ -873,25 +873,26 @@ describe("Market", () => {
 				.to.emit(market, "Settled")
 				.withArgs(index, betPayout, SCRATCHED, bob.address);
 
-			// const newNftBalance = await market.balanceOf(bob.address);
-			// expect(newNftBalance).to.equal(0, "Bob should have no NFTs now");
+			const newNftBalance = await market.balanceOf(bob.address);
+			expect(newNftBalance).to.equal(0, "Bob should have no NFTs now");
 
-			// await expect(market.settle(index)).to.be.revertedWith(
-			// 	"settle: Bet has already settled"
-			// );
-			// exposure = await market.getTotalExposure();
-			// expect(exposure).to.equal(0);
+			await expect(market.settle(index)).to.be.revertedWith(
+				"settle: Bet has already settled"
+			);
 
-			// inPlay = await market.getTotalInPlay();
-			// expect(inPlay).to.equal(0);
+			exposure = await market.getTotalExposure();
+			expect(exposure).to.equal(0);
 
-			// // Everything should be as it was before
-			// const balance = await underlying.balanceOf(bob.address);
-			// const endVaultBalance = await underlying.balanceOf(vault.address);
-			// const endMarketBalance = await underlying.balanceOf(market.address);
-			// expect(balance).to.equal(bobBalance);
-			// expect(vaultBalance).to.equal(endVaultBalance);
-			// expect(marketBalance).to.equal(endMarketBalance);
+			inPlay = await market.getTotalInPlay();
+			expect(inPlay).to.equal(0);
+
+			// Everything should be as it was before
+			const balance = await underlying.balanceOf(bob.address);
+			const endVaultBalance = await underlying.balanceOf(vault.address);
+			const endMarketBalance = await underlying.balanceOf(market.address);
+			expect(balance).to.equal(bobBalance);
+			expect(vaultBalance).to.equal(endVaultBalance);
+			expect(marketBalance).to.equal(endMarketBalance);
 		});
 
 		it("Should allow Bob to transfer a punt to Carol and for Carol to settle", async () => {
@@ -1125,7 +1126,7 @@ describe("Market", () => {
 				expect(bet[0]).to.equal(wager, "Bet amount should be same as wager");
 			}
 
-			const inPlayCount = await market.getInPlayCount();
+			let inPlayCount = await market.getInPlayCount();
 			expect(inPlayCount, "In play count should be 5").to.equal(max);
 
 			// add a result
@@ -1159,8 +1160,8 @@ describe("Market", () => {
 
 			await market.settleMarket(formatBytes16String(marketId));
 
-			// inPlayCount = await market.getInPlayCount();
-			// expect(inPlayCount).to.equal(0);
+			inPlayCount = await market.getInPlayCount();
+			expect(inPlayCount).to.equal(0);
 		});
 
 		it("Should settle multiple bets made with multiBack on a market", async () => {
