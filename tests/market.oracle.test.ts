@@ -169,7 +169,7 @@ describe("Market Oracle", () => {
 			const close = currentTime + 3600;
 			const end = 1000000000000;
 
-			// Bet on proposition 1 (looser)
+			// Bet on proposition 1 (loser)
 			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
 			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
 
