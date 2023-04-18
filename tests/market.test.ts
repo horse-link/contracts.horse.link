@@ -23,7 +23,7 @@ import { formatBytes16String } from "../scripts/utils";
 
 chai.use(solidity);
 
-describe.only("Market", () => {
+describe("Market", () => {
 	let underlying: Token;
 	let tokenDecimals: number;
 	let vault: Vault;
@@ -1074,7 +1074,7 @@ describe.only("Market", () => {
 				.withArgs(index, 272727300, WINNER, bob.address);
 		});
 
-		it.only("Should settle multiple bets on a market", async () => {
+		it("Should settle multiple bets on a market", async () => {
 			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
 			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
 			const currentTime = await time.latest();

@@ -7,9 +7,6 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
-// add hard hat console
-import "hardhat/console.sol";
-
 import "./IVault.sol";
 import "./IMarket.sol";
 import "./IOracle.sol";
@@ -515,7 +512,6 @@ contract Market is IMarket, Ownable, ERC721 {
 
 			Bet memory bet = _bets[index];
 			if (bet.settled == false) {
-				console.log("Settling bet %s", index);
 				_settle(index);
 			}
 		}
