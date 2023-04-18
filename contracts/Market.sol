@@ -490,7 +490,7 @@ contract Market is IMarket, Ownable, ERC721 {
 			amount
 		);
 
-		emit Borrowed(index, amount);
+		emit Borrowed(address(_vault), index, amount);
 
 		return amount;
 	}
@@ -553,6 +553,7 @@ contract Market is IMarket, Ownable, ERC721 {
 	);
 
 	event Borrowed(
+		address indexed vault,
 		uint256 index,
 		uint256 amount
 	);
