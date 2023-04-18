@@ -7,6 +7,9 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
+// add hard hat console
+import "hardhat/console.sol";
+
 import "./IVault.sol";
 import "./IMarket.sol";
 import "./IOracle.sol";
@@ -347,11 +350,6 @@ contract Market is IMarket, Ownable, ERC721 {
 
 			require(result != NULL, "_settle: Oracle does not have a result");
 
-			if (result == SCRATCHED) {
-				_refund(index);
-				return;
-			}
-
 			recipient = result != LOSER ? ownerOf(index) : address(_vault);
 
 			_payout(index, result);
@@ -366,7 +364,11 @@ contract Market is IMarket, Ownable, ERC721 {
 
 	function scratchAndRefund(uint64 index, bytes16 marketId, bytes16 propositionId, uint256 odds, SignatureLib.Signature calldata signature) external {
 		require(_bets[index].propositionId == propositionId, "scratchAndRefund: propositionId does not match bet");
+		require(_bets[index].settled == false, "scratchAndRefund: Bet has already settled");
+
 		_oracle.setScratchedResult(marketId, propositionId, odds, signature);
+
+		_bets[index].settled = true;
 		_refund(index);
 	}
 
@@ -375,12 +377,16 @@ contract Market is IMarket, Ownable, ERC721 {
 	 * @param index The index of the bet
 	 */
 	function refund(uint64 index) external {
+		require(_bets[index].settled == false, "refund: Bet has already settled");
+		
 		bytes16 marketId = _bets[index].marketId;
+
 		IOracle.Result memory result = IOracle(_oracle).getResult(marketId);
 		// Iterate through scratchings to see if the bet was on a scratched runner
 		uint256 count = result.scratched.length;
 		for (uint256 i = 0; i < count; i++) {
 			if (result.scratched[i].propositionId == _bets[index].propositionId) {
+				_bets[index].settled = true;
 				_refund(index);
 				return;
 			}
@@ -391,9 +397,7 @@ contract Market is IMarket, Ownable, ERC721 {
 
 	function _refund(uint64 index) internal virtual {
 		Bet memory bet = _bets[index];
-		require(bet.settled == false, "_refund: Bet has already settled");
 
-		bet.settled = true;
 		uint256 loan = _bets[index].payout - _bets[index].amount;
 		_totalExposure -= loan;
 		_totalInPlay -= _bets[index].amount;
@@ -430,7 +434,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		// Now apply the scratched odds to get the new odds for the bet
 		if (scratchedOdds > 0 && _bets[index].amount > 0) {
 			// Calculate the odds of the bet
-			uint256 originalOdds = _bets[index].payout / _bets[index].amount ;
+			uint256 originalOdds = _bets[index].payout / _bets[index].amount;
 			uint256 newOdds = OddsLib.rebaseOddsWithScratch(originalOdds, scratchedOdds, MARGIN);
 			// Calculate the new payout
 			_bets[index].payout = _bets[index].amount * newOdds;
@@ -511,6 +515,7 @@ contract Market is IMarket, Ownable, ERC721 {
 
 			Bet memory bet = _bets[index];
 			if (bet.settled == false) {
+				console.log("Settling bet %s", index);
 				_settle(index);
 			}
 		}

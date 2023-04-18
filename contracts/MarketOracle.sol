@@ -42,14 +42,14 @@ contract MarketOracle is IOracle {
 		}
 		
 		uint256 totalScratched = _results[marketId].scratched.length;
-		for (uint256 i = 0; i < totalScratched ; i++) {
+		for (uint256 i = 0; i < totalScratched; i++) {
 			if (_results[marketId].scratched[i].propositionId == propositionId) {
 				return SCRATCHED;
 			}
 		}
 
-		if (_results[marketId].winningPropositionId == propositionId && _results[marketId].winningPropositionId != bytes16(0)) {
-			return WINNER;
+		if (_results[marketId].winningPropositionId != propositionId && _results[marketId].winningPropositionId != bytes16(0)) {
+			return LOSER;
 		}
 
 		return NULL;
@@ -107,7 +107,7 @@ contract MarketOracle is IOracle {
 		);
 
 		uint256 totalScratched = _results[marketId].scratched.length;
-		for (uint256 i = 0; i < totalScratched ; i++) {
+		for (uint256 i = 0; i < totalScratched; i++) {
 			if (_results[marketId].scratched[i].propositionId == scratchedPropositionId) {
 				revert("setScratchedResult: Result already set");
 			}
