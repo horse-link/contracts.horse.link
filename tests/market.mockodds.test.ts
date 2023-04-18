@@ -131,7 +131,7 @@ describe("Market", () => {
 			.deposit(ethers.utils.parseUnits("1000", tokenDecimals), alice.address);
 	});
 
-	describe("Fixed odds betting", () => {
+	describe.only("Fixed odds betting", () => {
 		beforeEach(async () => {
 			// Vault should have 1000 USDT
 			const vaultAssets = await vault.totalAssets();
@@ -348,5 +348,108 @@ describe("Market", () => {
 				ethers.utils.parseUnits("900", USDT_DECIMALS)
 			);
 		});
+	});
+
+	it("Should settle a losing bet with a large loan and not send the market owner any reward", async () => {
+		const balance = await underlying.balanceOf(vault.address);
+		expect(balance).to.equal(ethers.utils.parseUnits("1000", tokenDecimals));
+
+		const wager = ethers.utils.parseUnits("1", USDT_DECIMALS);
+		const odds = ethers.utils.parseUnits("20", ODDS_DECIMALS);
+		const currentTime = await time.latest();
+		// Assume race closes in 1 hour from now
+		const close = currentTime + 3600;
+
+		const latestBlockNumber = await ethers.provider.getBlockNumber();
+		const latestBlock = await ethers.provider.getBlock(latestBlockNumber);
+
+		const end = latestBlock.timestamp + 10000;
+
+		// Runner 2 for a Win
+		const nonce = "2";
+		const propositionId = makePropositionId("ABC", 2);
+		const marketId = makeMarketId(new Date(), "ABC", "2");
+
+		const betSignature = await signBackMessage(
+			nonce,
+			marketId,
+			propositionId,
+			odds,
+			close,
+			end,
+			owner
+		);
+
+		const count = await market.getCount();
+		expect(count, "There should be no bets").to.equal(0);
+
+		expect(
+			await market
+				.connect(bob)
+				.back(
+					constructBet(
+						formatBytes16String(nonce),
+						formatBytes16String(propositionId),
+						formatBytes16String(marketId),
+						wager,
+						odds,
+						close,
+						end,
+						betSignature
+					)
+				)
+		).to.emit(market, "Placed");
+
+		// Check bob and vault balances
+		let bobBalance = await underlying.balanceOf(bob.address);
+		expect(bobBalance).to.equal(ethers.utils.parseUnits("999", USDT_DECIMALS));
+
+		// Vault should have lent 19 USDT and have 981 USDT left
+		let vaultBalance = await underlying.balanceOf(vault.address);
+		expect(vaultBalance).to.equal(
+			ethers.utils.parseUnits("981", USDT_DECIMALS)
+		);
+
+		const vaultAssets = await vault.totalAssets();
+		expect(vaultAssets).to.equal(ethers.utils.parseUnits("981", tokenDecimals));
+
+		const winningPropositionId = makePropositionId("ABC", 1);
+		const signature = await signSetResultMessage(
+			marketId,
+			winningPropositionId,
+			oracleSigner
+		);
+
+		await oracle.setResult(
+			formatBytes16String(marketId),
+			formatBytes16String(winningPropositionId),
+			signature
+		);
+
+		await hre.network.provider.request({
+			method: "evm_setNextBlockTimestamp",
+			params: [end + 7200]
+		});
+
+		// Bob should have lost his bet and still have 999 USDT
+		// The vault should have received 89 + 6 = 95 USDT back from the 7% of interest on the 89 USDT it lent
+		// The market owner should earned 0 USDT
+		const index = 0;
+		expect(await market.settle(index))
+			.to.emit(market, "Repaid")
+			.withArgs(vault.address, 95000000);
+
+		vaultBalance = await underlying.balanceOf(vault.address);
+		expect(vaultBalance).to.equal(
+			ethers.utils.parseUnits("1006", USDT_DECIMALS)
+		);
+
+		bobBalance = await underlying.balanceOf(bob.address);
+		expect(bobBalance).to.equal(ethers.utils.parseUnits("999", USDT_DECIMALS));
+
+		const marketOwnerBalance = await underlying.balanceOf(owner.address);
+		expect(marketOwnerBalance).to.equal(
+			ethers.utils.parseUnits("1000000", USDT_DECIMALS)
+		);
 	});
 });
