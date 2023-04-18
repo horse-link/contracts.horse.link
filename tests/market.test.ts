@@ -775,7 +775,7 @@ describe("Market", () => {
 		it("Should settle bobs scratched bet by index", async () => {
 			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
 			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
-			const totalOdds = odds.mul(5);
+
 			const currentTime = await time.latest();
 			const bobBalance = await underlying.balanceOf(bob.address);
 			const vaultBalance = await underlying.balanceOf(vault.address);
@@ -854,17 +854,21 @@ describe("Market", () => {
 				odds,
 				oracleSigner
 			);
+
 			const oracleOwner = await oracle.getOwner();
 			expect(oracleOwner).to.equal(oracleSigner.address);
-			await oracle.setScratchedResult(
-				formatBytes16String(marketId),
-				formatBytes16String(propositionId),
-				odds,
-				signature
-			);
+			expect(
+				await oracle.setScratchedResult(
+					formatBytes16String(marketId),
+					formatBytes16String(propositionId),
+					odds,
+					signature
+				)
+			).to.emit(oracle, "ScratchedSet");
+
 			const index = 0;
 
-			// Scratched bets do not need to wait for the race to finsih
+			// Scratched bets do not need to wait for the race to finish
 			expect(await market.settle(index), "Issue with settling scratched bet")
 				.to.emit(market, "Settled")
 				.withArgs(index, betPayout, SCRATCHED, bob.address);
@@ -875,6 +879,7 @@ describe("Market", () => {
 			await expect(market.settle(index)).to.be.revertedWith(
 				"settle: Bet has already settled"
 			);
+
 			exposure = await market.getTotalExposure();
 			expect(exposure).to.equal(0);
 
@@ -1086,7 +1091,7 @@ describe("Market", () => {
 
 			for (let i = 0; i < max; i++) {
 				const nonce = i.toString();
-				const propositionId = makePropositionId("ABC", i + 1);
+				const propositionId = makePropositionId(marketId, i + 1);
 				const betSignature = await signBackMessage(
 					nonce,
 					marketId,
@@ -1122,22 +1127,30 @@ describe("Market", () => {
 			}
 
 			let inPlayCount = await market.getInPlayCount();
-			expect(inPlayCount, "In play count should be 10").to.equal(max);
+			expect(inPlayCount, "In play count should be 5").to.equal(max);
 
 			// add a result
-			const propositionId = makePropositionId("ABC", 1);
+			const winningPropositionId = makePropositionId(marketId, 1);
 			const signature = await signSetResultMessage(
 				marketId,
-				propositionId,
+				winningPropositionId,
 				oracleSigner
 			);
 
 			const oracleOwner = await oracle.getOwner();
 			expect(oracleOwner).to.equal(oracleSigner.address);
-			await oracle.setResult(
-				formatBytes16String(marketId),
-				formatBytes16String(propositionId),
-				signature
+			expect(
+				await oracle.setResult(
+					formatBytes16String(marketId),
+					formatBytes16String(winningPropositionId),
+					signature
+				)
+			).to.emit(oracle, "ResultSet");
+
+			// Check result
+			const result = await oracle.getResult(formatBytes16String(marketId));
+			expect(result.winningPropositionId).to.equal(
+				formatBytes16String(winningPropositionId)
 			);
 
 			await hre.network.provider.request({
@@ -1316,7 +1329,7 @@ describe("Market", () => {
 					)
 			)
 				.to.emit(market, "Refunded")
-				.withArgs(betIndex, wager);
+				.withArgs(betIndex, wager, bob.address);
 
 			// Expect final and initial balances to be the same
 			bobBalance = await underlying.balanceOf(bob.address);
@@ -1410,7 +1423,7 @@ describe("Market", () => {
 			// Refund
 			await expect(market.connect(bob).refund(betIndex))
 				.to.emit(market, "Refunded")
-				.withArgs(betIndex, wager);
+				.withArgs(betIndex, wager, bob.address);
 
 			// Expect final and initial balances to be the same
 			const finalBettorBalance = await underlying.balanceOf(bob.address);

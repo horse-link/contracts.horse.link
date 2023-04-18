@@ -8,13 +8,12 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	const { deployments, getNamedAccounts } = hre;
 	const { deploy } = deployments;
-	const { deployer } = await getNamedAccounts();
-	let registryTokenDeployment: Deployment;
-	try {
-		registryTokenDeployment = await deployments.get("HorseLink");
-	} catch {
-		registryTokenDeployment = await deployments.get("MockHorseLink");
-	}
+
+	const namedAccounts = await getNamedAccounts();
+	const deployer = namedAccounts.deployer;
+	const registryTokenAddress = hre.network.live
+		? namedAccounts.HorseLink ?? namedAccounts.MockHorseLink
+		: (await hre.deployments.get("MockHorseLink")).address;
 
 	console.log(`Deployer: ${deployer}`);
 

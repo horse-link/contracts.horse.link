@@ -2,10 +2,11 @@
 pragma solidity =0.8.15;
 
 import "./IMarket.sol";
+import "./IOwnable.sol";
 import "./IVault.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
-contract Registry {
+contract Registry is IOwnable {
     address[] public markets;
     address[] public vaults;
 
@@ -15,6 +16,10 @@ contract Registry {
     address private immutable _owner;
     IERC20Metadata private immutable _token;
     uint256 private _threshold;
+
+    function getOwner() external view returns (address) {
+        return _owner;
+    }
 
     function marketCount() external view returns (uint256) {
         return markets.length;

@@ -11,6 +11,7 @@ contract MarketOracle is IOracle {
 	address private immutable _owner;
 
 	// Race result constants
+	uint8 public constant NULL = 0x00;
     uint8 public constant WINNER = 0x01;
     uint8 public constant LOSER = 0x02;
     uint8 public constant SCRATCHED = 0x03;
@@ -23,7 +24,10 @@ contract MarketOracle is IOracle {
 		return _owner;
 	}
 
-	// Change to return one of the constants
+	function hasResult(bytes16 marketId) external view returns (bool) {
+		return _results[marketId].winningPropositionId != bytes16(0);
+	}
+
 	function checkResult(
 		bytes16 marketId,
 		bytes16 propositionId
@@ -36,14 +40,19 @@ contract MarketOracle is IOracle {
 		if (_results[marketId].winningPropositionId == propositionId) {
 			return WINNER;
 		}
+		
 		uint256 totalScratched = _results[marketId].scratched.length;
-		for (uint256 i = 0; i < totalScratched ; i++) {
-			if (_results[marketId].scratched[i].scratchedPropositionId == propositionId) {
+		for (uint256 i = 0; i < totalScratched; i++) {
+			if (_results[marketId].scratched[i].propositionId == propositionId) {
 				return SCRATCHED;
 			}
 		}
 
-		return LOSER;
+		if (_results[marketId].winningPropositionId != propositionId && _results[marketId].winningPropositionId != bytes16(0)) {
+			return LOSER;
+		}
+
+		return NULL;
 	}
 
 	function getResult(bytes16 marketId) external view returns (Result memory) {
@@ -51,6 +60,10 @@ contract MarketOracle is IOracle {
 			marketId != bytes16(0),
 			"getResult: Invalid propositionId"
 		);
+		return _getResult(marketId);
+	}
+
+	function _getResult(bytes16 marketId) private view returns (Result memory) {
 		return _results[marketId];
 	}
 
@@ -94,8 +107,8 @@ contract MarketOracle is IOracle {
 		);
 
 		uint256 totalScratched = _results[marketId].scratched.length;
-		for (uint256 i = 0; i < totalScratched ; i++) {
-			if (_results[marketId].scratched[i].scratchedPropositionId == scratchedPropositionId) {
+		for (uint256 i = 0; i < totalScratched; i++) {
+			if (_results[marketId].scratched[i].propositionId == scratchedPropositionId) {
 				revert("setScratchedResult: Result already set");
 			}
 		}

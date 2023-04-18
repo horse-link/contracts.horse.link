@@ -61,9 +61,10 @@ contract Market is IMarket, Ownable, ERC721 {
 	mapping(address => bool) private _signers;
 
 	// Race result constants
-    uint8 internal constant WINNER = 0x01;
-    uint8 internal constant LOSER = 0x02;
-    uint8 internal constant SCRATCHED = 0x03;
+	uint8 public constant NULL = 0x00;
+	uint8 public constant WINNER = 0x01;
+	uint8 public constant LOSER = 0x02;
+	uint8 public constant SCRATCHED = 0x03;
 
 	constructor(
 		IVault vault,
@@ -86,8 +87,8 @@ contract Market is IMarket, Ownable, ERC721 {
 
 	// Override of ERC721Metadata. Use base URI specified in contructor
 	function _baseURI() internal view override returns (string memory) {
-        return _metadataBaseURI;
-    }
+		return _metadataBaseURI;
+	}
 
 	function getOwner() external view returns (address) {
 		return owner();
@@ -129,11 +130,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		return _getExpiry(index);
 	}
 
-	function getMarketTotal(bytes16 marketId)
-		external
-		view
-		returns (uint256)
-	{
+	function getMarketTotal(bytes16 marketId) external view returns (uint256) {
 		return _marketTotal[marketId];
 	}
 
@@ -141,7 +138,9 @@ contract Market is IMarket, Ownable, ERC721 {
 		return _bets[index].payoutDate + timeout;
 	}
 
-	function getBetByIndex(uint64 index)
+	function getBetByIndex(
+		uint64 index
+	)
 		external
 		view
 		returns (
@@ -157,21 +156,23 @@ contract Market is IMarket, Ownable, ERC721 {
 		return _getBet(index);
 	}
 
-	function _getBet(uint64 index)
+	function _getBet(
+		uint64 index
+	)
 		internal
 		view
-		returns (
-			uint256,
-			uint256,
-			uint256,
-			uint256,
-			bool,
-			bytes16,
-			bytes16
-		)
+		returns (uint256, uint256, uint256, uint256, bool, bytes16, bytes16)
 	{
 		Bet memory bet = _bets[index];
-		return (bet.amount, bet.payout, bet.payoutDate, bet.created, bet.settled, bet.marketId, bet.propositionId);
+		return (
+			bet.amount,
+			bet.payout,
+			bet.payoutDate,
+			bet.created,
+			bet.settled,
+			bet.marketId,
+			bet.propositionId
+		);
 	}
 
 	function getOdds(
@@ -251,11 +252,16 @@ contract Market is IMarket, Ownable, ERC721 {
 		return indexes;
 	}
 
-	function back(
-		Back calldata backData
-	) public returns (uint256) {
+	function back(Back calldata backData) public returns (uint256) {
 		bytes32 messageHash = keccak256(
-			abi.encodePacked(backData.nonce, backData.propositionId, backData.marketId, backData.odds, backData.close, backData.end)
+			abi.encodePacked(
+				backData.nonce,
+				backData.propositionId,
+				backData.marketId,
+				backData.odds,
+				backData.close,
+				backData.end
+			)
 		);
 
 		require(
@@ -263,33 +269,44 @@ contract Market is IMarket, Ownable, ERC721 {
 			"back: Invalid signature"
 		);
 
+		// Note: Now that we are checking the close time, this is not strictly necessary
+		require(
+			backData.end > block.timestamp && backData.close > block.timestamp,
+			"back: Invalid date"
+		);
+
+		// Do not allow a bet placed if we know the result
+		require(
+			IOracle(_oracle).hasResult(backData.marketId) == false,
+			"back: Oracle result already set for this market"
+		);
+
 		// add underlying to the market
-		uint256 payout = _getPayout(backData.propositionId, backData.marketId, backData.wager, backData.odds);
+		uint256 payout = _getPayout(
+			backData.propositionId,
+			backData.marketId,
+			backData.wager,
+			backData.odds
+		);
 		assert(payout > 0);
 
-		return _back(backData.propositionId, backData.marketId, backData.wager, backData.close, backData.end, payout);
+		return
+			_back(
+				backData.propositionId,
+				backData.marketId,
+				backData.wager,
+				backData.end,
+				payout
+			);
 	}
 
 	function _back(
 		bytes16 propositionId,
 		bytes16 marketId,
 		uint256 wager,
-		uint256 close,
 		uint256 end,
 		uint256 payout
 	) internal returns (uint256) {
-		require(
-			end > block.timestamp && close > block.timestamp,
-			"_back: Invalid date"
-		);
-
-		// Do not allow a bet placed if we know the result
-		// Note: Now that we are checking the close time, this is not strictly necessary
-		require(
-			IOracle(_oracle).checkResult(marketId, propositionId) == 0x02,
-			"_back: Oracle result already set for this market"
-		);
-
 		// Escrow the wager
 		_underlying.transferFrom(_msgSender(), _self, wager);
 
@@ -302,10 +319,24 @@ contract Market is IMarket, Ownable, ERC721 {
 
 		// If the payout for this proposition will be greater than the current max payout for the market)
 		_potentialPayout[propositionId] += payout;
-		_totalExposure += _obtainCollateral(uint256(index), marketId, propositionId, wager, payout);
+		_totalExposure += _obtainCollateral(
+			uint256(index),
+			marketId,
+			propositionId,
+			wager,
+			payout
+		);
 
 		_bets.push(
-			Bet(propositionId, marketId, wager, payout, end, block.timestamp, false)
+			Bet(
+				propositionId,
+				marketId,
+				wager,
+				payout,
+				end,
+				block.timestamp,
+				false
+			)
 		);
 		_marketBets[marketId].push(index);
 		_mint(_msgSender(), uint256(index));
@@ -344,13 +375,14 @@ contract Market is IMarket, Ownable, ERC721 {
 				bet.marketId,
 				bet.propositionId
 			);
+
+			require(result != NULL, "_settle: Oracle does not have a result");
+
 			recipient = result != LOSER ? ownerOf(index) : address(_vault);
-			if (result == WINNER) {
-				_applyScratchings(index);
-			}
+
 			_payout(index, result);
 			_totalInPlay -= _bets[index].amount;
-			_inplayCount --;
+			_inplayCount--;
 		}
 
 		emit Settled(index, _bets[index].payout, result, recipient);
@@ -358,9 +390,25 @@ contract Market is IMarket, Ownable, ERC721 {
 		_burn(uint256(index));
 	}
 
-	function scratchAndRefund(uint64 index, bytes16 marketId, bytes16 propositionId, uint256 odds, SignatureLib.Signature calldata signature) external {
-		require(_bets[index].propositionId == propositionId, "scratchAndRefund: propositionId does not match bet");
+	function scratchAndRefund(
+		uint64 index,
+		bytes16 marketId,
+		bytes16 propositionId,
+		uint256 odds,
+		SignatureLib.Signature calldata signature
+	) external {
+		require(
+			_bets[index].propositionId == propositionId,
+			"scratchAndRefund: propositionId does not match bet"
+		);
+		require(
+			_bets[index].settled == false,
+			"scratchAndRefund: Bet has already settled"
+		);
+
 		_oracle.setScratchedResult(marketId, propositionId, odds, signature);
+
+		_bets[index].settled = true;
 		_refund(index);
 	}
 
@@ -369,39 +417,51 @@ contract Market is IMarket, Ownable, ERC721 {
 	 * @param index The index of the bet
 	 */
 	function refund(uint64 index) external {
+		require(
+			_bets[index].settled == false,
+			"refund: Bet has already settled"
+		);
+
 		bytes16 marketId = _bets[index].marketId;
+
 		IOracle.Result memory result = IOracle(_oracle).getResult(marketId);
 		// Iterate through scratchings to see if the bet was on a scratched runner
-		for (uint256 i = 0; i < result.scratched.length; i++) {
-			if (result.scratched[i].scratchedPropositionId == _bets[index].propositionId) {
+		uint256 count = result.scratched.length;
+		for (uint256 i = 0; i < count; i++) {
+			if (
+				result.scratched[i].propositionId == _bets[index].propositionId
+			) {
+				_bets[index].settled = true;
 				_refund(index);
 				return;
 			}
 		}
 		// Not scratched, so revert
-		revert("refund: Not eligible for refund");	
+		revert("refund: Not eligible for refund");
 	}
 
 	function _refund(uint64 index) internal virtual {
 		Bet memory bet = _bets[index];
-		require(bet.settled == false, "_refund: Bet has already settled");
 
-		bet.settled = true;
-		
 		uint256 loan = _bets[index].payout - _bets[index].amount;
 		_totalExposure -= loan;
 		_totalInPlay -= _bets[index].amount;
-		_inplayCount --;
-		
-		_underlying.transfer(ownerOf(index), bet.amount);
+		_inplayCount--;
+
+		address recipient = ownerOf(index);
+
+		_underlying.transfer(recipient, bet.amount);
 		_underlying.transfer(address(_vault), loan);
+
 		emit Repaid(address(_vault), loan);
-		emit Refunded(index, bet.amount);
+		emit Refunded(index, bet.amount, recipient);
 
 		_burn(uint256(index));
 	}
 
-	function _applyScratchings(uint64 index) internal virtual returns (uint256) {
+	function _applyScratchings(
+		uint64 index
+	) internal virtual returns (uint256) {
 		// Get marketId of bet
 		bytes16 marketId = _bets[index].marketId;
 		// Ask the oracle for scratched runners on this market
@@ -411,8 +471,9 @@ contract Market is IMarket, Ownable, ERC721 {
 		// Loop through scratchings
 		uint256 scratchedOdds;
 		uint256 betCreated = _bets[index].created;
-		uint256 scratchedCount = result.scratched.length;
-		for (uint256 i = 0; i < scratchedCount; i++) {
+		uint256 count = result.scratched.length;
+
+		for (uint256 i = 0; i < count; i++) {
 			// If the timestamp of the scratching is after the bet
 			if (result.scratched[i].timestamp > betCreated) {
 				// Sum the odds
@@ -422,8 +483,12 @@ contract Market is IMarket, Ownable, ERC721 {
 		// Now apply the scratched odds to get the new odds for the bet
 		if (scratchedOdds > 0 && _bets[index].amount > 0) {
 			// Calculate the odds of the bet
-			uint256 originalOdds = _bets[index].payout / _bets[index].amount ;
-			uint256 newOdds = OddsLib.rebaseOddsWithScratch(originalOdds, scratchedOdds, MARGIN);
+			uint256 originalOdds = _bets[index].payout / _bets[index].amount;
+			uint256 newOdds = OddsLib.rebaseOddsWithScratch(
+				originalOdds,
+				scratchedOdds,
+				MARGIN
+			);
 			// Calculate the new payout
 			_bets[index].payout = _bets[index].amount * newOdds;
 		}
@@ -439,10 +504,10 @@ contract Market is IMarket, Ownable, ERC721 {
 		// Deduct from total exposure first
 		_totalExposure -= loan;
 
-		if (result == SCRATCHED) {				
+		if (result == SCRATCHED) {
 			// Transfer the bet amount to the owner of the NFT
 			_underlying.transfer(ownerOf(index), amount);
-			
+
 			// Transfer the loaned amount back to the vault
 			_underlying.transfer(address(_vault), loan);
 			emit Repaid(address(_vault), loan);
@@ -460,13 +525,14 @@ contract Market is IMarket, Ownable, ERC721 {
 			// Transfer the payout to the owner of the NFT
 			_underlying.transfer(ownerOf(index), payout);
 		}
-			
+
 		if (result == LOSER) {
 			uint256 rate = _vault.getRate();
 			assert(rate > 100_000);
-			
+
 			// Transfer the bet amount plus interest to the vault
-			uint256 repayment = loan * rate / 100_000;
+
+			uint256 repayment = (loan * rate) / 100_000;
 
 			if (payout > repayment) {
 				// Transfer the rest to the market owner
@@ -476,29 +542,31 @@ contract Market is IMarket, Ownable, ERC721 {
 			emit Repaid(address(_vault), repayment);
 		}
 	}
-	
+
 	// Allow the Vault to provide cover for this market
 	// Standard implementation is to request cover for each and every bet
 	// marketId and propositionId are not required here but ARE used in CollateralisedMarket, which inherits this contract
-	function _obtainCollateral(uint256 index, bytes16 /*marketId*/, bytes16 /*propositionId*/, uint256 wager, uint256 payout) internal virtual returns (uint256) {
+	function _obtainCollateral(
+		uint256 index,
+		bytes16 /*marketId*/,
+		bytes16 /*propositionId*/,
+		uint256 wager,
+		uint256 payout
+	) internal virtual returns (uint256) {
 		uint256 amount = payout - wager;
 
-		_underlying.transferFrom(
-			address(_vault),
-			_self,
-			amount
-		);
+		_underlying.transferFrom(address(_vault), _self, amount);
 
-		emit Borrowed(index, amount);
+		emit Borrowed(address(_vault), index, amount);
 
 		return amount;
 	}
 
 	function settleMarket(bytes16 marketId) external {
 		uint64[] memory bets = _marketBets[marketId];
-		uint256 total = bets.length;
+		uint256 count = bets.length;
 
-		for (uint64 i = 0; i < total; i++) {
+		for (uint64 i = 0; i < count; i++) {
 			uint64 index = bets[i];
 
 			Bet memory bet = _bets[index];
@@ -535,6 +603,8 @@ contract Market is IMarket, Ownable, ERC721 {
 		return _isSigner(signer);
 	}
 
+	event Borrowed(address indexed vault, uint256 index, uint256 amount);
+
 	event Placed(
 		uint256 index,
 		bytes16 propositionId,
@@ -544,25 +614,14 @@ contract Market is IMarket, Ownable, ERC721 {
 		address indexed owner
 	);
 
+	event Refunded(uint256 index, uint256 amount, address indexed recipient);
+
+	event Repaid(address indexed vault, uint256 amount);
+
 	event Settled(
 		uint256 index,
 		uint256 payout,
 		uint8 result,
 		address indexed recipient
-	);
-
-	event Borrowed(
-		uint256 index,
-		uint256 amount
-	);
-
-	event Repaid(
-		address indexed vault,
-		uint256 amount
-	);
-
-	event Refunded(
-		uint256 index,
-		uint256 amount
 	);
 }

@@ -1,3 +1,5 @@
+[![.github/workflows/test.yml](https://github.com/horse-link/contracts.horse.link/actions/workflows/test.yml/badge.svg)](https://github.com/horse-link/contracts.horse.link/actions/workflows/test.yml)
+
 # horse.link contracts
 
 ## Scripts
