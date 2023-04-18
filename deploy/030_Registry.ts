@@ -19,7 +19,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 	const deployment = await deploy("Registry", {
 		from: deployer,
-		args: [registryTokenDeployment.address],
+		args: [registryTokenAddress],
 		log: true,
 		autoMine: true,
 		skipIfAlreadyDeployed: false
@@ -30,7 +30,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 		setTimeout(async () => {
 			await hre.run("verify:verify", {
 				address: deployment.address,
-				constructorArguments: [registryTokenDeployment.address]
+				constructorArguments: [registryTokenAddress]
 			});
 		}, 20000);
 	}
