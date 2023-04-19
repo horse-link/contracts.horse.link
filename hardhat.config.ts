@@ -140,7 +140,7 @@ export default {
 			default: "0x3Ebee18ce417Ac6f725FeB0A3649b2bE672A4448"
 		},
 		handle_fi: {
-			default: "0xf00ccf5328389beb9e6ee63ea2cb303f50d9f42d"
+			default: "0xd7eD4FF9c8D82076fFEB1316CaB980Db9B771DE9"
 		},
 		deployer: {
 			default: 0,
@@ -162,8 +162,8 @@ export default {
 			dev_arbitrum: "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9"
 		},
 		fxAud: {
-			prod_arbitrum: "0xd7ed4ff9c8d82076ffeb1316cab980db9b771de9",
-			dev_arbitrum: "0xd7ed4ff9c8d82076ffeb1316cab980db9b771de9"
+			prod_arbitrum: "0x7E141940932E3D13bfa54B224cb4a16510519308",
+			dev_arbitrum: "0x7E141940932E3D13bfa54B224cb4a16510519308"
 		},
 		fxUsd: {
 			prod_arbitrum: "0x8616E8EA83f048ab9A5eC513c9412Dd2993bcE3F",
