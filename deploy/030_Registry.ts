@@ -8,6 +8,7 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	const { deployments, getNamedAccounts } = hre;
 	const { deploy } = deployments;
+
 	const namedAccounts = await getNamedAccounts();
 	const deployer = namedAccounts.deployer;
 	const registryTokenAddress = hre.network.live

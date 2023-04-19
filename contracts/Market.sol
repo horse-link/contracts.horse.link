@@ -358,7 +358,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		require(bet.settled == false, "settle: Bet has already settled");
 		_settle(index);
 	}
-
+	
 	function _settle(uint64 index) internal {
 		Bet memory bet = _bets[index];
 		_bets[index].settled = true;
@@ -531,14 +531,15 @@ contract Market is IMarket, Ownable, ERC721 {
 			assert(rate > 100_000);
 
 			// Transfer the bet amount plus interest to the vault
-			uint256 repayment = (loan * rate) / 100_000;
-			uint256 winnings = payout - repayment;
 
+			uint256 repayment = (loan * rate) / 100_000;
+
+			if (payout > repayment) {
+				// Transfer the rest to the market owner
+				_underlying.transfer(owner(), payout - repayment);
+			}
 			_underlying.transfer(address(_vault), repayment);
 			emit Repaid(address(_vault), repayment);
-
-			// Transfer the rest to the market owner
-			_underlying.transfer(owner(), winnings);
 		}
 	}
 
