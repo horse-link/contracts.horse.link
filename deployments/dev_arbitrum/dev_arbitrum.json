@@ -3,7 +3,7 @@
   "chainId": "42161",
   "contracts": {
     "MarketOracle": {
-      "address": "0xE21F0d670f5f7F9b000cAfF1e052E76006D36a67",
+      "address": "0xBF1132328ac47Ec7d4cB367f7ddb21968b409F0c",
       "abi": [
         {
           "inputs": [],
@@ -51,6 +51,19 @@
         {
           "inputs": [],
           "name": "LOSER",
+          "outputs": [
+            {
+              "internalType": "uint8",
+              "name": "",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "NULL",
           "outputs": [
             {
               "internalType": "uint8",
@@ -145,7 +158,7 @@
                   "components": [
                     {
                       "internalType": "bytes16",
-                      "name": "scratchedPropositionId",
+                      "name": "propositionId",
                       "type": "bytes16"
                     },
                     {
@@ -167,6 +180,25 @@
               "internalType": "struct IOracle.Result",
               "name": "",
               "type": "tuple"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes16",
+              "name": "marketId",
+              "type": "bytes16"
+            }
+          ],
+          "name": "hasResult",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
             }
           ],
           "stateMutability": "view",
@@ -259,254 +291,6 @@
         }
       ]
     },
-    "OddsLib": {
-      "address": "0x85E1225b73512bbBcbeC6004551F6e832746f64E",
-      "abi": [
-        {
-          "inputs": [],
-          "name": "PRECISION",
-          "outputs": [
-            {
-              "internalType": "uint256",
-              "name": "",
-              "type": "uint256"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint256",
-              "name": "odds",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "margin",
-              "type": "uint256"
-            }
-          ],
-          "name": "addMargin",
-          "outputs": [
-            {
-              "internalType": "uint256",
-              "name": "",
-              "type": "uint256"
-            }
-          ],
-          "stateMutability": "pure",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint256",
-              "name": "odds",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "margin",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "targetMargin",
-              "type": "uint256"
-            }
-          ],
-          "name": "changeMargin",
-          "outputs": [
-            {
-              "internalType": "uint256",
-              "name": "",
-              "type": "uint256"
-            }
-          ],
-          "stateMutability": "pure",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint256",
-              "name": "wager",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "odds",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "liquidity",
-              "type": "uint256"
-            }
-          ],
-          "name": "getCurvedAdjustedOdds",
-          "outputs": [
-            {
-              "internalType": "uint256",
-              "name": "",
-              "type": "uint256"
-            }
-          ],
-          "stateMutability": "pure",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint256",
-              "name": "wager",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "odds",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "liquidity",
-              "type": "uint256"
-            }
-          ],
-          "name": "getLinearAdjustedOdds",
-          "outputs": [
-            {
-              "internalType": "uint256",
-              "name": "",
-              "type": "uint256"
-            }
-          ],
-          "stateMutability": "pure",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint256[]",
-              "name": "odds",
-              "type": "uint256[]"
-            }
-          ],
-          "name": "getMargin",
-          "outputs": [
-            {
-              "internalType": "uint256",
-              "name": "",
-              "type": "uint256"
-            }
-          ],
-          "stateMutability": "pure",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint256",
-              "name": "odds",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "scratchedOdds",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "targetMargin",
-              "type": "uint256"
-            }
-          ],
-          "name": "rebaseOddsWithScratch",
-          "outputs": [
-            {
-              "internalType": "uint256",
-              "name": "",
-              "type": "uint256"
-            }
-          ],
-          "stateMutability": "pure",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint256",
-              "name": "odds",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "margin",
-              "type": "uint256"
-            }
-          ],
-          "name": "removeMargin",
-          "outputs": [
-            {
-              "internalType": "uint256",
-              "name": "",
-              "type": "uint256"
-            }
-          ],
-          "stateMutability": "pure",
-          "type": "function"
-        }
-      ]
-    },
-    "SignatureLib": {
-      "address": "0xC2ab165C60747a2b3FBc468CF5B74F5B7822Ca49",
-      "abi": [
-        {
-          "inputs": [
-            {
-              "internalType": "bytes32",
-              "name": "message",
-              "type": "bytes32"
-            },
-            {
-              "components": [
-                {
-                  "internalType": "uint8",
-                  "name": "v",
-                  "type": "uint8"
-                },
-                {
-                  "internalType": "bytes32",
-                  "name": "r",
-                  "type": "bytes32"
-                },
-                {
-                  "internalType": "bytes32",
-                  "name": "s",
-                  "type": "bytes32"
-                }
-              ],
-              "internalType": "struct SignatureLib.Signature",
-              "name": "signature",
-              "type": "tuple"
-            }
-          ],
-          "name": "recoverSigner",
-          "outputs": [
-            {
-              "internalType": "address",
-              "name": "",
-              "type": "address"
-            }
-          ],
-          "stateMutability": "pure",
-          "type": "function"
-        }
-      ]
-    },
-    "dev_arbitrum": {},
     "MockHorseLink": {
       "address": "0x3233488413f31D479493d1586E13B28312c96a87",
       "abi": [
@@ -891,8 +675,256 @@
         }
       ]
     },
+    "OddsLib": {
+      "address": "0x58Ba751de8cc553988734e9D9c9fc524EAea6d12",
+      "abi": [
+        {
+          "inputs": [],
+          "name": "PRECISION",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "odds",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "margin",
+              "type": "uint256"
+            }
+          ],
+          "name": "addMargin",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "pure",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "odds",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "margin",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "targetMargin",
+              "type": "uint256"
+            }
+          ],
+          "name": "changeMargin",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "pure",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "wager",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "odds",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "liquidity",
+              "type": "uint256"
+            }
+          ],
+          "name": "getCurvedAdjustedOdds",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "pure",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "wager",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "odds",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "liquidity",
+              "type": "uint256"
+            }
+          ],
+          "name": "getLinearAdjustedOdds",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "pure",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256[]",
+              "name": "odds",
+              "type": "uint256[]"
+            }
+          ],
+          "name": "getMargin",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "pure",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "odds",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "scratchedOdds",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "targetMargin",
+              "type": "uint256"
+            }
+          ],
+          "name": "rebaseOddsWithScratch",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "pure",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "odds",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "margin",
+              "type": "uint256"
+            }
+          ],
+          "name": "removeMargin",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "pure",
+          "type": "function"
+        }
+      ]
+    },
+    "SignatureLib": {
+      "address": "0xC2ab165C60747a2b3FBc468CF5B74F5B7822Ca49",
+      "abi": [
+        {
+          "inputs": [
+            {
+              "internalType": "bytes32",
+              "name": "message",
+              "type": "bytes32"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "uint8",
+                  "name": "v",
+                  "type": "uint8"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "r",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "s",
+                  "type": "bytes32"
+                }
+              ],
+              "internalType": "struct SignatureLib.Signature",
+              "name": "signature",
+              "type": "tuple"
+            }
+          ],
+          "name": "recoverSigner",
+          "outputs": [
+            {
+              "internalType": "address",
+              "name": "",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "pure",
+          "type": "function"
+        }
+      ]
+    },
+    "dev_arbitrum": {},
     "Registry": {
-      "address": "0x2f8489403275Ed0E0660a31D8dC9c7B4F1f3b4c8",
+      "address": "0xeF3f2e909BFD8D45371F330311f4465A0C2F7760",
       "abi": [
         {
           "inputs": [
@@ -994,6 +1026,19 @@
           "name": "addVault",
           "outputs": [],
           "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "getOwner",
+          "outputs": [
+            {
+              "internalType": "address",
+              "name": "",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "view",
           "type": "function"
         },
         {
@@ -1112,7 +1157,7 @@
       ]
     },
     "MockHorseLinkVault": {
-      "address": "0xDCa091C9d804bE49Bc438594F643a43Ef14F13Dd",
+      "address": "0x2b2f2f890136b06898da096fba0541b5fBB9cBa2",
       "abi": [
         {
           "inputs": [
@@ -1978,7 +2023,7 @@
       ]
     },
     "USDC Vault": {
-      "address": "0xc390738E400E95A4210AB17D9CB6A4506F7D7052",
+      "address": "0xCC29ae29B9A802BBF9f5B5a9b7E01ee3DA731996",
       "abi": [
         {
           "inputs": [
@@ -2844,7 +2889,7 @@
       ]
     },
     "USDT Vault": {
-      "address": "0x67a9f328247ebA8be6178a8B985397B33faE422A",
+      "address": "0x76378a6ec270cC7903BD948Fc210a4557Ce0410d",
       "abi": [
         {
           "inputs": [
@@ -3710,7 +3755,7 @@
       ]
     },
     "fxAUD Vault": {
-      "address": "0x239B5Ac291cE2b107d347e9e2bb218E74C8724B5",
+      "address": "0x672C6528f078a3d4f383a25A01420316DFd12DF7",
       "abi": [
         {
           "inputs": [
@@ -4576,7 +4621,7 @@
       ]
     },
     "fxUSD Vault": {
-      "address": "0x58F0537f1B710Fe882FbCbd7C3eb70Cb3FEdB84A",
+      "address": "0x482d243c3AE208Ff3E5d06155fa6A078D8526748",
       "abi": [
         {
           "inputs": [
@@ -5442,7 +5487,7 @@
       ]
     },
     "MockHorseLinkMarket": {
-      "address": "0xa435857Cc533054f86492D22044F1f3dB6b6930d",
+      "address": "0x4F9bB1011f957C6F1EA23527d5AB30b735587DB7",
       "abi": [
         {
           "inputs": [
@@ -5528,6 +5573,12 @@
         {
           "anonymous": false,
           "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "vault",
+              "type": "address"
+            },
             {
               "indexed": false,
               "internalType": "uint256",
@@ -5620,6 +5671,12 @@
               "internalType": "uint256",
               "name": "amount",
               "type": "uint256"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "recipient",
+              "type": "address"
             }
           ],
           "name": "Refunded",
@@ -5699,6 +5756,58 @@
           ],
           "name": "Transfer",
           "type": "event"
+        },
+        {
+          "inputs": [],
+          "name": "LOSER",
+          "outputs": [
+            {
+              "internalType": "uint8",
+              "name": "",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "NULL",
+          "outputs": [
+            {
+              "internalType": "uint8",
+              "name": "",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "SCRATCHED",
+          "outputs": [
+            {
+              "internalType": "uint8",
+              "name": "",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "WINNER",
+          "outputs": [
+            {
+              "internalType": "uint8",
+              "name": "",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
         },
         {
           "inputs": [
@@ -6553,7 +6662,7 @@
       ]
     },
     "USDC Market": {
-      "address": "0x4433A05e62BD89814E892971e041121CE88E2bE3",
+      "address": "0x4A2E34Ac5208335e3427f2cDe14CAE4cB8855598",
       "abi": [
         {
           "inputs": [
@@ -6639,6 +6748,12 @@
         {
           "anonymous": false,
           "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "vault",
+              "type": "address"
+            },
             {
               "indexed": false,
               "internalType": "uint256",
@@ -6731,6 +6846,12 @@
               "internalType": "uint256",
               "name": "amount",
               "type": "uint256"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "recipient",
+              "type": "address"
             }
           ],
           "name": "Refunded",
@@ -6810,6 +6931,58 @@
           ],
           "name": "Transfer",
           "type": "event"
+        },
+        {
+          "inputs": [],
+          "name": "LOSER",
+          "outputs": [
+            {
+              "internalType": "uint8",
+              "name": "",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "NULL",
+          "outputs": [
+            {
+              "internalType": "uint8",
+              "name": "",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "SCRATCHED",
+          "outputs": [
+            {
+              "internalType": "uint8",
+              "name": "",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "WINNER",
+          "outputs": [
+            {
+              "internalType": "uint8",
+              "name": "",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
         },
         {
           "inputs": [
@@ -7664,7 +7837,7 @@
       ]
     },
     "USDT Market": {
-      "address": "0x67BFD54e2Ce8609DE902099Ae3200713F16C0996",
+      "address": "0x5138a1Be45a8897541763464c63c8fFf9AE60696",
       "abi": [
         {
           "inputs": [
@@ -7675,7 +7848,7 @@
             },
             {
               "internalType": "uint8",
-              "name": "fee",
+              "name": "margin",
               "type": "uint8"
             },
             {
@@ -7690,7 +7863,7 @@
             },
             {
               "internalType": "string",
-              "name": "baseMetadataURI",
+              "name": "metadataBaseURI",
               "type": "string"
             }
           ],
@@ -7750,6 +7923,12 @@
         {
           "anonymous": false,
           "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "vault",
+              "type": "address"
+            },
             {
               "indexed": false,
               "internalType": "uint256",
@@ -7842,6 +8021,12 @@
               "internalType": "uint256",
               "name": "amount",
               "type": "uint256"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "recipient",
+              "type": "address"
             }
           ],
           "name": "Refunded",
@@ -7921,6 +8106,58 @@
           ],
           "name": "Transfer",
           "type": "event"
+        },
+        {
+          "inputs": [],
+          "name": "LOSER",
+          "outputs": [
+            {
+              "internalType": "uint8",
+              "name": "",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "NULL",
+          "outputs": [
+            {
+              "internalType": "uint8",
+              "name": "",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "SCRATCHED",
+          "outputs": [
+            {
+              "internalType": "uint8",
+              "name": "",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "WINNER",
+          "outputs": [
+            {
+              "internalType": "uint8",
+              "name": "",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
         },
         {
           "inputs": [
@@ -8171,25 +8408,6 @@
               "type": "bytes16"
             }
           ],
-          "name": "getMarketCollateral",
-          "outputs": [
-            {
-              "internalType": "uint256",
-              "name": "",
-              "type": "uint256"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "bytes16",
-              "name": "marketId",
-              "type": "bytes16"
-            }
-          ],
           "name": "getMarketTotal",
           "outputs": [
             {
@@ -8285,19 +8503,6 @@
             }
           ],
           "name": "getPotentialPayout",
-          "outputs": [
-            {
-              "internalType": "uint256",
-              "name": "",
-              "type": "uint256"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
-          "inputs": [],
-          "name": "getTotalCollateral",
           "outputs": [
             {
               "internalType": "uint256",
@@ -8535,13 +8740,6 @@
             }
           ],
           "name": "refund",
-          "outputs": [],
-          "stateMutability": "nonpayable",
-          "type": "function"
-        },
-        {
-          "inputs": [],
-          "name": "refundCollateral",
           "outputs": [],
           "stateMutability": "nonpayable",
           "type": "function"
@@ -8814,7 +9012,7 @@
       ]
     },
     "fxAUD Market": {
-      "address": "0x19028719cF0e3dD1b34317118Ef7F4212B929ca9",
+      "address": "0x0CeEb81a9b7E08a5b694F15fcB01244C641a503f",
       "abi": [
         {
           "inputs": [
@@ -8900,6 +9098,12 @@
         {
           "anonymous": false,
           "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "vault",
+              "type": "address"
+            },
             {
               "indexed": false,
               "internalType": "uint256",
@@ -8992,6 +9196,12 @@
               "internalType": "uint256",
               "name": "amount",
               "type": "uint256"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "recipient",
+              "type": "address"
             }
           ],
           "name": "Refunded",
@@ -9071,6 +9281,58 @@
           ],
           "name": "Transfer",
           "type": "event"
+        },
+        {
+          "inputs": [],
+          "name": "LOSER",
+          "outputs": [
+            {
+              "internalType": "uint8",
+              "name": "",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "NULL",
+          "outputs": [
+            {
+              "internalType": "uint8",
+              "name": "",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "SCRATCHED",
+          "outputs": [
+            {
+              "internalType": "uint8",
+              "name": "",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "WINNER",
+          "outputs": [
+            {
+              "internalType": "uint8",
+              "name": "",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
         },
         {
           "inputs": [
@@ -9925,7 +10187,7 @@
       ]
     },
     "fxUSD Market": {
-      "address": "0x1d1c2CDF03390dFd548C4499244e6cF9689bAD81",
+      "address": "0xBb9752584717b9D0b7b6F8cC87be3043B48B4640",
       "abi": [
         {
           "inputs": [
@@ -10011,6 +10273,12 @@
         {
           "anonymous": false,
           "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "vault",
+              "type": "address"
+            },
             {
               "indexed": false,
               "internalType": "uint256",
@@ -10103,6 +10371,12 @@
               "internalType": "uint256",
               "name": "amount",
               "type": "uint256"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "recipient",
+              "type": "address"
             }
           ],
           "name": "Refunded",
@@ -10182,6 +10456,58 @@
           ],
           "name": "Transfer",
           "type": "event"
+        },
+        {
+          "inputs": [],
+          "name": "LOSER",
+          "outputs": [
+            {
+              "internalType": "uint8",
+              "name": "",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "NULL",
+          "outputs": [
+            {
+              "internalType": "uint8",
+              "name": "",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "SCRATCHED",
+          "outputs": [
+            {
+              "internalType": "uint8",
+              "name": "",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "WINNER",
+          "outputs": [
+            {
+              "internalType": "uint8",
+              "name": "",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
         },
         {
           "inputs": [

@@ -2,8 +2,55 @@
   "name": "dev_goerli",
   "chainId": "5",
   "contracts": {
+    "SignatureLib": {
+      "address": "0x2CFb7A620A699229a41C66E530b1C06877f3982F",
+      "abi": [
+        {
+          "inputs": [
+            {
+              "internalType": "bytes32",
+              "name": "message",
+              "type": "bytes32"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "uint8",
+                  "name": "v",
+                  "type": "uint8"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "r",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "s",
+                  "type": "bytes32"
+                }
+              ],
+              "internalType": "struct SignatureLib.Signature",
+              "name": "signature",
+              "type": "tuple"
+            }
+          ],
+          "name": "recoverSigner",
+          "outputs": [
+            {
+              "internalType": "address",
+              "name": "",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "pure",
+          "type": "function"
+        }
+      ]
+    },
+    "dev_goerli": {},
     "MarketOracle": {
-      "address": "0xECa2E51406111B31f2B1277aD61f528A2eECe585",
+      "address": "0xa67CE09ac04952E6ED5e5d45369501f452B24137",
       "abi": [
         {
           "inputs": [],
@@ -51,6 +98,19 @@
         {
           "inputs": [],
           "name": "LOSER",
+          "outputs": [
+            {
+              "internalType": "uint8",
+              "name": "",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "NULL",
           "outputs": [
             {
               "internalType": "uint8",
@@ -145,7 +205,7 @@
                   "components": [
                     {
                       "internalType": "bytes16",
-                      "name": "scratchedPropositionId",
+                      "name": "propositionId",
                       "type": "bytes16"
                     },
                     {
@@ -167,6 +227,25 @@
               "internalType": "struct IOracle.Result",
               "name": "",
               "type": "tuple"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes16",
+              "name": "marketId",
+              "type": "bytes16"
+            }
+          ],
+          "name": "hasResult",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
             }
           ],
           "stateMutability": "view",
@@ -260,7 +339,7 @@
       ]
     },
     "Registry": {
-      "address": "0xF3d25609fCef57e5b662793663d87cD558bE51E4",
+      "address": "0x6e1312e283D4152d42006dc8Eaf11A433D739fB0",
       "abi": [
         {
           "inputs": [
@@ -362,6 +441,19 @@
           "name": "addVault",
           "outputs": [],
           "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "getOwner",
+          "outputs": [
+            {
+              "internalType": "address",
+              "name": "",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "view",
           "type": "function"
         },
         {
@@ -479,54 +571,8 @@
         }
       ]
     },
-    "SignatureLib": {
-      "address": "0x2CFb7A620A699229a41C66E530b1C06877f3982F",
-      "abi": [
-        {
-          "inputs": [
-            {
-              "internalType": "bytes32",
-              "name": "message",
-              "type": "bytes32"
-            },
-            {
-              "components": [
-                {
-                  "internalType": "uint8",
-                  "name": "v",
-                  "type": "uint8"
-                },
-                {
-                  "internalType": "bytes32",
-                  "name": "r",
-                  "type": "bytes32"
-                },
-                {
-                  "internalType": "bytes32",
-                  "name": "s",
-                  "type": "bytes32"
-                }
-              ],
-              "internalType": "struct SignatureLib.Signature",
-              "name": "signature",
-              "type": "tuple"
-            }
-          ],
-          "name": "recoverSigner",
-          "outputs": [
-            {
-              "internalType": "address",
-              "name": "",
-              "type": "address"
-            }
-          ],
-          "stateMutability": "pure",
-          "type": "function"
-        }
-      ]
-    },
     "MockHorseLinkVault": {
-      "address": "0xd1993bE4fb5ba25333d1b26242a6c7F01F31e3Aa",
+      "address": "0xb3c3b7c3f284d3E3de837C12Fb9Af9e048169756",
       "abi": [
         {
           "inputs": [
@@ -1392,7 +1438,7 @@
       ]
     },
     "MockUsdtVault": {
-      "address": "0xBd195A1f7822A83d16DD3A88C8E69397Bcac02Bd",
+      "address": "0x20857B64384d9A759E6B4c68b9b4EA65f3ff3ee6",
       "abi": [
         {
           "inputs": [
@@ -2258,7 +2304,7 @@
       ]
     },
     "OddsLib": {
-      "address": "0x6572C1eAb1F1EdD06c1Cc449e630413b6E5de647",
+      "address": "0xd4C71272E671eC04405E5Ecf1c9b2B9904E0e380",
       "abi": [
         {
           "inputs": [],
@@ -2459,7 +2505,7 @@
       ]
     },
     "MockHorseLinkMarket": {
-      "address": "0x404C5552b141C02f0D13830f49f1360874D41eBa",
+      "address": "0x07c08980f60B4239eCA1De7baD6F1cCF03185A23",
       "abi": [
         {
           "inputs": [
@@ -2545,6 +2591,12 @@
         {
           "anonymous": false,
           "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "vault",
+              "type": "address"
+            },
             {
               "indexed": false,
               "internalType": "uint256",
@@ -2637,6 +2689,12 @@
               "internalType": "uint256",
               "name": "amount",
               "type": "uint256"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "recipient",
+              "type": "address"
             }
           ],
           "name": "Refunded",
@@ -2716,6 +2774,58 @@
           ],
           "name": "Transfer",
           "type": "event"
+        },
+        {
+          "inputs": [],
+          "name": "LOSER",
+          "outputs": [
+            {
+              "internalType": "uint8",
+              "name": "",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "NULL",
+          "outputs": [
+            {
+              "internalType": "uint8",
+              "name": "",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "SCRATCHED",
+          "outputs": [
+            {
+              "internalType": "uint8",
+              "name": "",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "WINNER",
+          "outputs": [
+            {
+              "internalType": "uint8",
+              "name": "",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
         },
         {
           "inputs": [
@@ -3570,7 +3680,7 @@
       ]
     },
     "MockUsdtMarket": {
-      "address": "0x9739A16BdC4Eee9fE99180960B3bE58298ecda35",
+      "address": "0xf9E6A8127b538C3B7826443cC5Ec079cCdC1E422",
       "abi": [
         {
           "inputs": [
@@ -3656,6 +3766,12 @@
         {
           "anonymous": false,
           "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "vault",
+              "type": "address"
+            },
             {
               "indexed": false,
               "internalType": "uint256",
@@ -3748,6 +3864,12 @@
               "internalType": "uint256",
               "name": "amount",
               "type": "uint256"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "recipient",
+              "type": "address"
             }
           ],
           "name": "Refunded",
@@ -3827,6 +3949,58 @@
           ],
           "name": "Transfer",
           "type": "event"
+        },
+        {
+          "inputs": [],
+          "name": "LOSER",
+          "outputs": [
+            {
+              "internalType": "uint8",
+              "name": "",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "NULL",
+          "outputs": [
+            {
+              "internalType": "uint8",
+              "name": "",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "SCRATCHED",
+          "outputs": [
+            {
+              "internalType": "uint8",
+              "name": "",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "WINNER",
+          "outputs": [
+            {
+              "internalType": "uint8",
+              "name": "",
+              "type": "uint8"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
         },
         {
           "inputs": [
