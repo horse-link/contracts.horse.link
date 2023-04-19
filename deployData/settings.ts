@@ -126,7 +126,7 @@ export const productionTokens: TokenDeployDetails[] = [
 		vaultName: "USDT Vault",
 		marketName: "USDT Market",
 		nftBaseUri: "https://horse.link/api/nft/",
-		marketType: MarketType.Collateralised,
+		marketType: MarketType.Simple,
 		owner: "lucas_cullen",
 		networks: ["prod_arbitrum", "dev_arbitrum"]
 	},

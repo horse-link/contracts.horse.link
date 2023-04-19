@@ -140,7 +140,7 @@ export default {
 			default: "0x3Ebee18ce417Ac6f725FeB0A3649b2bE672A4448"
 		},
 		handle_fi: {
-			default: "0xf00ccf5328389beb9e6ee63ea2cb303f50d9f42d"
+			default: "0xd7eD4FF9c8D82076fFEB1316CaB980Db9B771DE9"
 		},
 		deployer: {
 			default: 0,
