@@ -93,11 +93,6 @@ contract Vault is IVault, ERC4626Metadata, Ownable {
         return allowance;
     }
 
-    // Total Assets = amount held by the vault
-    function totalAssets() public view returns (uint256 totalManagedAssets) {
-        return IERC20(asset()).balanceOf(_self);
-    }
-
     function totalAssetsLocked() external view returns (uint256) {
         return IMarket(_market).getTotalExposure();
     }
