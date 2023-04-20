@@ -6,16 +6,12 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
-import "./IVault.sol";
-import "./IMarket.sol";
-import "./IOracle.sol";
 import "./SignatureLib.sol";
-import "./OddsLib.sol";
 import "./Market.sol";
 
 contract MarketWithRisk is Market {
     constructor(
-        IVault vault,
+        address vault,
         uint8 fee,
 		uint8 timeoutDays,
         address oracle,

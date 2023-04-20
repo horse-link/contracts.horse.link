@@ -2,14 +2,14 @@
 pragma solidity =0.8.15;
 import "./ERC4626Metadata.sol";
 import "./IMarket.sol";
-// import "./IVault.sol";
+import "./IVault.sol";
 import "@openzeppelin/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol";
 import "@openzeppelin/contracts/interfaces/IERC20Metadata.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-contract Vault is ERC4626Metadata, Ownable {
+contract Vault is IVault, ERC4626Metadata, Ownable {
 
     using Math for uint256;
     using SafeERC20 for IERC20;
@@ -38,7 +38,7 @@ contract Vault is ERC4626Metadata, Ownable {
 		return owner();
 	}
 
-    function removeMarket() public onlyOwner {
+    function removeMarket() external onlyOwner {
         _rate = 0;
         IERC20(asset()).approve(_market, 0);
 
@@ -47,7 +47,7 @@ contract Vault is ERC4626Metadata, Ownable {
         _market = address(0);
     }
 
-    function setMarket(address market, uint256 max, uint256 rate) public onlyOwner {
+    function setMarket(address market, uint256 max, uint256 rate) external onlyOwner {
         require(_market == address(0), "setMarket: Market already set");
         require(rate >= 100_000, "setMarket: Rate must be greater than 100,000");
         _market = market;
@@ -94,7 +94,7 @@ contract Vault is ERC4626Metadata, Ownable {
     }
 
     // Total Assets = amount held by the vault
-    function totalAssets() public view override returns (uint256) {
+    function totalAssets() public view returns (uint256 totalManagedAssets) {
         return IERC20(asset()).balanceOf(_self);
     }
 
