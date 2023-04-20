@@ -48,7 +48,7 @@ export const mockTokens: TokenDeployDetails[] = [
 		decimals: 6,
 		mintAmount: "1000000000",
 		nftBaseUri: "https://horse.link/api/nft/",
-		marketType: MarketType.Collateralised,
+		marketType: MarketType.Simple,
 		owner: "deployer",
 		mock: true,
 		networks: ["hardhat", "localhost", "dev_goerli", "prod_goerli"]
@@ -62,7 +62,7 @@ export const mockTokens: TokenDeployDetails[] = [
 		decimals: 6,
 		mintAmount: "1000000000",
 		nftBaseUri: "https://horse.link/api/nft/",
-		marketType: MarketType.Collateralised,
+		marketType: MarketType.Simple,
 		owner: "deployer",
 		mock: true,
 		networks: ["hardhat"]
