@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity =0.8.15;
 import "./ERC4626Metadata.sol";
-import "./Market.sol";
+import "./IMarket.sol";
+// import "./IVault.sol";
 import "@openzeppelin/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol";
 import "@openzeppelin/contracts/interfaces/IERC20Metadata.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
