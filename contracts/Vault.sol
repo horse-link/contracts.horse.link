@@ -37,12 +37,23 @@ contract Vault is ERC4626Metadata, Ownable {
 		return owner();
 	}
 
+    function removeMarket() public onlyOwner {
+        _rate = 0;
+        IERC20(asset()).approve(_market, 0);
+
+        emit MarketRemoved(_market);
+
+        _market = address(0);
+    }
+
     function setMarket(address market, uint256 max, uint256 rate) public onlyOwner {
         require(_market == address(0), "setMarket: Market already set");
         require(rate >= 100_000, "setMarket: Rate must be greater than 100,000");
         _market = market;
         _rate = rate;
         IERC20(asset()).approve(_market, max);
+
+        emit MarketSet(market, rate);
     }
 
     function getMarket() external view returns (address) {
@@ -116,4 +127,7 @@ contract Vault is ERC4626Metadata, Ownable {
         );
         _;
     }
+
+    event MarketSet(address indexed market, uint256 rate);
+    event MarketRemoved(address indexed market);
 }
