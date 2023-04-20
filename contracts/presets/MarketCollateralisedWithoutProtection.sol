@@ -1,14 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity =0.8.15;
 
-import "../MarketWithoutProtection.sol";
 import "../MarketCollateralised.sol";
 import "../Market.sol";
 
 contract MarketCollateralisedWithoutProtection is MarketCollateralised {
 
     constructor(
-        IVault vault,
+        address vault,
         uint8 fee,
         uint8 timeoutDays,
         address oracle,

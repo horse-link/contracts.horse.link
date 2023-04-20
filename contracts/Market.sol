@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/interfaces/IERC4626.sol";
 
 import "./IVault.sol";
 import "./IMarket.sol";
@@ -32,7 +33,7 @@ contract Market is IMarket, Ownable, ERC721 {
 	string internal _metadataBaseURI;
 
 	uint8 internal immutable _margin;
-	IVault internal immutable _vault;
+	address internal immutable _vault;
 	IERC20 internal immutable _underlying;
 	address internal immutable _self;
 	IOracle internal immutable _oracle;
@@ -67,7 +68,7 @@ contract Market is IMarket, Ownable, ERC721 {
 	uint8 public constant SCRATCHED = 0x03;
 
 	constructor(
-		IVault vault,
+		address vault,
 		uint8 margin,
 		uint8 timeoutDays,
 		address oracle,
@@ -76,7 +77,8 @@ contract Market is IMarket, Ownable, ERC721 {
 		assert(address(vault) != address(0));
 		_self = address(this);
 		_vault = vault;
-		_underlying = IERC20(vault.asset());
+		_underlying = IERC20(IERC4626(vault).asset());
+		assert(address(_underlying) != address(0));
 		_margin = margin;
 		_oracle = IOracle(oracle);
 		_signers[owner()] = true;
@@ -123,7 +125,7 @@ contract Market is IMarket, Ownable, ERC721 {
 	}
 
 	function getVaultAddress() external view returns (address) {
-		return address(_vault);
+		return _vault;
 	}
 
 	function getExpiry(uint64 index) external view returns (uint256) {
@@ -196,7 +198,7 @@ contract Market is IMarket, Ownable, ERC721 {
 	) internal view returns (uint256) {
 		if (wager <= 1 || odds <= 1) return 1;
 
-		uint256 pool = _vault.getMarketAllowance();
+		uint256 pool = IVault(_vault).getMarketAllowance();
 
 		// If the pool is not sufficient to cover a new bet
 		if (pool == 0) return 1;
@@ -378,7 +380,7 @@ contract Market is IMarket, Ownable, ERC721 {
 
 			require(result != NULL, "_settle: Oracle does not have a result");
 
-			recipient = result != LOSER ? ownerOf(index) : address(_vault);
+			recipient = result != LOSER ? ownerOf(index) : _vault;
 
 			_payout(index, result);
 			_totalInPlay -= _bets[index].amount;
@@ -451,9 +453,9 @@ contract Market is IMarket, Ownable, ERC721 {
 		address recipient = ownerOf(index);
 
 		_underlying.transfer(recipient, bet.amount);
-		_underlying.transfer(address(_vault), loan);
+		_underlying.transfer(_vault, loan);
 
-		emit Repaid(address(_vault), loan);
+		emit Repaid(_vault, loan);
 		emit Refunded(index, bet.amount, recipient);
 
 		_burn(uint256(index));
@@ -509,8 +511,8 @@ contract Market is IMarket, Ownable, ERC721 {
 			_underlying.transfer(ownerOf(index), amount);
 
 			// Transfer the loaned amount back to the vault
-			_underlying.transfer(address(_vault), loan);
-			emit Repaid(address(_vault), loan);
+			_underlying.transfer(_vault, loan);
+			emit Repaid(_vault, loan);
 
 			return;
 		}
@@ -527,7 +529,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		}
 
 		if (result == LOSER) {
-			uint256 rate = _vault.getRate();
+			uint256 rate = IVault(_vault).getRate();
 			assert(rate > 100_000);
 
 			// Transfer the bet amount plus interest to the vault
@@ -538,8 +540,8 @@ contract Market is IMarket, Ownable, ERC721 {
 				// Transfer the rest to the market owner
 				_underlying.transfer(owner(), payout - repayment);
 			}
-			_underlying.transfer(address(_vault), repayment);
-			emit Repaid(address(_vault), repayment);
+			_underlying.transfer(_vault, repayment);
+			emit Repaid(_vault, repayment);
 		}
 	}
 
@@ -555,9 +557,9 @@ contract Market is IMarket, Ownable, ERC721 {
 	) internal virtual returns (uint256) {
 		uint256 amount = payout - wager;
 
-		_underlying.transferFrom(address(_vault), _self, amount);
+		_underlying.transferFrom(_vault, _self, amount);
 
-		emit Borrowed(address(_vault), index, amount);
+		emit Borrowed(_vault, index, amount);
 
 		return amount;
 	}

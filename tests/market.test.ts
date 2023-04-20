@@ -1437,6 +1437,15 @@ describe("Market", () => {
 				"Vault should have been refunded the loan"
 			).to.equal(initialVaultBalance);
 		});
+
+		it("Should allow vault owner to remove a market", async () => {
+			expect(await vault.connect(owner).removeMarket()).to.emit(
+				vault,
+				"MarketRemoved"
+			);
+
+			expect(await vault.getMarket()).to.equal(ethers.constants.AddressZero);
+		});
 	});
 
 	describe("ACL", () => {

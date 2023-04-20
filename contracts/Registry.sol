@@ -3,8 +3,8 @@ pragma solidity =0.8.15;
 
 import "./IMarket.sol";
 import "./IOwnable.sol";
-import "./IVault.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+import "@openzeppelin/contracts/interfaces/IERC4626.sol";
 
 contract Registry is IOwnable {
     address[] public markets;
@@ -36,7 +36,7 @@ contract Registry is IOwnable {
 
     function addVault(address vault) external onlyTokenHolders {
         assert(vault != address(0));
-        address assetAddress = IVault(vault).asset();
+        address assetAddress = IERC4626(vault).asset();
         require(_vaultByAsset[assetAddress] == address(0), "addVault: Vault with this asset token already added");
 
         vaults.push(vault);
@@ -97,7 +97,7 @@ contract Registry is IOwnable {
 
     modifier onlyVaultOwner(address vault) {
         require(
-            IVault(vault).getOwner() == msg.sender,
+            IOwnable(vault).getOwner() == msg.sender,
             "onlyVaultOwner: Caller is not the vault owner"
         );
         _;

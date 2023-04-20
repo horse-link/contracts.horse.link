@@ -3,6 +3,7 @@ pragma solidity =0.8.15;
 pragma abicoder v2;
 
 import "./Market.sol";
+import "@openzeppelin/contracts/interfaces/IERC4626.sol";
 
 abstract contract MarketCollateralised is Market {
 	// MarketID => amount of collateral taken for this market
@@ -48,7 +49,7 @@ abstract contract MarketCollateralised is Market {
 		if (result == LOSER) {
 			// Else, the bet was a loser
 			// Send the bet amount to the vault
-			_underlying.transfer(address(_vault), _bets[index].amount);
+			_underlying.transfer(_vault, _bets[index].amount);
 		}
 	}
 
@@ -63,10 +64,10 @@ abstract contract MarketCollateralised is Market {
 		_inplayCount --;
 
 		address recipient = ownerOf(index);
-		IERC20(_vault.asset()).transfer(recipient, bet.amount);
+		IERC20(IERC4626(_vault).asset()).transfer(recipient, bet.amount);
 		if (loan > 0) {
-			IERC20(_vault.asset()).transfer(address(_vault), loan);
-			emit Repaid(_vault.asset(), loan);
+			IERC20(IERC4626(_vault).asset()).transfer(_vault, loan);
+			emit Repaid(IERC4626(_vault).asset(), loan);
 		}	
 		emit Refunded(index, bet.amount, recipient);
 
@@ -116,14 +117,14 @@ abstract contract MarketCollateralised is Market {
 		if (internalCollateralToUse < amountToObtain) {
 			// We need to get more collateral from the Vault
 			uint256 amountToBorrow = amountToObtain - internalCollateralToUse;
-			IERC20(_vault.asset()).transferFrom(
-				address(_vault),
+			IERC20(IERC4626(_vault).asset()).transferFrom(
+				_vault,
 				_self,
 				amountToBorrow
 			);
 
 			// Add the amount we borrowed to the total collateral				
-			emit Borrowed(address(_vault), index, amountToBorrow);
+			emit Borrowed(_vault, index, amountToBorrow);
 			_totalCollateral += amountToBorrow;
 		}
 
@@ -146,8 +147,8 @@ abstract contract MarketCollateralised is Market {
 		require(_totalCollateral > _totalExposure, "refundCollateral: No collateral to refund");
 
 		_totalCollateral = _totalExposure;
-		IERC20(_vault.asset()).transfer(
-			address(_vault),
+		IERC20(IERC4626(_vault).asset()).transfer(
+			_vault,
 			_totalCollateral - _totalExposure
 		);	
 	}

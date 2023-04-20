@@ -7,7 +7,7 @@ import "./OddsLib.sol";
 contract MarketCurved is Market {
 
     constructor(
-        IVault vault,
+        address vault,
         uint8 fee,
 		uint8 timeoutDays,
         address oracle,
