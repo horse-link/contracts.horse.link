@@ -7,7 +7,7 @@ import "../Market.sol";
 contract MarketCollateralisedLinear is MarketCollateralised {
 
     constructor(
-        IVault vault,
+        address vault,
         uint8 fee,
         uint8 timeoutDays,
         address oracle,
