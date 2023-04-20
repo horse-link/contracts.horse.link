@@ -49,7 +49,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 			0,
 			timeoutDays,
 			oracle.address,
-			`${tokenDetails.nftBaseUri}/${hre.network.name}/${registryDeployment.address}/${tokenDetails.symbol}/` // This is enough to allow us to derive the correct market contract and return useful metadata
+			`${tokenDetails.nftBaseUri}${hre.network.name}/${registryDeployment.address}/${tokenDetails.symbol}/` // This is enough to allow us to derive the correct market contract and return useful metadata
 		];
 
 		// If the token has a named account, use that, otherwise get the address from the deployment
