@@ -2,8 +2,9 @@
   "name": "dev_goerli",
   "chainId": "5",
   "contracts": {
+    "dev_goerli": {},
     "SignatureLib": {
-      "address": "0x2CFb7A620A699229a41C66E530b1C06877f3982F",
+      "address": "0xAb365f6D937b8959a262F558ed8b644F90620F16",
       "abi": [
         {
           "inputs": [
@@ -48,9 +49,8 @@
         }
       ]
     },
-    "dev_goerli": {},
     "MarketOracle": {
-      "address": "0xa67CE09ac04952E6ED5e5d45369501f452B24137",
+      "address": "0x6de3298b0FfDBF378D47B60B12e8cd3d53bf62Fd",
       "abi": [
         {
           "inputs": [],
@@ -339,7 +339,7 @@
       ]
     },
     "Registry": {
-      "address": "0x6e1312e283D4152d42006dc8Eaf11A433D739fB0",
+      "address": "0x728d9D69107FE9E81DCE86926aC2a1B65b812a92",
       "abi": [
         {
           "inputs": [
@@ -572,7 +572,7 @@
       ]
     },
     "MockHorseLinkVault": {
-      "address": "0xb3c3b7c3f284d3E3de837C12Fb9Af9e048169756",
+      "address": "0x5017a61Fc0b68CcaD241AB24DE2Bf7953575D235",
       "abi": [
         {
           "inputs": [
@@ -644,6 +644,38 @@
             }
           ],
           "name": "Deposit",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "market",
+              "type": "address"
+            }
+          ],
+          "name": "MarketRemoved",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "market",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "rate",
+              "type": "uint256"
+            }
+          ],
+          "name": "MarketSet",
           "type": "event"
         },
         {
@@ -1255,6 +1287,13 @@
               "type": "uint256"
             }
           ],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "removeMarket",
+          "outputs": [],
           "stateMutability": "nonpayable",
           "type": "function"
         },
@@ -1438,7 +1477,7 @@
       ]
     },
     "MockUsdtVault": {
-      "address": "0x20857B64384d9A759E6B4c68b9b4EA65f3ff3ee6",
+      "address": "0x729bC3Ca948cb1A0E3C5c554aeFb3E1f79497E55",
       "abi": [
         {
           "inputs": [
@@ -1510,6 +1549,38 @@
             }
           ],
           "name": "Deposit",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "market",
+              "type": "address"
+            }
+          ],
+          "name": "MarketRemoved",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "market",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "rate",
+              "type": "uint256"
+            }
+          ],
+          "name": "MarketSet",
           "type": "event"
         },
         {
@@ -2126,6 +2197,13 @@
         },
         {
           "inputs": [],
+          "name": "removeMarket",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [],
           "name": "renounceOwnership",
           "outputs": [],
           "stateMutability": "nonpayable",
@@ -2304,7 +2382,7 @@
       ]
     },
     "OddsLib": {
-      "address": "0xd4C71272E671eC04405E5Ecf1c9b2B9904E0e380",
+      "address": "0x8be45e4Ffc30B659753D37a142e4603aC9eC8837",
       "abi": [
         {
           "inputs": [],
@@ -2505,12 +2583,12 @@
       ]
     },
     "MockHorseLinkMarket": {
-      "address": "0x07c08980f60B4239eCA1De7baD6F1cCF03185A23",
+      "address": "0xa1bE11F18e2d00540163C22687F4698b026f32A0",
       "abi": [
         {
           "inputs": [
             {
-              "internalType": "contract IVault",
+              "internalType": "address",
               "name": "vault",
               "type": "address"
             },
@@ -3680,18 +3758,18 @@
       ]
     },
     "MockUsdtMarket": {
-      "address": "0xf9E6A8127b538C3B7826443cC5Ec079cCdC1E422",
+      "address": "0xe90A7bC77E9f9DB81dD4f65f6bE0bcb3a4fa49Cf",
       "abi": [
         {
           "inputs": [
             {
-              "internalType": "contract IVault",
+              "internalType": "address",
               "name": "vault",
               "type": "address"
             },
             {
               "internalType": "uint8",
-              "name": "fee",
+              "name": "margin",
               "type": "uint8"
             },
             {
@@ -3706,7 +3784,7 @@
             },
             {
               "internalType": "string",
-              "name": "baseMetadataURI",
+              "name": "metadataBaseURI",
               "type": "string"
             }
           ],
@@ -4251,25 +4329,6 @@
               "type": "bytes16"
             }
           ],
-          "name": "getMarketCollateral",
-          "outputs": [
-            {
-              "internalType": "uint256",
-              "name": "",
-              "type": "uint256"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "bytes16",
-              "name": "marketId",
-              "type": "bytes16"
-            }
-          ],
           "name": "getMarketTotal",
           "outputs": [
             {
@@ -4365,19 +4424,6 @@
             }
           ],
           "name": "getPotentialPayout",
-          "outputs": [
-            {
-              "internalType": "uint256",
-              "name": "",
-              "type": "uint256"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
-          "inputs": [],
-          "name": "getTotalCollateral",
           "outputs": [
             {
               "internalType": "uint256",
@@ -4615,13 +4661,6 @@
             }
           ],
           "name": "refund",
-          "outputs": [],
-          "stateMutability": "nonpayable",
-          "type": "function"
-        },
-        {
-          "inputs": [],
-          "name": "refundCollateral",
           "outputs": [],
           "stateMutability": "nonpayable",
           "type": "function"
