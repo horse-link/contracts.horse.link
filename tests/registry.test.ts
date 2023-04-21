@@ -166,7 +166,7 @@ describe("Registry", () => {
 		let market_count = await registry.marketCount();
 		expect(market_count, "Should have 3 markets").to.equal(3);
 
-		await registry.removeMarket(1, mockMarket2.address);
+		await registry.removeMarket(1);
 
 		market_count = await registry.marketCount();
 		expect(market_count, "Should have 2 markets").to.equal(2);
