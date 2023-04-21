@@ -49,7 +49,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 			args: constructorArguments,
 			log: true,
 			autoMine: true, // speed up deployment on local network (ganache, hardhat), no effect on live networks,
-			skipIfAlreadyDeployed: false
+			skipIfAlreadyDeployed: true
 		});
 		console.log(
 			"Deployed vault: ",
