@@ -79,6 +79,7 @@ contract Vault is IVault, ERC4626Metadata, Ownable {
 
     // If receiver is omitted, use the sender
     function deposit(uint256 assets, address receiver) public override returns (uint256) {
+        require(receiver != _self, "deposit: The receiver cannot be the vault");
         if (receiver == address(0)) receiver = _msgSender();
         return super.deposit(assets, receiver);
     }
