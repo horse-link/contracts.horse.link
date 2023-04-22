@@ -9,8 +9,9 @@
     "deploy:production": "yarn deploy:prod_arbitrum && yarn deploy:prod_goerli",
     "deploy:dev": "yarn deploy:dev_arbitrum && yarn deploy:dev_goerli",
     "deploy:prod_arbitrum": "npx hardhat clean && npx hardhat compile && npx hardhat deploy --network prod_arbitrum --tags oracle,vault,market,registry --export ./deployments/prod_arbitrum/prod_arbitrum.json",
+    "deploy:dev_arbitrum":  "npx hardhat clean && npx hardhat compile && npx hardhat deploy --network dev_arbitrum  --tags oracle,vault,market,registry --export ./deployments/dev_arbitrum/dev_arbitrum.json",
     "deploy:prod_goerli": "npx hardhat clean && npx hardhat compile && npx hardhat deploy --network prod_goerli --tags oracle,vault,market --export ./deployments/prod_goerli/dev_goerli.json",
-    "deploy:dev_arbitrum": "npx hardhat clean && npx hardhat compile && npx hardhat deploy --network dev_arbitrum --tags oracle,vault,market,registry --export ./deployments/dev_arbitrum/dev_arbitrum.json",
+    
     "deploy:dev_goerli": "npx hardhat clean && npx hardhat compile && npx hardhat deploy --network dev_goerli --tags oracle,vault,market --export ./deployments/dev_goerli/dev_goerli.json",
     "verify:prod_goerli": "npx hardhat --network prod_goerli etherscan-verify --solc-input",
     "verify:dev_goerli": "npx hardhat --network dev_goerli etherscan-verify --solc-input",

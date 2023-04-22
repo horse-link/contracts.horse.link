@@ -53,22 +53,12 @@ export default {
 			url: process.env.GOERLI_URL || defaultRpcUrl,
 			accounts: [process.env.GOERLI_DEPLOYER || defaultKey],
 			saveDeployment: true,
-			verify: {
-				etherscan: {
-					apiKey: process.env.ETHERSCAN_API_KEY
-				}
-			},
 			tags: ["production"]
 		},
 		prod_arbitrum: {
 			url: process.env.ARBITRUM_URL || defaultRpcUrl,
 			accounts: [process.env.ARBITRUM_DEPLOYER || defaultKey],
 			saveDeployment: true,
-			verify: {
-				etherscan: {
-					apiKey: process.env.ARBISCAN_API_KEY
-				}
-			},
 			gasMultiplier: 1,
 			tags: ["production"]
 		},
@@ -78,11 +68,6 @@ export default {
 			url: process.env.ARBITRUM_URL || defaultRpcUrl,
 			accounts: [process.env.ARBITRUM_DEPLOYER || defaultKey],
 			saveDeployment: true,
-			verify: {
-				etherscan: {
-					apiKey: process.env.ARBISCAN_API_KEY
-				}
-			},
 			gasMultiplier: 1,
 			tags: ["uat"]
 		},
@@ -90,11 +75,6 @@ export default {
 			url: process.env.GOERLI_URL || defaultRpcUrl,
 			accounts: [process.env.GOERLI_DEPLOYER || defaultKey],
 			saveDeployment: true,
-			verify: {
-				etherscan: {
-					apiKey: process.env.ETHERSCAN_API_KEY
-				}
-			},
 			tags: ["uat"]
 		}
 	},

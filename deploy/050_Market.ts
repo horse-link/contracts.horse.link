@@ -73,7 +73,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 			args: constructorArguments,
 			log: true,
 			autoMine: true,
-			skipIfAlreadyDeployed: false,
+			skipIfAlreadyDeployed: true,
 			libraries: {
 				SignatureLib: signatureLib.address,
 				OddsLib: oddsLib.address
