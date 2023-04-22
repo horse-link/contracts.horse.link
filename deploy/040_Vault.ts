@@ -82,9 +82,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 					constructorArguments
 				});
 			}, 10000);
-			console.log(
-				`Minted ${tokenDetails.mintAmount} ${tokenDetails.symbol} to deployer`
-			);
 		}
 	}
 };
