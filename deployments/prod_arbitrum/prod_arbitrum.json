@@ -493,7 +493,7 @@
       ]
     },
     "Registry": {
-      "address": "0x72ac70c30f7627286E050864A8ac95f533A14F06",
+      "address": "0x43f3bb55952cfF292e629c440e326C3b8B886423",
       "abi": [
         {
           "inputs": [
@@ -767,7 +767,7 @@
       ]
     },
     "USDC Market": {
-      "address": "0x48B3cD888C901d01d04a270205aA17028943A9D2",
+      "address": "0xc27dda1a8bcb81f2b9c32672912224904bb6f50d",
       "abi": [
         {
           "inputs": [
