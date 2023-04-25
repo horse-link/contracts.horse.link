@@ -48,7 +48,7 @@ export const mockTokens: TokenDeployDetails[] = [
 		decimals: 6,
 		mintAmount: "1000000000",
 		nftBaseUri: "https://horse.link/api/nft/",
-		marketType: MarketType.Collateralised,
+		marketType: MarketType.Simple,
 		owner: "deployer",
 		mock: true,
 		networks: ["hardhat", "localhost", "dev_goerli", "prod_goerli"]
@@ -62,7 +62,7 @@ export const mockTokens: TokenDeployDetails[] = [
 		decimals: 6,
 		mintAmount: "1000000000",
 		nftBaseUri: "https://horse.link/api/nft/",
-		marketType: MarketType.Collateralised,
+		marketType: MarketType.Simple,
 		owner: "deployer",
 		mock: true,
 		networks: ["hardhat"]
@@ -126,7 +126,7 @@ export const productionTokens: TokenDeployDetails[] = [
 		vaultName: "USDT Vault",
 		marketName: "USDT Market",
 		nftBaseUri: "https://horse.link/api/nft/",
-		marketType: MarketType.Collateralised,
+		marketType: MarketType.Simple,
 		owner: "lucas_cullen",
 		networks: ["prod_arbitrum", "dev_arbitrum"]
 	},
@@ -137,7 +137,7 @@ export const productionTokens: TokenDeployDetails[] = [
 		marketName: "fxAUD Market",
 		nftBaseUri: "https://horse.link/api/nft/",
 		marketType: MarketType.Simple,
-		owner: "handle_fi",
+		owner: "horse_link",
 		networks: ["prod_arbitrum", "dev_arbitrum"]
 	},
 	{

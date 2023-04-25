@@ -60,6 +60,6 @@ interface IMarket is IOwnable {
 
 	function settle(uint64 index) external;
 	function settleMarket(bytes16 marketId) external;
-	// function refundWithSignature(uint64 index, SignatureLib.Signature calldata signature) external;
+	function scratchAndRefund(uint64 index, bytes16 marketId, bytes16 propositionId, uint256 odds, SignatureLib.Signature calldata signature) external;
 	function refund(uint64 index) external;
 }

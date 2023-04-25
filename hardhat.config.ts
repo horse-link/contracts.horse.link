@@ -140,7 +140,7 @@ export default {
 			default: "0x3Ebee18ce417Ac6f725FeB0A3649b2bE672A4448"
 		},
 		handle_fi: {
-			default: "0xf00ccf5328389beb9e6ee63ea2cb303f50d9f42d"
+			default: "0xd7eD4FF9c8D82076fFEB1316CaB980Db9B771DE9"
 		},
 		deployer: {
 			default: 0,
@@ -159,9 +159,7 @@ export default {
 		},
 		Usdt: {
 			prod_arbitrum: "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
-			dev_arbitrum: "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
-			prod_goerli: "0xF9F36C66854010D61e8F46F9Cc46F9ed55996229", //Mock
-			dev_goerli: "0xF9F36C66854010D61e8F46F9Cc46F9ed55996229" //Mock
+			dev_arbitrum: "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9"
 		},
 		fxAud: {
 			prod_arbitrum: "0x7E141940932E3D13bfa54B224cb4a16510519308",
@@ -173,15 +171,20 @@ export default {
 		},
 		HorseLink: {
 			prod_arbitrum: "0x06d0164b1bFb040D667a82C64De870dDeac38b86",
-			dev_arbitrum: "0x06d0164b1bFb040D667a82C64De870dDeac38b86",
+			dev_arbitrum: "0x06d0164b1bFb040D667a82C64De870dDeac38b86"
+		},
+		MockHorseLink: {
 			prod_goerli: "0xb8ff864683c2Bc75558B3F38257Cd05eE1CDB8F7", //Mock
 			dev_goerli: "0xb8ff864683c2Bc75558B3F38257Cd05eE1CDB8F7" //Mock
 		},
-		Dai: {
+		MockDai: {
 			prod_goerli: "0x8D9A084b37E826d02040479911375Dc79C266684", //Mock
 			dev_goerli: "0x8D9A084b37E826d02040479911375Dc79C266684" //Mock
 		},
-
+		MockUsdt: {
+			prod_goerli: "0xF9F36C66854010D61e8F46F9Cc46F9ed55996229", //Mock
+			dev_goerli: "0xF9F36C66854010D61e8F46F9Cc46F9ed55996229" //Mock
+		},
 		MarketSigner: {
 			default: 1,
 			prod_goerli: "0xF33b9A4efA380Df3B435f755DD2C2AF7fE53C2d1", // key in bitwarden

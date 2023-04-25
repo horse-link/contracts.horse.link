@@ -3,21 +3,26 @@ pragma solidity =0.8.15;
 
 import "./I6224.sol";
 import "./IMarket.sol";
+import "./IOwnable.sol";
 import "./IVault.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+import "@openzeppelin/contracts/interfaces/IERC4626.sol";
 
-contract Registry is IContractsRegistry {
+contract Registry is IOwnable {
     address[] public markets;
     address[] public vaults;
 
     mapping(address => address) private _vaultByAsset;
     mapping(address => address) private _markets; 
+    mapping (string => address) private _contracts;
 
     address private immutable _owner;
     IERC20Metadata private immutable _token;
     uint256 private _threshold;
 
-    mapping (string => address) private _contracts;
+    function getOwner() external view returns (address) {
+        return _owner;
+    }
 
     function marketCount() external view returns (uint256) {
         return markets.length;
@@ -32,6 +37,10 @@ contract Registry is IContractsRegistry {
     }
 
     function hasContract(string memory name) external view returns (bool) {
+        return _hasContract(name);
+    }
+
+    function _hasContract(string memory name) prviate view returns (bool) {
         return _contracts[name] != address(0);
     }
 
@@ -62,12 +71,8 @@ contract Registry is IContractsRegistry {
         emit ContractUpgraded(name, newImplementation);
     }
 
-    // function addVault(address vault) external onlyTokenHolders {
-    //     _addVault(vault);
-    // }
-
     function addContract(string memory name, address contractAddress) external {
-        require(_contracts[name] == address(0), "addContract: Contract already added");
+        require(!_hasContract(name), "addContract: Contract already added");
         require(contractAddress != address(0), "addContract: Contract address is invalid");
 
         assert(markets.length == vaults.length);
@@ -82,14 +87,22 @@ contract Registry is IContractsRegistry {
         emit AddedContract(name, contractAddress, false);
     }
 
+    function removeContract(string memory name) external {
+        require(!_hasContract(name), "removeContract: Contract does not exist");
+
+        address contractAdress = _contracts[name];
+        require(IOwnable(_contracts[name]).getOwner() == msg.sender, "removeContract: Must be the contract owner");
+
+        address market = IVault(contractAddress).getMarket();
+        _contracts[name]
+    }
+
     function _addVault(address vault) private {
-        address assetAddress = IVault(vault).asset();
+        address assetAddress = IERC4626(vault).asset();
         require(_vaultByAsset[assetAddress] == address(0), "addVault: Vault with this asset token already added");
 
         vaults.push(vault);
         _vaultByAsset[assetAddress] = vault; 
-
-        // emit VaultAdded(vault);
     }
 
     function _removeVault(uint256 index, address vault) private {
@@ -102,7 +115,6 @@ contract Registry is IContractsRegistry {
         vaults.pop();
 
         delete _vaultByAsset[vault];
-        // emit RemovedContract();
     }
 
     function _addMarket(address market) private {
@@ -112,7 +124,6 @@ contract Registry is IContractsRegistry {
         );
         _markets[market] = market;
         markets.push(market);
-        // emit AddedContract(market);
     }
 
     function _removeMarket(uint256 index, address market) private {
@@ -125,7 +136,6 @@ contract Registry is IContractsRegistry {
         markets.pop();
 
         delete _markets[market];
-        // emit MarketRemoved(market);
     }
 
     function setThreshold(uint256 threshold) external onlyOwner {
@@ -133,14 +143,6 @@ contract Registry is IContractsRegistry {
         _threshold = threshold;
         emit ThresholdUpdated(threshold);
     }
-
-    // modifier onlyMarketOwner(address market) {
-    //     require(
-    //         IMarket(_markets[market]).getOwner() == msg.sender,
-    //         "onlyMarketOwner: Caller is not the market owner"
-    //     );
-    //     _;
-    // }
 
     modifier onlyContractOwner(address _contract) {
         require(
@@ -171,4 +173,7 @@ contract Registry is IContractsRegistry {
     event ThresholdUpdated(uint256 threshold);
     // event VaultAdded(address indexed vault);
     // event VaultRemoved(address indexed vault);
+    event AddedContract(string name, address indexed contractAddress, bool isProxy);
+    event ContractUpgraded(string name, address indexed contractName);
+    event RemovedContract(string name);
 }

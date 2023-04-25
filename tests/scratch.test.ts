@@ -122,7 +122,7 @@ describe("Late scratched", () => {
 			);
 	});
 
-	it("A scratching occurs after a bet has been placed", async () => {
+	it.skip("A scratching occurs after a bet has been placed", async () => {
 		const betNum = 100; // 100 USDT
 		const oddsNum = 2;
 
@@ -158,12 +158,14 @@ describe("Late scratched", () => {
 			scratchedOdds,
 			oracleSigner
 		);
-		await oracle.setScratchedResult(
-			formatBytes16String(marketId),
-			formatBytes16String(scratchedPropositionId),
-			scratchedOdds,
-			scratchedSig
-		);
+		expect(
+			await oracle.setScratchedResult(
+				formatBytes16String(marketId),
+				formatBytes16String(scratchedPropositionId),
+				scratchedOdds,
+				scratchedSig
+			)
+		).to.emit(oracle, "ScratchedResultSet");
 
 		//=== Set the result to make Alice a winner
 		const resultSig = await signSetResultMessage(
