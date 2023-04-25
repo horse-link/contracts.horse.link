@@ -94,7 +94,7 @@ contract Registry is IOwnable {
         require(IOwnable(_contracts[name]).getOwner() == msg.sender, "removeContract: Must be the contract owner");
 
         address market = IVault(contractAddress).getMarket();
-        _contracts[name]
+        _removeMarket(index, market);
     }
 
     function _addVault(address vault) private {
@@ -105,16 +105,16 @@ contract Registry is IOwnable {
         _vaultByAsset[assetAddress] = vault; 
     }
 
-    function _removeVault(uint256 index, address vault) private {
+    function _removeVault(uint256 index) private {
         if (index >= vaults.length) return;
+
+        delete _vaultByAsset[vaults[i]];
 
         for (uint256 i = index; i < vaults.length - 1; i++){
             vaults[i] = vaults[i+1];
         }
 
         vaults.pop();
-
-        delete _vaultByAsset[vault];
     }
 
     function _addMarket(address market) private {
@@ -126,16 +126,16 @@ contract Registry is IOwnable {
         markets.push(market);
     }
 
-    function _removeMarket(uint256 index, address market) private {
+    function _removeMarket(uint256 index) private {
         if (index >= markets.length) return;
+
+        delete _markets[markets[i]];
 
         for (uint256 i = index; i < markets.length - 1; i++){
             markets[i] = markets[i+1];
         }
 
         markets.pop();
-
-        delete _markets[market];
     }
 
     function setThreshold(uint256 threshold) external onlyOwner {
