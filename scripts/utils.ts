@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import axios from "axios";
+import { AxiosInstance } from "axios";
 import rlp from "rlp";
 import keccak from "keccak";
 import { ethers, Wallet } from "ethers";
@@ -8,15 +9,14 @@ import { concat, hexlify, isHexString, toUtf8Bytes } from "ethers/lib/utils";
 import { LedgerSigner } from "@ethersproject/hardware-wallets";
 import * as dotenv from "dotenv";
 import type { BigNumberish } from "ethers";
+import { JsonRpcProvider, Provider } from "@ethersproject/providers";
 
 // load .env into process.env
 dotenv.config();
 
-export const node = process.env.GOERLI_URL;
-export const provider: ethers.providers.Provider =
-	new ethers.providers.JsonRpcProvider(node);
-
 const configPath = path.resolve(__dirname, "../contracts.json");
+export let provider: Provider;
+export let axiosClient: AxiosInstance;
 
 export type Signature = {
 	v: BigNumberish;
@@ -49,31 +49,67 @@ export type BetDetails = {
 
 export type DataHexString = string;
 
+export function setProvider(url: string): void {
+	provider = new JsonRpcProvider(url);
+}
+
+export function setAxiosClient(chainId: string, baseApiUrl: string) {
+	axiosClient = axios.create({
+		baseURL: baseApiUrl,
+		headers: {
+			Accept: "application/json",
+			"chain-id": chainId
+		}
+	});
+}
+
 export async function getOracle(): Promise<string> {
-	const response = await axios.get("https://alpha.horse.link/api/config");
+	const response = await axiosClient.get("/config");
 	const data = response.data;
 	return data.addresses.marketOracle;
 }
 
-export async function loadOracle(): Promise<ethers.Contract> {
+export async function loadOracle(
+	deployment: string,
+	privateKeyEnvVar: string
+): Promise<ethers.Contract> {
 	const address = await getOracle();
-	const response = await axios.get(
-		"https://raw.githubusercontent.com/horse-link/contracts.horse.link/main/deployments/prod_goerli/MarketOracle.json"
-	);
-	const data = response.data;
+	const deploymentUrl = `https://raw.githubusercontent.com/horse-link/contracts.horse.link/main/deployments/${deployment}/${deployment}.json`;
+	const response = await axios.get(deploymentUrl);
+	const data = response.data.contracts.MarketOracle;
+
 	return new ethers.Contract(address, data.abi, provider).connect(
-		new ethers.Wallet(process.env.SETTLE_PRIVATE_KEY, provider)
+		new ethers.Wallet(process.env[privateKeyEnvVar], provider)
 	);
 }
 
-export async function loadMarket(address: string): Promise<ethers.Contract> {
+export async function loadMarket(
+	deployment: string,
+	address: string,
+	privateKeyEnvVar: string
+): Promise<ethers.Contract> {
 	// All the markets are the same, so we'll just the Usdt for now
 	const response = await axios.get(
-		"https://raw.githubusercontent.com/horse-link/contracts.horse.link/main/deployments/prod_goerli/UsdtMarket.json"
+		`https://raw.githubusercontent.com/horse-link/contracts.horse.link/main/deployments/${deployment}/${deployment}.json`
 	);
-	const data = response?.data;
-	return new ethers.Contract(address, data.abi, provider).connect(
-		new ethers.Wallet(process.env.SETTLE_PRIVATE_KEY, provider)
+	const data = response.data.contracts;
+	let contractAbi;
+	// For each key in contracts,
+	for (const key in data) {
+		// If the key is a market contract
+		if (key.endsWith("Market")) {
+			// If the address matches the one we're looking for
+			//if (data[key].address === address) {
+			contractAbi = data[key].abi;
+			break;
+			//}
+		}
+	}
+	if (!contractAbi) {
+		throw new Error(`No market contract found at address ${address}`);
+	}
+	return new ethers.Contract(address, contractAbi, provider).connect(
+		new ethers.Wallet(process.env[privateKeyEnvVar], provider)
 	);
 }
 
@@ -189,6 +225,7 @@ export type SubgraphBetOptions = {
 };
 
 export async function getSubgraphBetsSince(
+	subgraphUrl: string,
 	createdAtGt: Seconds,
 	options: SubgraphBetOptions = {}
 ): Promise<BetDetails[]> {
@@ -215,18 +252,15 @@ export async function getSubgraphBetsSince(
         }
     `;
 
-	const response = await axios(
-		"https://api.thegraph.com/subgraphs/name/horse-link/hl-protocol-goerli",
-		{
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json"
-			},
-			data: JSON.stringify({
-				query: betsQuery
-			})
-		}
-	);
+	const response = await axios(subgraphUrl, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json"
+		},
+		data: JSON.stringify({
+			query: betsQuery
+		})
+	});
 	return response.data.data.bets;
 }
 
