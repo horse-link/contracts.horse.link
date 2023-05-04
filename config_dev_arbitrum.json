@@ -1,0 +1,7 @@
+{
+    "chainId": "42161",
+    "baseApiUrl": "https://dev2.horse.link/api",
+    "subgraphUrl": "https://api.thegraph.com/subgraphs/name/horse-link/hl-protocol-dev-arbitrum",
+    "privateKeyEnvVar": "ARBITRUM_DEPLOYER",
+    "providerUrlEnvVar": "ARBITRUM_URL"
+}
