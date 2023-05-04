@@ -13,6 +13,7 @@ import {
 } from "./utils";
 import type { MarketDetails } from "./utils";
 import type { AxiosResponse } from "axios";
+import { Contract } from "ethers";
 
 dotenv.config();
 const hexZero: Bytes16 = "0x00000000000000000000000000000000";
@@ -48,17 +49,21 @@ export type OracleResult = Array<any>;
 
 export async function main() {
 	const deploymentName = process.argv[2];
-	const { chainId, baseApiUrl, subgraphUrl, privateKeyEnvVar, providerUrl } =
-		JSON.parse(fs.readFileSync(`./config_${deploymentName}.json`).toString());
-	setProvider(providerUrl);
+	const hoursBack = +process.argv[3] || 48;
+	const {
+		chainId,
+		baseApiUrl,
+		subgraphUrl,
+		privateKeyEnvVar,
+		providerUrlEnvVar
+	} = JSON.parse(fs.readFileSync(`./config_${deploymentName}.json`).toString());
+	setProvider(process.env[providerUrlEnvVar]);
 	setAxiosClient(chainId, baseApiUrl);
 
 	const oracle = await loadOracle(deploymentName, privateKeyEnvVar);
 	const now: Seconds = Math.floor(Date.now() / 1000);
-	console.log(`Current Time: ${now} (seconds)`);
-
-	const closeTime: Seconds = now - 48 * HOUR_IN_SECONDS;
-	console.log(`"Using close time of ${closeTime} (seconds)"`);
+	const closeTime: Seconds = now - hoursBack * HOUR_IN_SECONDS;
+	console.log(`Starting from bets ${hoursBack} hours ago`);
 
 	const bets: BetDetails[] = await getSubgraphBetsSince(
 		subgraphUrl,
@@ -72,14 +77,19 @@ export async function main() {
 
 	console.log(`Found ${bets.length} unsettled bets`);
 
+	// Mapping for market by address, for caching
+	const marketMap: Record<string, Contract> = {};
+
 	for (const bet of bets) {
 		const market = hydrateMarketId(bet.marketId);
-		// TODO: cache me
-		const marketContract = await loadMarket(
-			deploymentName,
-			bet.marketAddress,
-			privateKeyEnvVar
-		);
+		if (!marketMap[bet.marketAddress]) {
+			marketMap[bet.marketAddress] = await loadMarket(
+				deploymentName,
+				bet.marketAddress,
+				privateKeyEnvVar
+			);
+		}
+		const marketContract = marketMap[bet.marketAddress];
 
 		let marketResultResponse: AxiosResponse;
 		// Get race result

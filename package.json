@@ -26,7 +26,11 @@
     "format": "prettier --write \"scripts/**/*.{js,ts}\" && prettier --write \"contracts/**/*.sol\"",
     "lint": "eslint --ext .ts --fix scripts && yarn format",
     "lint-staged": "lint-staged",
-    "scratch": "ts-node scripts/scratch.ts"
+    "scratch": "ts-node scripts/scratch.ts",
+    "settle:prod_goerli": "ts-node scripts/settle.ts prod_goerli",
+    "settle:dev_goerli": "ts-node scripts/settle.ts dev_goerli",
+    "settle:prod_arbitrum": "ts-node scripts/settle.ts prod_arbitrum",
+    "settle:dev_arbitrum": "ts-node scripts/settle.ts dev_arbitrum"
   },
   "dependencies": {
     "@chainlink/contracts": "^0.5.1",
