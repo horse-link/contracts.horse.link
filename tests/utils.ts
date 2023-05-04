@@ -8,9 +8,6 @@ import type { Signature } from "../scripts/utils";
 import { Market, Token, Vault } from "../build/typechain";
 import { prototype } from "events";
 
-export const node = process.env.GOERLI_URL;
-export const provider = new ethers.providers.JsonRpcProvider(node);
-
 // load .env into process.env
 dotenv.config();
 
