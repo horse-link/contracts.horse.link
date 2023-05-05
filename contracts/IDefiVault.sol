@@ -5,4 +5,6 @@ interface IVault {
     function join() external;
     function exit() external;
     function rebalance() external;
+    function lpBalance() external view returns (uint256);
+    function lpToken() external view returns (address);
 }
