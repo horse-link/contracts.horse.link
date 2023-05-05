@@ -16,7 +16,7 @@ contract Vault is IVault, ERC4626Metadata, Ownable {
 
     // These will change to allow multiple markets
     address private _market;
-    address private _self;
+    address internal _self;
     uint256 private _rate;
 
     constructor(IERC20Metadata asset_)
