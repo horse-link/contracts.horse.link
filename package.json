@@ -12,7 +12,6 @@
     "deploy:prod_arbitrum:registry": "npx hardhat clean && npx hardhat compile && npx hardhat deploy --network prod_arbitrum --tags registry",
     "deploy:dev_arbitrum":  "npx hardhat clean && npx hardhat compile && npx hardhat deploy --network dev_arbitrum  --tags oracle,vault,market,registry --export ./deployments/dev_arbitrum/dev_arbitrum.json",
     "deploy:prod_goerli": "npx hardhat clean && npx hardhat compile && npx hardhat deploy --network prod_goerli --tags oracle,vault,market --export ./deployments/prod_goerli/prod_goerli.json",
-    
     "deploy:dev_goerli": "npx hardhat clean && npx hardhat compile && npx hardhat deploy --network dev_goerli --tags oracle,vault,market --export ./deployments/dev_goerli/dev_goerli.json",
     "deploy:dev_goerli:registry": "npx hardhat clean && npx hardhat compile && npx hardhat deploy --network dev_goerli --tags registry",
     "verify:prod_goerli": "npx hardhat --network prod_goerli etherscan-verify --solc-input",
