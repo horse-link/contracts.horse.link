@@ -159,7 +159,7 @@ export async function main() {
 			const txReceipt = await marketContract.settle(index).catch((e) => {
 				return { hash: `FAILED: ${e?.error?.reason}` };
 			});
-			console.log(`settle bet ${bet.id}(${index}), receipt`, txReceipt.hash);
+			console.log(`settle bet ${bet.id} (#${index}), receipt`, txReceipt.hash);
 		}
 	}
 }
