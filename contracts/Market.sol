@@ -363,7 +363,11 @@ contract Market is IMarket, Ownable, ERC721 {
 	
 	function _settle(uint64 index) internal {
 		Bet memory bet = _bets[index];
+		
+		// Update all state vars
 		_bets[index].settled = true;
+		_totalInPlay -= _bets[index].amount;
+		_inplayCount--;
 
 		uint8 result;
 		address recipient;
@@ -381,10 +385,7 @@ contract Market is IMarket, Ownable, ERC721 {
 			require(result != NULL, "_settle: Oracle does not have a result");
 
 			recipient = result != LOSER ? ownerOf(index) : _vault;
-
 			_payout(index, result);
-			_totalInPlay -= _bets[index].amount;
-			_inplayCount--;
 		}
 
 		emit Settled(index, _bets[index].payout, result, recipient);
