@@ -116,6 +116,10 @@ export default {
 		lucas_cullen: {
 			default: "0x9943d42D7a59a0abaE451130CcfC77d758da9cA0"
 		},
+		lucas_cullen2: {
+			default: "0x05Ee13982bF0f31CC87b0ef2c9B54880aa712e06",
+			name: "Lucas Ledger address [1], Ledger derivation"
+		},
 		horse_link: {
 			default: "0x3Ebee18ce417Ac6f725FeB0A3649b2bE672A4448"
 		},

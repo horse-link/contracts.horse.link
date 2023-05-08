@@ -99,18 +99,6 @@ export const mockTokens: TokenDeployDetails[] = [
 
 export const productionTokens: TokenDeployDetails[] = [
 	{
-		name: "HorseLink",
-		symbol: "HL",
-		deploymentName: "HorseLink",
-		vaultName: "HorseLinkVault",
-		marketName: "HorseLinkMarket",
-		decimals: 18,
-		nftBaseUri: "https://horse.link/api/nft/",
-		marketType: MarketType.Simple,
-		owner: "horse_link",
-		networks: []
-	},
-	{
 		name: "Usdc",
 		deploymentName: "Usdc",
 		vaultName: "USDC Vault",
@@ -127,17 +115,7 @@ export const productionTokens: TokenDeployDetails[] = [
 		marketName: "USDT Market",
 		nftBaseUri: "https://horse.link/api/nft/",
 		marketType: MarketType.Simple,
-		owner: "lucas_cullen",
-		networks: ["prod_arbitrum", "dev_arbitrum"]
-	},
-	{
-		name: "fxAud",
-		deploymentName: "fxAud",
-		vaultName: "fxAUD Vault",
-		marketName: "fxAUD Market",
-		nftBaseUri: "https://horse.link/api/nft/",
-		marketType: MarketType.Simple,
-		owner: "horse_link",
+		owner: "lucas_cullen2",
 		networks: ["prod_arbitrum", "dev_arbitrum"]
 	},
 	{
@@ -147,7 +125,7 @@ export const productionTokens: TokenDeployDetails[] = [
 		marketName: "fxUSD Market",
 		nftBaseUri: "https://horse.link/api/nft/",
 		marketType: MarketType.Simple,
-		owner: "handle_fi",
+		owner: "horse_link",
 		networks: ["prod_arbitrum", "dev_arbitrum"]
 	}
 ];
