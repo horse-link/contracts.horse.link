@@ -1011,7 +1011,7 @@ describe("Market", () => {
 			expect(balance).to.equal(carolBalance.add(betPayout));
 		});
 
-		it("Should payout wage after timeout has been reached", async () => {
+		it("Should payout wage after timeout / expire has been reached", async () => {
 			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
 			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
 			const currentTime = await time.latest();
@@ -1073,6 +1073,10 @@ describe("Market", () => {
 			expect(await market.settle(index), "Should emit a Settled event")
 				.to.emit(market, "Settled")
 				.withArgs(index, 272727300, WINNER, bob.address);
+
+			expect(await market.getInPlayCount()).to.equal(0);
+			expect(await market.getTotalInPlay()).to.equal(0);
+			expect(await market.getTotalExposure()).to.equal(0);
 		});
 
 		it("Should settle multiple bets on a market", async () => {
