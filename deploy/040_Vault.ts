@@ -44,7 +44,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 			tokenAddress = tokenDeployment.address;
 		}
 
-		const locktime = process.env.VAULT_LOCK_TIME || 0;
+		const locktime = process.env.VAULT_LOCK_TIME || 30;
 		const constructorArguments = [tokenAddress, locktime];
 		const deployResult: DeployResult = await deploy(tokenDetails.vaultName, {
 			contract: "VaultTimeLock",
