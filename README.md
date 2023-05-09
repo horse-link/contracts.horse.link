@@ -240,9 +240,17 @@ Then the Vault lends 50 tokens to the Market
 
 The registry contract is a mapping of Vaults and Markets used by the protocol. This allows a single source of truth for calling applications and smart contracts. It also has the ability to only allow token holders to modify the contracts it registers.
 
+| Network | Address |
+| ------- | ------- |
+| Arbitrum  | 0xa110D6Bd21c226285b18f91b1749eBc12007a7E7 |
+
 ### Oracle
 
 The `MarketOracle.sol` contract allows authorised accounts to set results based on the Market ID and the Proposition ID. The results are either set from a python script `settle.py` in the event of a losing Proposition or by the front end should the user win and claim their profits. The market owner is responsible for providing a signed result after the event.
+
+| Network | Address |
+| ------- | ------- |
+| Arbitrum  | 0x8D54e1319A50B715a13E1E1a86297fC039B7C949 |
 
 ## Configuration
 
@@ -250,13 +258,23 @@ See `/hardhat.config.ts` for hardhat configuration. Some values are fetched from
 
 ## Deployment
 
-TODO: How to deploy
+Deployments for each network are defined in the `package.json` file. To deploy to a network, run the following command:  `yarn deploy:env_network`
+
+eg: 
+
+```bash
+yarn deploy:prod_arbitrum"
+```
 
 ### Deployment to Goerli
 
 ### Deployment to Local
 
-### Deployment to Mainnet
+### Deployment to Arbitrum
+
+```bash
+yarn deploy:prod_arbitrum"
+```
 
 ### Contract addresses
 
