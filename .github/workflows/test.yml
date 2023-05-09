@@ -14,6 +14,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Run unit tests
+        with:
+        node-version: '16.x'
         run: |
           export PRIVATE_KEY="0000000000000000000000000000000000000000000000000000000000000001"
           yarn install --ignore-scripts
