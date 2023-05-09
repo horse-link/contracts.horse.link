@@ -14,12 +14,12 @@ jobs:
       - name: Install packages
         uses: actions/setup-node@v3
         with:
-          node-version: '18.x'
+          node-version: '16.x'
       - run: yarn --ignore-scripts
         shell: bash
-      - name: Create local node and deploy
-        run: |
-          yarn hh:node &
-          yarn deploy:local
+      # - name: Create local node and deploy
+      #   run: |
+      #     yarn hh:node &
+      #     yarn deploy:local
       - name: Run Tests
-        run: yarn hardhat test
+        run: yarn test
