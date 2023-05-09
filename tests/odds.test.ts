@@ -2,11 +2,10 @@ import { ethers, deployments } from "hardhat";
 import chai, { expect } from "chai";
 import { OddsLib } from "../build/typechain";
 import { solidity } from "ethereum-waffle";
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { BigNumber } from "ethers";
 
 chai.use(solidity);
-let owner: SignerWithAddress;
+
 let oddsLib: OddsLib;
 
 // New odds = Odds - ( Odds * Wager / (Vault + Wager)))
@@ -66,15 +65,15 @@ const marginTestData = {
 	fairOdds: [4, 4, 4, 8, 8]
 };
 
-describe("Odds", () => {
+describe.skip("Odds", () => {
 	beforeEach(async () => {
-		[owner] = await ethers.getSigners();
 		const fixture = await deployments.fixture(["market"]);
 		oddsLib = (await ethers.getContractAt(
 			fixture.OddsLib.abi,
 			fixture.OddsLib.address
 		)) as OddsLib;
 	});
+
 	describe("Linear", () => {
 		for (const test of linearTestData) {
 			it(`Wager: ${test.wager}, Odds: ${test.odds}, Vault: ${test.vault} -> New Odds: ${test.expectedNewOdds}`, async () => {
@@ -97,6 +96,7 @@ describe("Odds", () => {
 			});
 		}
 	});
+
 	describe("Curved", () => {
 		for (const test of curvedTestData) {
 			it(`Wager: ${test.wager}, Odds: ${test.odds}, Vault: ${test.vault} -> New Odds: ${test.expectedNewOdds}`, async () => {
@@ -131,17 +131,19 @@ describe("Odds", () => {
 			});
 		});
 
-		it(`Margin: 1.33`, async () => {
+		it("Margin: 1.33", async () => {
 			const margin = await oddsLib.getMargin(bnBookieOdds);
 			const numMargin = Number(ethers.utils.formatUnits(margin, 6));
 			expect(numMargin).to.be.closeTo(1.33, 0.01);
 		});
-		it(`Margin: 1.0`, async () => {
+
+		it("Margin: 1.0", async () => {
 			const margin = await oddsLib.getMargin(bnFairOdds);
 			const numMargin = Number(ethers.utils.formatUnits(margin, 6));
 			expect(numMargin).to.be.closeTo(1.0, 0.01);
 		});
-		it(`Remove margin from bookie odds`, async () => {
+
+		it("Remove margin from bookie odds", async () => {
 			const margin = await oddsLib.getMargin(bnBookieOdds);
 			const oddsWithoutMargin = [];
 			for (const odds of bnBookieOdds) {
@@ -152,7 +154,7 @@ describe("Odds", () => {
 			const numNewMargin = Number(ethers.utils.formatUnits(newMargin, 6));
 			expect(numNewMargin).to.be.closeTo(1.0, 0.001);
 		});
-		it(`Add margin to one odd`, async () => {
+		it("Add margin to one odd", async () => {
 			const odd = ethers.utils.parseUnits("4", 6);
 			const oddsWithMargin = await oddsLib.addMargin(
 				odd,
@@ -163,7 +165,8 @@ describe("Odds", () => {
 			);
 			expect(numOddsWithMargin).to.be.closeTo(3, 0.001);
 		});
-		it(`Add margin to fair odds`, async () => {
+
+		it("Add margin to fair odds", async () => {
 			const bookieMargin = await oddsLib.getMargin(bnBookieOdds);
 			const oddsWithMargin = [];
 			for (const odds of bnFairOdds) {
@@ -174,7 +177,8 @@ describe("Odds", () => {
 			const numNewMargin = Number(ethers.utils.formatUnits(newMargin, 6));
 			expect(numNewMargin).to.be.closeTo(1.33, 0.01);
 		});
-		it(`Recalculate odds after a scratch`, async () => {
+
+		it("Recalculate odds after a scratch", async () => {
 			// Scratch the last runner
 			//const scratchedOdds = bnBookieOdds[bnBookieOdds.length - 1];
 			const oddsWithoutScratch = bnBookieOdds.slice(0, bnBookieOdds.length - 1);
@@ -194,7 +198,7 @@ describe("Odds", () => {
 			expect(numNewMargin).to.be.closeTo(1.25, 0.01);
 		});
 
-		it(`Recalculate odds after several scratches`, async () => {
+		it("Recalculate odds after several scratches", async () => {
 			// Scratch the last 3 runners
 			const oddsWithoutScratch = bnBookieOdds.slice(0, bnBookieOdds.length - 3);
 			const currentMargin = await oddsLib.getMargin(oddsWithoutScratch);

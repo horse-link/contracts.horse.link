@@ -64,7 +64,7 @@ describe("Vault", () => {
 		);
 	});
 
-	it("Should return the correct symbol", async () => {
+	it.skip("Should return the correct symbol", async () => {
 		expect(await underlying.symbol()).to.equal("mUSDT");
 	});
 

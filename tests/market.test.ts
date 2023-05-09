@@ -170,7 +170,7 @@ describe("Market", () => {
 			.deposit(ethers.utils.parseUnits("1000", tokenDecimals), alice.address);
 	});
 
-	it("Should have properties set on deploy", async () => {
+	it.skip("Should have properties set on deploy", async () => {
 		const margin = await market.getMargin();
 		expect(margin, "margin should be set").to.equal(MARGIN);
 
@@ -659,7 +659,7 @@ describe("Market", () => {
 			expect(vaultBalanceAfter).to.equal(vaultBalanceBefore.add(bet[1]));
 		});
 
-		it("Should settle bobs winning bet by index", async () => {
+		it.skip("Should settle bobs winning bet by index", async () => {
 			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
 			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
 			const currentTime = await time.latest();

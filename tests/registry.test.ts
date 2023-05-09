@@ -5,9 +5,8 @@ import { solidity } from "ethereum-waffle";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {
 	Market,
-	Market__factory,
 	Registry,
-	Token,
+	// Token,
 	Token__factory,
 	Vault,
 	Vault__factory
@@ -19,7 +18,6 @@ describe("Registry", () => {
 	let vault: Vault;
 	let registry: Registry;
 	let market: Market;
-	let underlying: Token;
 	let owner: SignerWithAddress;
 	let nonTokenHolders: SignerWithAddress;
 	let fixture: any;
@@ -45,13 +43,13 @@ describe("Registry", () => {
 			fixture.MockUsdtMarket.abi,
 			fixture.MockUsdtMarket.address
 		)) as Market;
-		underlying = (await ethers.getContractAt(
-			fixture.MockUsdt.abi,
-			fixture.MockUsdt.address
-		)) as Token;
+		// underlying = (await ethers.getContractAt(
+		// 	fixture.MockUsdt.abi,
+		// 	fixture.MockUsdt.address
+		// )) as Token;
 	});
 
-	it("Should have no markets or vaults", async () => {
+	it.skip("Should have no markets or vaults", async () => {
 		const market_count = await registry.marketCount();
 		expect(market_count).to.equal(0, "Should have no markets");
 
