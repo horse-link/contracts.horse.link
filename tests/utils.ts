@@ -6,7 +6,6 @@ import type { BigNumber } from "ethers";
 import { formatBytes16String } from "../scripts/utils";
 import type { Signature } from "../scripts/utils";
 import { Market, Token, Vault } from "../build/typechain";
-import { prototype } from "events";
 
 // load .env into process.env
 dotenv.config();
@@ -19,25 +18,6 @@ export type MarketDetails = {
 };
 
 export type DataHexString = string;
-
-export const getEventData = (
-	eventName: string,
-	contract: ethers.Contract,
-	txResult: ethers.ContractReceipt
-): unknown => {
-	if (!Array.isArray(txResult.logs)) return null;
-	for (const log of txResult.logs) {
-		try {
-			const decoded = contract.interface.parseLog(log);
-			if (decoded.name === eventName)
-				return {
-					...decoded,
-					...decoded.args
-				};
-		} catch (error) {}
-	}
-	return null;
-};
 
 export function makeMarketId(date: Date, location: string, raceNumber: string) {
 	//Turn Date object into number of days since 1/1/1970, padded to 6 digits

@@ -3,6 +3,7 @@ import "hardhat-deploy";
 import { DeployFunction, DeployResult } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { UnderlyingTokens } from "../deployData/settings";
+import { ethers } from "ethers";
 
 /*
  * Deploy a VaultTimeLock contract with an Underlying ERC-20 token
@@ -44,7 +45,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 			tokenAddress = tokenDeployment.address;
 		}
 
-		const locktime = process.env.VAULT_LOCK_TIME || 1800;
+		// 30 days in seconds
+		const locktime = process.env.VAULT_LOCK_TIME || 2592000;
 		const constructorArguments = [tokenAddress, locktime];
 		const deployResult: DeployResult = await deploy(tokenDetails.vaultName, {
 			contract: "VaultTimeLock",

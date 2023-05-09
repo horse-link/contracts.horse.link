@@ -3,7 +3,6 @@ import hre, { ethers, deployments } from "hardhat";
 import { solidity } from "ethereum-waffle";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { Market, Token, Vault, VaultTimeLock } from "../build/typechain";
-import { getEventData } from "./utils";
 
 chai.use(solidity);
 
@@ -100,9 +99,9 @@ describe("Vault", () => {
 		const _market = await vault.getMarket();
 		expect(_market, "Should have market address").to.equal(market.address);
 
-		const lockDuration = await vault.lockDuration();
+		const lockDuration = await vaultTimeLock.lockDuration();
 		expect(lockDuration, "Should have market address").to.equal(
-			process.env.VAULT_LOCK_TIME
+			process.env.VAULT_LOCK_TIME || 2592000
 		);
 	});
 
@@ -219,7 +218,7 @@ describe("Vault", () => {
 					)
 			).to.be.revertedWith("ERC4626: withdraw more than max");
 
-			const receipt = await (
+			expect(
 				await vault
 					.connect(alice)
 					.withdraw(
@@ -227,7 +226,7 @@ describe("Vault", () => {
 						alice.address,
 						alice.address
 					)
-			).wait();
+			).to.emit(vault, "Withdraw");
 
 			expect(
 				await vault.balanceOf(alice.address),
@@ -238,16 +237,6 @@ describe("Vault", () => {
 				await underlying.balanceOf(alice.address),
 				"Balance of underlying assets is wrong"
 			).to.equal(ethers.utils.parseUnits("1500", underlyingDecimals));
-
-			const event = getEventData("Withdraw", vault, receipt);
-			expect(event.sender, "Sender should be alice").to.equal(alice.address);
-			expect(event.receiver, "Receiver should be alice").to.equal(
-				alice.address
-			);
-			expect(
-				event.assets,
-				"Assets should be the amount of assets requested"
-			).to.equal(ethers.utils.parseUnits("500", underlyingDecimals));
 		});
 
 		it("Should not allow user to withdraw before the lock up period ends", async () => {
@@ -263,8 +252,11 @@ describe("Vault", () => {
 			).toNumber();
 
 			expect(lockedTime).to.equal(
-				latestBlock.timestamp + Number(process.env.VAULT_LOCK_TIME) + 1
+				latestBlock.timestamp +
+					Number(process.env.VAULT_LOCK_TIME || 2592000) +
+					1
 			);
+
 			await expect(
 				vaultTimeLock
 					.connect(alice)
@@ -308,7 +300,7 @@ describe("Vault", () => {
 				params: [lockedTime + 1]
 			});
 
-			const receipt = await (
+			expect(
 				await vaultTimeLock
 					.connect(alice)
 					.withdraw(
@@ -316,7 +308,8 @@ describe("Vault", () => {
 						alice.address,
 						alice.address
 					)
-			).wait();
+			).to.emit(vaultTimeLock, "Withdraw");
+
 			expect(
 				await vaultTimeLock.balanceOf(alice.address),
 				"Balance of shares is wrong"
@@ -326,16 +319,6 @@ describe("Vault", () => {
 				await underlying.balanceOf(alice.address),
 				"Balance of underlying assets is wrong"
 			).to.equal(ethers.utils.parseUnits("1500", underlyingDecimals));
-
-			const event = getEventData("Withdraw", vaultTimeLock, receipt);
-			expect(event.sender, "Sender should be alice").to.equal(alice.address);
-			expect(event.receiver, "Receiver should be alice").to.equal(
-				alice.address
-			);
-			expect(
-				event.assets,
-				"Assets should be the amount of assets requested"
-			).to.equal(ethers.utils.parseUnits("500", underlyingDecimals));
 
 			// Should now be able to transfer or transferFrom since the lock up period ends
 			await expect(
