@@ -49,7 +49,7 @@ describe("Registry", () => {
 		// )) as Token;
 	});
 
-	it.skip("Should have no markets or vaults", async () => {
+	it("Should have no markets or vaults", async () => {
 		const market_count = await registry.marketCount();
 		expect(market_count).to.equal(0, "Should have no markets");
 

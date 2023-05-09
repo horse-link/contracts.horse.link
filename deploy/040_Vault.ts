@@ -20,6 +20,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 	const underlyingTokens = UnderlyingTokens.filter((details) => {
 		return details.networks.includes(network.name);
 	});
+
 	if (underlyingTokens.length == 0) {
 		console.log("No underlying tokens found for network: ", network.name);
 		return;
@@ -42,7 +43,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 			);
 			tokenAddress = tokenDeployment.address;
 		}
-		const constructorArguments = [tokenAddress, process.env.VAULT_LOCK_TIME];
+
+		const locktime = process.env.VAULT_LOCK_TIME || 0;
+		const constructorArguments = [tokenAddress, locktime];
 		const deployResult: DeployResult = await deploy(tokenDetails.vaultName, {
 			contract: "VaultTimeLock",
 			from: deployer,

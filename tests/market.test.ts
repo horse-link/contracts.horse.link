@@ -170,7 +170,7 @@ describe("Market", () => {
 			.deposit(ethers.utils.parseUnits("1000", tokenDecimals), alice.address);
 	});
 
-	it.skip("Should have properties set on deploy", async () => {
+	it("Should have properties set on deploy", async () => {
 		const margin = await market.getMargin();
 		expect(margin, "margin should be set").to.equal(MARGIN);
 
@@ -496,7 +496,7 @@ describe("Market", () => {
 		).to.be.revertedWith("back: Invalid date");
 	});
 
-	it.skip("Should not allow a betting attack", async () => {
+	it("Should not allow a betting attack", async () => {
 		// Whale has some USDT but he wants more
 		const whaleOriginalBalance = await underlying.balanceOf(whale.address);
 
@@ -600,7 +600,7 @@ describe("Market", () => {
 	});
 
 	describe("Settle", () => {
-		it.skip("Should transfer to vault if result not been set", async () => {
+		it("Should transfer to vault if result not been set", async () => {
 			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
 			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
 			const currentTime = await time.latest();
@@ -659,7 +659,7 @@ describe("Market", () => {
 			expect(vaultBalanceAfter).to.equal(vaultBalanceBefore.add(bet[1]));
 		});
 
-		it.skip("Should settle bobs winning bet by index", async () => {
+		it("Should settle bobs winning bet by index", async () => {
 			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
 			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
 			const currentTime = await time.latest();
@@ -1486,7 +1486,7 @@ describe("Market", () => {
 	});
 
 	describe("Risky Markets", () => {
-		it.skip("Should account for market risk coefficient", async () => {
+		it("Should account for market risk coefficient", async () => {
 			const wager = ethers.utils.parseUnits("50", USDT_DECIMALS);
 			const targetOdds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
 			const propositionId = makePropositionId("ABC", 1);

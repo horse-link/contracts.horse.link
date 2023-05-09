@@ -65,7 +65,7 @@ const marginTestData = {
 	fairOdds: [4, 4, 4, 8, 8]
 };
 
-describe.skip("Odds", () => {
+describe("Odds", () => {
 	beforeEach(async () => {
 		const fixture = await deployments.fixture(["market"]);
 		oddsLib = (await ethers.getContractAt(

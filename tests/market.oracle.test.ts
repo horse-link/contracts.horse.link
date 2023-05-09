@@ -131,7 +131,7 @@ describe("Market Oracle", () => {
 	});
 
 	describe("Adding oracle results", () => {
-		it.skip("should get owner address", async () => {
+		it("should get owner address", async () => {
 			const ownerAddress = await oracle.getOwner();
 			expect(ownerAddress).to.equal(owner.address);
 		});
