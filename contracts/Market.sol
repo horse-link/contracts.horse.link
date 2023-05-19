@@ -356,8 +356,7 @@ contract Market is IMarket, Ownable, ERC721 {
 	}
 
 	function settle(uint64 index) external {
-		Bet memory bet = _bets[index];
-		require(bet.settled == false, "settle: Bet has already settled");
+		require(_bets[index].settled == false, "settle: Bet has already settled");
 		_settle(index);
 	}
 	
@@ -366,7 +365,7 @@ contract Market is IMarket, Ownable, ERC721 {
 		
 		// Update all state vars
 		_bets[index].settled = true;
-		_totalInPlay -= _bets[index].amount;
+		_totalInPlay -= bet.amount;
 		_inplayCount--;
 
 		uint8 result;
@@ -388,7 +387,7 @@ contract Market is IMarket, Ownable, ERC721 {
 			_payout(index, result);
 		}
 
-		emit Settled(index, _bets[index].payout, result, recipient);
+		emit Settled(index, bet.payout, result, recipient);
 
 		_burn(uint256(index));
 	}
