@@ -39,6 +39,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 			tokenDetails.symbol,
 			tokenDetails.decimals
 		];
+
 		const underlying = await deploy(tokenDetails.deploymentName, {
 			contract: "Token",
 			from: deployer,
