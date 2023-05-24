@@ -1,7 +1,6 @@
 import chai, { expect } from "chai";
 import hre, { ethers, deployments } from "hardhat";
 import { solidity } from "ethereum-waffle";
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { TestAccounts, mockTokens } from "../deployData/settings";
 import { Token } from "../build/typechain";
 
