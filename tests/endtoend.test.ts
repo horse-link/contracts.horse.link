@@ -200,6 +200,32 @@ describe("End to End", () => {
 		);
 	});
 
+	// Deposit 1000 USDT from alice
+	const ZERO = BigNumber.from(0);
+	const FIFTY = ethers.utils.parseUnits("50", USDT_DECIMALS);
+	const ONE_HUNDRED = ethers.utils.parseUnits("100", USDT_DECIMALS);
+	const TWO_HUNDRED = ethers.utils.parseUnits("200", USDT_DECIMALS);
+	const FOUR_HUNDRED = ethers.utils.parseUnits("400", USDT_DECIMALS);
+	const FIVE_HUNDRED = ethers.utils.parseUnits("500", USDT_DECIMALS);
+	const ONE_THOUSAND = ethers.utils.parseUnits("1000", USDT_DECIMALS);
+	const TEN_THOUSAND = ethers.utils.parseUnits("10000", USDT_DECIMALS);
+
+	const tests = [
+		{
+			index: 0,
+			wager: ONE_HUNDRED,
+			odds: ethers.utils.parseUnits("5", ODDS_DECIMALS),
+			proposition: 1,
+			expectedMarketTotal: ethers.utils.parseUnits("100", ODDS_DECIMALS),
+			expectedPayout: ethers.utils.parseUnits("500", ODDS_DECIMALS),
+			expectedExposure: ethers.utils.parseUnits("100", ODDS_DECIMALS),
+			inPlay: ethers.utils.parseUnits("100", ODDS_DECIMALS),
+			inPlayCount: 1,
+			actor: carol,
+			expectedActorBalance: ethers.utils.parseUnits("900", USDT_DECIMALS)
+		}
+	];
+
 	const checkMarketTotals = async (
 		expectedInPlay: BigNumber,
 		expectedInPlayCount: number,
@@ -220,15 +246,179 @@ describe("End to End", () => {
 		let marketOwnerBalance = await underlying.balanceOf(owner.address);
 		console.log("marketOwnerBalance", marketOwnerBalance.toString());
 
-		// Deposit 1000 USDT from alice
-		const ZERO = BigNumber.from(0);
-		const FIFTY = ethers.utils.parseUnits("50", USDT_DECIMALS);
-		const ONE_HUNDRED = ethers.utils.parseUnits("100", USDT_DECIMALS);
-		const TWO_HUNDRED = ethers.utils.parseUnits("200", USDT_DECIMALS);
-		const FOUR_HUNDRED = ethers.utils.parseUnits("400", USDT_DECIMALS);
-		const FIVE_HUNDRED = ethers.utils.parseUnits("500", USDT_DECIMALS);
-		const ONE_THOUSAND = ethers.utils.parseUnits("1000", USDT_DECIMALS);
-		const TEN_THOUSAND = ethers.utils.parseUnits("10000", USDT_DECIMALS);
+		await vault.connect(alice).deposit(ONE_THOUSAND, alice.address);
+
+		// Deposit 50 USDT from bob
+		await vault.connect(bob).deposit(FIFTY, bob.address);
+
+		// Withdraw 50 shares from alice
+		await vault.connect(alice).withdraw(FIFTY, alice.address, alice.address);
+
+		// check vault balance
+		const vaultBalance = await underlying.balanceOf(vault.address);
+		expect(vaultBalance).to.equal(
+			ONE_THOUSAND,
+			"Should have $1,000 USDT in vault"
+		);
+
+		await vault.connect(alice).deposit(TEN_THOUSAND, alice.address);
+
+		// Markets should be empty
+		const inPlay = await market.getTotalInPlay();
+		expect(inPlay).to.equal(0, "Should have $0 USDT in play");
+
+		const inPlayCount = await market.getInPlayCount();
+		expect(inPlayCount).to.equal(0, "Should have 0 bets in play");
+
+		const exposure = await market.getTotalExposure();
+		expect(exposure).to.equal(0, "Should have $0 USDT exposure");
+
+		// Place a $100 bet from bettor 1 on proposition / horse 1
+		const currentTime = await time.latest();
+		const close = currentTime + 3600;
+		const end = 1000000000000;
+
+		const marketId = makeMarketId(new Date(), "ABC", "1");
+
+		// ###################
+		// # Place bets
+		// ###################
+		tests.forEach(async (test) => {
+			const propositionId = makePropositionId(marketId, test.proposition);
+			const nonce = "0";
+
+			const signature = await signBackMessage(
+				nonce,
+				marketId,
+				propositionId,
+				test.odds, // odds,
+				close,
+				end,
+				market_owner
+			);
+
+			await market.connect(test.actor).back(
+				constructBet(
+					formatBytes16String(nonce),
+					formatBytes16String(propositionId),
+					formatBytes16String(marketId),
+					test.wager, // wager
+					test.odds, // odds,
+					close,
+					end,
+					signature
+				)
+			);
+
+			const bet = await market.getBetByIndex(test.index);
+			const betAmount = bet[0];
+			const betPayout = bet[1];
+
+			expect(betAmount).to.equal(test.wager);
+			expect(betPayout).to.equal(test.expectedPayout);
+
+			const actorBalance = await underlying.balanceOf(test.actor.address);
+			expect(actorBalance).to.equal(test.expectedActorBalance);
+
+			// const marketBalance = await underlying.balanceOf(market.address);
+			// expect(marketBalance).to.equal(FIVE_HUNDRED);
+
+			// $100 market total
+			expect(
+				await market.getMarketTotal(formatBytes16String(marketId))
+			).to.equal(test.expectedMarketTotal);
+
+			const inPlay = await market.getTotalInPlay();
+			expect(inPlay).to.equal(test.expectedPayout);
+
+			const inPlayCount = await market.getInPlayCount();
+			expect(inPlayCount).to.equal(test.inPlayCount);
+
+			const exposure = await market.getTotalExposure();
+			expect(exposure).to.equal(test.expectedExposure);
+		});
+
+		// inPlayCount = await market.getInPlayCount();
+		// expect(inPlayCount).to.equal(2, "Should have 2 bets in play");
+
+		// exposure = await market.getTotalExposure();
+		// expect(exposure).to.equal(FIVE_HUNDRED, "Should have $500 USDT exposure");
+
+		// inplay, inplayCount, exposure
+		// await checkMarketTotals(TWO_HUNDRED, 2, FIVE_HUNDRED);
+
+		// Close the market
+		await hre.network.provider.request({
+			method: "evm_setNextBlockTimestamp",
+			params: [end + 7200]
+		});
+
+		const propositionId = makePropositionId(marketId, 1);
+		// Set the result to be proposition 1
+		const result_signature = await signSetResultMessage(
+			marketId,
+			propositionId,
+			oracleSigner
+		);
+
+		await oracle.setResult(
+			formatBytes16String(marketId),
+			formatBytes16String(propositionId),
+			result_signature
+		);
+
+		// // Settle the market
+		// await market.settleMarket(formatBytes16String(marketId));
+
+		// Settle the winner, no one else gets paid
+		await market.settle(0); // WIN
+
+		// inplay, inplayCount, exposure
+		await checkMarketTotals(ONE_HUNDRED, 1, ONE_HUNDRED);
+
+		// inPlayCount = await market.getInPlayCount();
+		// expect(inPlayCount).to.equal(1);
+
+		marketOwnerBalance = await underlying.balanceOf(market_owner.address);
+		expect(marketOwnerBalance).to.equal(
+			0,
+			"Should have $0 USDT in market owner account"
+		);
+
+		const carolBalance = await underlying.balanceOf(carol.address);
+		expect(carolBalance).to.equal(
+			ethers.utils.parseUnits("1400", USDT_DECIMALS)
+		);
+
+		let marketBalance = await underlying.balanceOf(market.address);
+		expect(marketBalance).to.equal(TWO_HUNDRED);
+
+		// Settle winning bet, bet index 1
+		await market.settle(1);
+
+		// inplay, inplayCount, exposure
+		await checkMarketTotals(ZERO, 0, ZERO);
+
+		marketBalance = await underlying.balanceOf(market.address);
+		expect(marketBalance).to.equal(0);
+
+		// vaultBalance = await underlying.balanceOf(vault.address);
+		// expect(vaultBalance).to.equal(0);
+
+		// Check the vault balance
+
+		// Check market owner balance
+		// Should have the profits form the loosing bet less the 7% interest
+		// marketOwnerBalance = await underlying.balanceOf(market_owner.address);
+		// expect(marketOwnerBalance).to.equal(
+		// 	ethers.utils.parseUnits("93", USDT_DECIMALS),
+		// 	"Should have $93 USDT in market owner account"
+		// );
+	});
+
+	it.skip("Should do end to end test", async () => {
+		let marketOwnerBalance = await underlying.balanceOf(owner.address);
+		console.log("marketOwnerBalance", marketOwnerBalance.toString());
 
 		await vault.connect(alice).deposit(ONE_THOUSAND, alice.address);
 
