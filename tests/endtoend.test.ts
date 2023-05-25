@@ -588,7 +588,7 @@ describe("End to End", () => {
 		// // Settle the market
 		// await market.settleMarket(formatBytes16String(marketId));
 
-		// Settle the winner, no one else gets paid
+		// Settle the winner, no one else gets paid but the punter $500
 		await market.settle(0); // WIN
 
 		// inplay, inplayCount, exposure
@@ -617,7 +617,7 @@ describe("End to End", () => {
 			ethers.utils.parseUnits("10500", USDT_DECIMALS)
 		);
 
-		// Settle winning bet, bet index 1
+		// Settle loosing bet, bet index 1 $200 bet => 7% of the $100 lent plush interest = $107
 		await market.settle(1);
 
 		// inplay, inplayCount, exposure
@@ -628,10 +628,10 @@ describe("End to End", () => {
 		expect(marketBalance).to.equal(0);
 
 		// // vault should have been repaid $100 plus interest of 7%
-		// vaultBalance = await underlying.balanceOf(vault.address);
-		// expect(vaultBalance).to.equal(
-		// 	ethers.utils.parseUnits("10607", USDT_DECIMALS)
-		// );
+		vaultBalance = await underlying.balanceOf(vault.address);
+		expect(vaultBalance).to.equal(
+			ethers.utils.parseUnits("10607", USDT_DECIMALS)
+		);
 
 		// Check the vault balance
 
