@@ -150,9 +150,10 @@ describe("Vault", () => {
 
 		it("Should deposit assets for two users and receive shares", async () => {
 			const ONE_HUNDRED = ethers.utils.parseUnits("100", underlyingDecimals);
+			const TWO_HUNDRED = ethers.utils.parseUnits("200", underlyingDecimals);
 			const FIFTY = ethers.utils.parseUnits("50", underlyingDecimals);
 
-			await underlying.connect(alice).approve(vault.address, ONE_HUNDRED);
+			await underlying.connect(alice).approve(vault.address, TWO_HUNDRED);
 			await underlying.connect(bob).approve(vault.address, FIFTY);
 
 			await vault.connect(alice).deposit(ONE_HUNDRED, alice.address);
@@ -169,6 +170,15 @@ describe("Vault", () => {
 			totalAssets = await vault.totalAssets();
 			expect(totalAssets).to.equal(
 				ethers.utils.parseUnits("150", underlyingDecimals)
+			);
+
+			await vault.connect(alice).deposit(ONE_HUNDRED, alice.address);
+			shares = await vault.balanceOf(alice.address);
+			expect(shares).to.equal(TWO_HUNDRED);
+
+			totalAssets = await vault.totalAssets();
+			expect(totalAssets).to.equal(
+				ethers.utils.parseUnits("250", underlyingDecimals)
 			);
 		});
 	});
