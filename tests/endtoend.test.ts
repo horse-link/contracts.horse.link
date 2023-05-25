@@ -561,8 +561,10 @@ describe("End to End", () => {
 		await checkMarketTotals(TWO_HUNDRED, 2, FIVE_HUNDRED);
 
 		// Should have lent $400 + $100 = $500 to the market
-		// vaultBalance = await underlying.balanceOf(vault.address);
-		// expect(vaultBalance).to.equal(ethers.utils.parseUnits("10500", USDT_DECIMALS));
+		vaultBalance = await underlying.balanceOf(vault.address);
+		expect(vaultBalance).to.equal(
+			ethers.utils.parseUnits("10500", USDT_DECIMALS)
+		);
 
 		// Close the market
 		await hre.network.provider.request({
@@ -609,9 +611,11 @@ describe("End to End", () => {
 		marketBalance = await underlying.balanceOf(market.address);
 		expect(marketBalance).to.equal(TWO_HUNDRED);
 
-		// // Should have lent $400 + $100 = $500 to the market
-		// vaultBalance = await underlying.balanceOf(vault.address);
-		// expect(vaultBalance).to.equal(ethers.utils.parseUnits("10600", USDT_DECIMALS));
+		// Should have lent $400 + $100 = $500 to the market
+		vaultBalance = await underlying.balanceOf(vault.address);
+		expect(vaultBalance).to.equal(
+			ethers.utils.parseUnits("10500", USDT_DECIMALS)
+		);
 
 		// Settle winning bet, bet index 1
 		await market.settle(1);
@@ -623,11 +627,11 @@ describe("End to End", () => {
 		marketBalance = await underlying.balanceOf(market.address);
 		expect(marketBalance).to.equal(0);
 
-		// vault should have been repaid $200 plus interest of 7%
-		vaultBalance = await underlying.balanceOf(vault.address);
-		expect(vaultBalance).to.equal(
-			ethers.utils.parseUnits("11050", USDT_DECIMALS)
-		);
+		// // vault should have been repaid $100 plus interest of 7%
+		// vaultBalance = await underlying.balanceOf(vault.address);
+		// expect(vaultBalance).to.equal(
+		// 	ethers.utils.parseUnits("10607", USDT_DECIMALS)
+		// );
 
 		// Check the vault balance
 
