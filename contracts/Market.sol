@@ -14,6 +14,8 @@ import "./IOracle.sol";
 import "./SignatureLib.sol";
 import "./OddsLib.sol";
 
+import "hardhat/console.sol";
+
 // Put these in the ERC721 contract
 struct Bet {
 	bytes16 propositionId;
@@ -270,6 +272,10 @@ contract Market is IMarket, Ownable, ERC721 {
 			isValidSignature(messageHash, backData.signature) == true,
 			"back: Invalid signature"
 		);
+
+		// console.log("backData: %s", backData);
+		// console.log("backData.end: %s", backData.end);
+		// console.log("backData.close: %s", backData.close);
 
 		// Note: Now that we are checking the close time, this is not strictly necessary
 		require(
