@@ -240,7 +240,7 @@ describe("End to End", () => {
 		expect(exposure).to.equal(expectedExposure);
 	};
 
-	it.skip("Should do end to end test", async () => {
+	it.only("Should do end to end test", async () => {
 		const marketId = makeMarketId(new Date(), "EGL", "1");
 		const end = 1000000000000;
 
@@ -253,7 +253,7 @@ describe("End to End", () => {
 			const currentTime = await time.latest();
 			const close = currentTime + 3600;
 
-			console.log(close, end, currentTime);
+			console.log(close, currentTime);
 
 			const signature = await signBackMessage(
 				nonce,
@@ -377,7 +377,7 @@ describe("End to End", () => {
 		// // // );
 	});
 
-	it.only("Should do end to end test", async () => {
+	it.skip("Should do end to end test", async () => {
 		// Markets should be empty
 		const inPlay = await market.getTotalInPlay();
 		expect(inPlay).to.equal(0, "Should have $0 USDT in play");
@@ -529,10 +529,7 @@ describe("End to End", () => {
 		// inplay, inplayCount, exposure
 		await checkMarketTotals(ONE_HUNDRED, 1, ONE_HUNDRED);
 
-		// inPlayCount = await market.getInPlayCount();
-		// expect(inPlayCount).to.equal(1);
-
-		const marketOwnerBalance = await underlying.balanceOf(market_owner.address);
+		let marketOwnerBalance = await underlying.balanceOf(market_owner.address);
 		expect(marketOwnerBalance).to.equal(
 			0,
 			"Should have $0 USDT in market owner account"
@@ -562,20 +559,18 @@ describe("End to End", () => {
 		marketBalance = await underlying.balanceOf(market.address);
 		expect(marketBalance).to.equal(0);
 
-		// // vault should have been repaid $100 plus interest of 7%
+		// vault should have been repaid $100 plus interest of 7%
 		vaultBalance = await underlying.balanceOf(vault.address);
 		expect(vaultBalance).to.equal(
 			ethers.utils.parseUnits("10607", USDT_DECIMALS)
 		);
 
-		// Check the vault balance
-
 		// Check market owner balance
 		// Should have the profits form the loosing bet less the 7% interest
-		// marketOwnerBalance = await underlying.balanceOf(market_owner.address);
-		// expect(marketOwnerBalance).to.equal(
-		// 	ethers.utils.parseUnits("93", USDT_DECIMALS),
-		// 	"Should have $93 USDT in market owner account"
-		// );
+		marketOwnerBalance = await underlying.balanceOf(market_owner.address);
+		expect(marketOwnerBalance).to.equal(
+			ethers.utils.parseUnits("93", USDT_DECIMALS),
+			"Should have $93 USDT in market owner account"
+		);
 	});
 });
