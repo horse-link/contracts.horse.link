@@ -208,22 +208,6 @@ describe("End to End", () => {
 	const ONE_THOUSAND = ethers.utils.parseUnits("1000", USDT_DECIMALS);
 	const TEN_THOUSAND = ethers.utils.parseUnits("10000", USDT_DECIMALS);
 
-	const tests = [
-		{
-			index: 0,
-			wager: ONE_HUNDRED,
-			odds: ethers.utils.parseUnits("5", ODDS_DECIMALS),
-			proposition: 1,
-			expectedMarketTotal: ONE_HUNDRED,
-			expectedPayout: ethers.utils.parseUnits("500", USDT_DECIMALS),
-			expectedExposure: ONE_HUNDRED,
-			inPlay: ONE_HUNDRED,
-			inPlayCount: 1,
-			actor: carol,
-			expectedActorBalance: ethers.utils.parseUnits("900", USDT_DECIMALS)
-		}
-	];
-
 	const checkMarketTotals = async (
 		expectedInPlay: BigNumber,
 		expectedInPlayCount: number,
@@ -241,13 +225,30 @@ describe("End to End", () => {
 	};
 
 	it.only("Should do end to end test", async () => {
+		const tests = [
+			{
+				index: 0,
+				wager: ONE_HUNDRED,
+				odds: ethers.utils.parseUnits("5", ODDS_DECIMALS),
+				proposition: 1,
+				expectedMarketTotal: ONE_HUNDRED,
+				expectedPayout: ethers.utils.parseUnits("500", USDT_DECIMALS),
+				expectedExposure: ONE_HUNDRED,
+				inPlay: ONE_HUNDRED,
+				inPlayCount: 1,
+				actor: carol,
+				expectedActorBalance: ethers.utils.parseUnits("900", USDT_DECIMALS)
+			}
+		];
+
 		const marketId = makeMarketId(new Date(), "EGL", "1");
 		const end = 1000000000000;
 
 		// ###################
 		// # Place bets
 		// ###################
-		tests.forEach(async (test) => {
+		//tests.forEach(async (test) => {
+		for (const test of tests) {
 			const propositionId = makePropositionId(marketId, test.proposition);
 			const nonce = "0";
 			const currentTime = await time.latest();
@@ -265,7 +266,7 @@ describe("End to End", () => {
 				market_owner
 			);
 
-			// const actor: SignerWithAddress = test.actor;
+			const actor: SignerWithAddress = test.actor;
 			await market.connect(carol).back(
 				constructBet(
 					formatBytes16String(nonce),
@@ -305,7 +306,7 @@ describe("End to End", () => {
 
 			const exposure = await market.getTotalExposure();
 			expect(exposure).to.equal(test.expectedExposure);
-		});
+		}
 
 		// Close the market
 		await hre.network.provider.request({
