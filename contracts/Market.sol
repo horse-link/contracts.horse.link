@@ -360,28 +360,27 @@ contract Market is IMarket, Ownable, ERC721 {
 		require(bet.settled == false, "settle: Bet has already settled");
 		_settle(index);
 	}
-	
+
 	function _settle(uint64 index) internal {
 		Bet memory bet = _bets[index];
-		
+
 		// Update all state vars
 		_bets[index].settled = true;
 		_totalInPlay -= _bets[index].amount;
 		_inplayCount--;
 
-		uint8 result;
+		uint8 result = IOracle(_oracle).checkResult(
+			bet.marketId,
+			bet.propositionId
+		);
+
 		address recipient;
 
-		if (block.timestamp > _getExpiry(index)) {
+		if (block.timestamp > _getExpiry(index) && result == NULL) {
 			result = WINNER;
 			recipient = ownerOf(index);
 			_payout(index, WINNER);
 		} else {
-			result = IOracle(_oracle).checkResult(
-				bet.marketId,
-				bet.propositionId
-			);
-
 			require(result != NULL, "_settle: Oracle does not have a result");
 
 			recipient = result != LOSER ? ownerOf(index) : _vault;
