@@ -1081,6 +1081,90 @@ describe("Market", () => {
 			expect(await market.getTotalExposure()).to.equal(0);
 		});
 
+		it.only("Should not payout wage after timeout / expire has been reached and result added to the oracle", async () => {
+			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
+			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
+			const currentTime = await time.latest();
+			// Assume race closes in 1 hour from now
+			const close = currentTime + 3600;
+			const latestBlockNumber = await ethers.provider.getBlockNumber();
+			const latestBlock = await ethers.provider.getBlock(latestBlockNumber);
+
+			const end = latestBlock.timestamp + 10000;
+
+			// Runner 1 for a Win
+			const marketId = makeMarketId(new Date(), "ABC", "1");
+			const propositionId = makePropositionId(marketId, 1);
+			const nonce = "1";
+
+			const betSignature = await signBackMessage(
+				nonce,
+				marketId,
+				propositionId,
+				odds,
+				close,
+				end,
+				owner
+			);
+
+			const index = 0;
+			expect(
+				await market
+					.connect(bob)
+					.back(
+						constructBet(
+							formatBytes16String(nonce),
+							formatBytes16String(propositionId),
+							formatBytes16String(marketId),
+							wager,
+							odds,
+							close,
+							end,
+							betSignature
+						)
+					),
+				"Should emit a Placed event"
+			)
+				.to.emit(market, "Placed")
+				.withArgs(
+					index,
+					formatBytes16String(propositionId),
+					formatBytes16String(marketId),
+					wager,
+					272727300,
+					bob.address
+				);
+
+			// add a looser result
+			const winningPropositionId = makePropositionId(marketId, 2);
+			const signature = await signSetResultMessage(
+				marketId,
+				winningPropositionId,
+				oracleSigner
+			);
+
+			expect(
+				await oracle.setResult(
+					formatBytes16String(marketId),
+					formatBytes16String(winningPropositionId),
+					signature
+				)
+			).to.emit(oracle, "ResultSet");
+
+			await hre.network.provider.request({
+				method: "evm_setNextBlockTimestamp",
+				params: [end + 31 * 24 * 60 * 60]
+			});
+
+			expect(await market.settle(index), "Should emit a Settled event")
+				.to.emit(market, "Settled")
+				.withArgs(index, 272727300, WINNER, bob.address);
+
+			// expect(await market.getInPlayCount()).to.equal(0);
+			// expect(await market.getTotalInPlay()).to.equal(0);
+			// expect(await market.getTotalExposure()).to.equal(0);
+		});
+
 		it("Should settle multiple bets on a market", async () => {
 			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
 			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
