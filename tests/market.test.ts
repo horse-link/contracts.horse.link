@@ -41,6 +41,7 @@ describe("Market", () => {
 	const MARGIN = 100;
 	const TIMEOUT_DAYS = 5;
 	const WINNER = 0x01;
+	const LOOSER = 0x02;
 	const SCRATCHED = 0x03;
 	const NFT_BASE_URI = "https://example.org/";
 
@@ -1081,7 +1082,7 @@ describe("Market", () => {
 			expect(await market.getTotalExposure()).to.equal(0);
 		});
 
-		it.only("Should not payout wage after timeout / expire has been reached and result added to the oracle", async () => {
+		it("Should not payout wage after timeout / expire has been reached and result added to the oracle", async () => {
 			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
 			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
 			const currentTime = await time.latest();
@@ -1143,13 +1144,11 @@ describe("Market", () => {
 				oracleSigner
 			);
 
-			expect(
-				await oracle.setResult(
-					formatBytes16String(marketId),
-					formatBytes16String(winningPropositionId),
-					signature
-				)
-			).to.emit(oracle, "ResultSet");
+			await oracle.setResult(
+				formatBytes16String(marketId),
+				formatBytes16String(winningPropositionId),
+				signature
+			);
 
 			await hre.network.provider.request({
 				method: "evm_setNextBlockTimestamp",
@@ -1158,11 +1157,11 @@ describe("Market", () => {
 
 			expect(await market.settle(index), "Should emit a Settled event")
 				.to.emit(market, "Settled")
-				.withArgs(index, 272727300, WINNER, bob.address);
+				.withArgs(index, 272727300, LOOSER, vault.address);
 
-			// expect(await market.getInPlayCount()).to.equal(0);
-			// expect(await market.getTotalInPlay()).to.equal(0);
-			// expect(await market.getTotalExposure()).to.equal(0);
+			expect(await market.getInPlayCount()).to.equal(0);
+			expect(await market.getTotalInPlay()).to.equal(0);
+			expect(await market.getTotalExposure()).to.equal(0);
 		});
 
 		it("Should settle multiple bets on a market", async () => {

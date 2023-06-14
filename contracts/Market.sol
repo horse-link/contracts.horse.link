@@ -380,16 +380,18 @@ contract Market is IMarket, Ownable, ERC721 {
 			result = WINNER;
 			recipient = ownerOf(index);
 			_payout(index, WINNER);
-		} else {
-			require(result != NULL, "_settle: Oracle does not have a result");
 
-			recipient = result != LOSER ? ownerOf(index) : _vault;
-			_payout(index, result);
+			emit Settled(index, _bets[index].payout, result, recipient);
+			_burn(uint256(index));
 		}
 
-		emit Settled(index, _bets[index].payout, result, recipient);
+		if (result != NULL) {
+			recipient = result != LOSER ? ownerOf(index) : _vault;
+			_payout(index, result);
 
-		_burn(uint256(index));
+			emit Settled(index, _bets[index].payout, result, recipient);
+			_burn(uint256(index));
+		}
 	}
 
 	function scratchAndRefund(
