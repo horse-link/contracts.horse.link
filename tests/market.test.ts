@@ -1082,7 +1082,7 @@ describe("Market", () => {
 			expect(await market.getTotalExposure()).to.equal(0);
 		});
 
-		it("Should not payout wage after timeout / expire has been reached and result added to the oracle", async () => {
+		it("Should not payout wager after timeout / expiry has been reached and result added to the oracle", async () => {
 			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
 			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
 			const currentTime = await time.latest();
