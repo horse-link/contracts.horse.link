@@ -1157,7 +1157,7 @@ describe("Market", () => {
 
 			expect(await market.settle(index), "Should emit a Settled event")
 				.to.emit(market, "Settled")
-				.withArgs(index, 272727300, LOOSER, vault.address);
+				.withArgs(index, 272727300, LOSER, vault.address);
 
 			expect(await market.getInPlayCount()).to.equal(0);
 			expect(await market.getTotalInPlay()).to.equal(0);
