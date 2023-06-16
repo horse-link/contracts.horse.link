@@ -41,7 +41,7 @@ describe("Market", () => {
 	const MARGIN = 100;
 	const TIMEOUT_DAYS = 5;
 	const WINNER = 0x01;
-	const LOOSER = 0x02;
+	const LOSER = 0x02;
 	const SCRATCHED = 0x03;
 	const NFT_BASE_URI = "https://example.org/";
 
@@ -1136,7 +1136,7 @@ describe("Market", () => {
 					bob.address
 				);
 
-			// add a looser result
+			// add a loser result
 			const winningPropositionId = makePropositionId(marketId, 2);
 			const signature = await signSetResultMessage(
 				marketId,
@@ -1157,7 +1157,7 @@ describe("Market", () => {
 
 			expect(await market.settle(index), "Should emit a Settled event")
 				.to.emit(market, "Settled")
-				.withArgs(index, 272727300, LOOSER, vault.address);
+				.withArgs(index, 272727300, LOSER, vault.address);
 
 			expect(await market.getInPlayCount()).to.equal(0);
 			expect(await market.getTotalInPlay()).to.equal(0);
