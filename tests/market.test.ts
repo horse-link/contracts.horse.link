@@ -1083,6 +1083,10 @@ describe("Market", () => {
 		});
 
 		it("Should not payout wager after timeout / expiry has been reached and result added to the oracle", async () => {
+			expect(await market.getInPlayCount()).to.equal(0);
+			expect(await market.getTotalInPlay()).to.equal(0);
+			expect(await market.getTotalExposure()).to.equal(0);
+
 			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
 			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
 			const currentTime = await time.latest();
@@ -1135,6 +1139,10 @@ describe("Market", () => {
 					272727300,
 					bob.address
 				);
+
+			expect(await market.getInPlayCount()).to.equal(1);
+			expect(await market.getTotalInPlay()).to.equal(100000000);
+			expect(await market.getTotalExposure()).to.equal(172727300);
 
 			// add a loser result
 			const winningPropositionId = makePropositionId(marketId, 2);
