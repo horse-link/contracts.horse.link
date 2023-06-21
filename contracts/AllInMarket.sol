@@ -10,7 +10,6 @@ import "@openzeppelin/contracts/interfaces/IERC4626.sol";
 
 import "./IVault.sol";
 import "./IMarket.sol";
-import "./IMarketWithScratchings.sol";
 import "./IOracle.sol";
 import "./SignatureLib.sol";
 import "./OddsLib.sol";
@@ -28,7 +27,7 @@ struct Bet {
 
 uint256 constant MARGIN = 1500000;
 
-contract Market is IMarketWithScratchings, IMarket, Ownable, ERC721 {
+contract AllInMarket is IMarket, Ownable, ERC721 {
 	using Strings for uint256;
 
 	string internal _metadataBaseURI;
@@ -395,28 +394,6 @@ contract Market is IMarketWithScratchings, IMarket, Ownable, ERC721 {
 		}
 	}
 
-	function scratchAndRefund(
-		uint64 index,
-		bytes16 marketId,
-		bytes16 propositionId,
-		uint256 odds,
-		SignatureLib.Signature calldata signature
-	) external {
-		require(
-			_bets[index].propositionId == propositionId,
-			"scratchAndRefund: propositionId does not match bet"
-		);
-		require(
-			_bets[index].settled == false,
-			"scratchAndRefund: Bet has already settled"
-		);
-
-		_oracle.setScratchedResult(marketId, propositionId, odds, signature);
-
-		_bets[index].settled = true;
-		_refund(index);
-	}
-
 	/*
 	 * @dev Reverse a bet on a scratched runner. If the bet was on a scratched runner, return the stake to the bettor and the loan to the vault
 	 * @param index The index of the bet
@@ -462,43 +439,6 @@ contract Market is IMarketWithScratchings, IMarket, Ownable, ERC721 {
 		emit Refunded(index, bet.amount, recipient);
 
 		_burn(uint256(index));
-	}
-
-	function _applyScratchings(
-		uint64 index
-	) internal virtual returns (uint256) {
-		// Get marketId of bet
-		bytes16 marketId = _bets[index].marketId;
-		// Ask the oracle for scratched runners on this market
-		IOracle.Result memory result = IOracle(_oracle).getResult(marketId);
-
-		// Get all scratchings with a timestamp after this bet
-		// Loop through scratchings
-		uint256 scratchedOdds;
-		uint256 betCreated = _bets[index].created;
-		uint256 count = result.scratched.length;
-
-		for (uint256 i = 0; i < count; i++) {
-			// If the timestamp of the scratching is after the bet
-			if (result.scratched[i].timestamp > betCreated) {
-				// Sum the odds
-				scratchedOdds += result.scratched[i].odds;
-			}
-		}
-		// Now apply the scratched odds to get the new odds for the bet
-		if (scratchedOdds > 0 && _bets[index].amount > 0) {
-			// Calculate the odds of the bet
-			uint256 originalOdds = _bets[index].payout / _bets[index].amount;
-			uint256 newOdds = OddsLib.rebaseOddsWithScratch(
-				originalOdds,
-				scratchedOdds,
-				MARGIN
-			);
-			// Calculate the new payout
-			_bets[index].payout = _bets[index].amount * newOdds;
-		}
-
-		return _bets[index].payout;
 	}
 
 	function _payout(uint256 index, uint8 result) internal virtual {
