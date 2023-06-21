@@ -10,6 +10,7 @@ import "@openzeppelin/contracts/interfaces/IERC4626.sol";
 
 import "./IVault.sol";
 import "./IMarket.sol";
+import "./IMarketWithScratchings.sol";
 import "./IOracle.sol";
 import "./SignatureLib.sol";
 import "./OddsLib.sol";
@@ -27,7 +28,7 @@ struct Bet {
 
 uint256 constant MARGIN = 1500000;
 
-contract Market is IMarket, Ownable, ERC721 {
+contract Market is IMarketWithScratchings, IMarket, Ownable, ERC721 {
 	using Strings for uint256;
 
 	string internal _metadataBaseURI;
