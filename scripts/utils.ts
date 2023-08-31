@@ -234,9 +234,9 @@ export async function getSubgraphBetsSince(
 	const { unsettledOnly = false, maxResults = 1000, payoutAtLt } = options;
 
 	const whereClauses = [
-		`createdAt_gt: "${timeString}"`,
-		unsettledOnly ? ", settled_not: true" : "",
-		payoutAtLt ? `payoutAt_lt: ${payoutAtLt}` : ""
+		`createdAt_gt: "${timeString}"`
+		// unsettledOnly ? ", settled_not: true" : "",
+		// payoutAtLt ? `payoutAt_lt: ${payoutAtLt}` : ""
 	];
 	const whereClause = whereClauses.filter(Boolean).join(",");
 
