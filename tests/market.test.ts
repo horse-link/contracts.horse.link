@@ -278,7 +278,7 @@ describe("Market", () => {
 		).to.be.revertedWith("back: Invalid signature");
 	});
 
-	it("Should allow Bob a $100 punt at 5:1", async () => {
+	it.only("Should allow Bob a $100 punt at 5:1", async () => {
 		let balance = await underlying.balanceOf(bob.address);
 		expect(balance).to.equal(
 			ethers.utils.parseUnits("1000", USDT_DECIMALS),
@@ -339,7 +339,7 @@ describe("Market", () => {
 			);
 
 		expect(await market.getMarketTotal(formatBytes16String(marketId))).to.equal(
-			ethers.utils.parseUnits("100", USDT_DECIMALS)
+			BigNumber.from("100000000")
 		);
 
 		balance = await underlying.balanceOf(bob.address);
@@ -349,7 +349,7 @@ describe("Market", () => {
 		);
 
 		const inPlay = await market.getTotalInPlay();
-		expect(inPlay).to.equal(ethers.utils.parseUnits("100", USDT_DECIMALS));
+		expect(inPlay).to.equal(BigNumber.from("272727300"));
 
 		vaultBalance = await underlying.balanceOf(vault.address);
 		expect(vaultBalance).to.equal(

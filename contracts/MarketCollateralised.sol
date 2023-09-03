@@ -60,7 +60,7 @@ abstract contract MarketCollateralised is Market {
 		bet.settled = true;
 		uint256 loan = _betExposure[index];
 		_totalExposure -= loan;
-		_totalInPlay -= _bets[index].amount;
+		_totalWagered -= _bets[index].amount;
 		_inplayCount --;
 
 		address recipient = ownerOf(index);

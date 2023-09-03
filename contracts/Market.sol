@@ -54,7 +54,7 @@ contract Market is IMarketWithScratchings, IMarket, Ownable, ERC721 {
 	// PropositionID => winnings that could be paid out for this proposition
 	mapping(bytes16 => uint256) internal _potentialPayout;
 
-	uint256 internal _totalInPlay;
+	uint256 internal _totalWagered;
 	uint256 internal _totalExposure;
 
 	// Can claim after this period regardless
@@ -102,7 +102,7 @@ contract Market is IMarketWithScratchings, IMarket, Ownable, ERC721 {
 	}
 
 	function getTotalInPlay() external view returns (uint256) {
-		return _totalInPlay;
+		return IERC20(_underlying).balanceOf(_self);
 	}
 
 	function getInPlayCount() external view returns (uint256) {
@@ -119,6 +119,10 @@ contract Market is IMarketWithScratchings, IMarket, Ownable, ERC721 {
 
 	function getTotalExposure() external view returns (uint256) {
 		return _totalExposure;
+	}
+
+	function getTotalWagered() external view returns (uint256) {
+		return _totalWagered;
 	}
 
 	function getOracleAddress() external view returns (address) {
@@ -312,10 +316,11 @@ contract Market is IMarketWithScratchings, IMarket, Ownable, ERC721 {
 	) internal returns (uint256) {
 		// Escrow the wager
 		_underlying.transferFrom(_msgSender(), _self, wager);
+		// IERC20(IERC4626(_vault).asset()).transferFrom(_msgSender(), _self, wager);
 
 		// Add to in play total for this marketId
 		_marketTotal[marketId] += wager;
-		_totalInPlay += wager;
+		// _totalWagered += wager;
 		_inplayCount++;
 
 		uint64 index = _getCount();
@@ -367,7 +372,7 @@ contract Market is IMarketWithScratchings, IMarket, Ownable, ERC721 {
 
 		// Update all state vars
 		_bets[index].settled = true;
-		_totalInPlay -= _bets[index].amount;
+		// _totalWagered -= _bets[index].amount;
 		_inplayCount--;
 
 		uint8 result = IOracle(_oracle).checkResult(
@@ -450,7 +455,7 @@ contract Market is IMarketWithScratchings, IMarket, Ownable, ERC721 {
 
 		uint256 loan = _bets[index].payout - _bets[index].amount;
 		_totalExposure -= loan;
-		_totalInPlay -= _bets[index].amount;
+		// _totalWagered -= _bets[index].amount;
 		_inplayCount--;
 
 		address recipient = ownerOf(index);
