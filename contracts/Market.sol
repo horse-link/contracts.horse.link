@@ -148,7 +148,7 @@ contract Market is IMarketWithScratchings, IMarket, Ownable, ERC721 {
 		view
 		returns (
 			uint256,
-			uint256,
+			uint256, // payout
 			uint256, // payoutDate
 			uint256, // created
 			bool,
