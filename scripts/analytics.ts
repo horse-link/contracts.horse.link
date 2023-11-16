@@ -35,18 +35,17 @@ export async function main() {
 		provider
 	);
 
-	const start_block = 150872800;
-	const end_block = 150872807;
+	// first usdt deposit @ 90089343
+	const start_block = 90089340;
+	const length = 100;
 
-	for (let i = start_block; i < end_block; i++) {
+	for (let i = start_block; i < start_block + length; i++) {
 		const market_balance = await usdt.balanceOf(
 			"0x47563a2fA82200c0f652fd4688c71f10a2c8DAF3",
 			{
 				blockTag: i
 			}
 		);
-
-		console.log(market_balance.toString());
 
 		const vault_balance = await usdt.balanceOf(
 			"0xE37ae0A43d0f0e01a4AdB8605da2D2CD915E3906",
@@ -55,7 +54,7 @@ export async function main() {
 			}
 		);
 
-		console.log(vault_balance.toString());
+		console.info(`Block ${i}: ${vault_balance}, ${market_balance}`);
 	}
 }
 
