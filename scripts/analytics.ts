@@ -30,16 +30,28 @@ export async function main() {
 		process.env[providerUrlEnvVar]
 	);
 
+	setProvider(process.env[providerUrlEnvVar]);
+
 	const usdt = await ERC20__factory.connect(
 		"0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
 		provider
 	);
 
+	const marketContract = await loadMarket(
+		deploymentName,
+		"0x47563a2fA82200c0f652fd4688c71f10a2c8DAF3",
+		privateKeyEnvVar
+	);
+
 	// first usdt deposit @ 90089343
-	const start_block = 90089340;
-	const length = 100;
+	const start_block = 90089340 + 1000;
+	const length = 10;
+
+	const logs = [];
 
 	for (let i = start_block; i < start_block + length; i++) {
+		console.info(`Processing Block ${i}`);
+
 		const market_balance = await usdt.balanceOf(
 			"0x47563a2fA82200c0f652fd4688c71f10a2c8DAF3",
 			{
@@ -54,8 +66,26 @@ export async function main() {
 			}
 		);
 
-		console.info(`Block ${i}: ${vault_balance}, ${market_balance}`);
+		const [bet_count, in_play_count, getTotalInPlay, getTotalExposure] =
+			await Promise.all([
+				await marketContract.getCount({ blockTag: i }),
+				await marketContract.getInPlayCount({ blockTag: i }),
+				await marketContract.getTotalInPlay({ blockTag: i }),
+				await marketContract.getTotalExposure({ blockTag: i })
+			]);
+
+		logs.push([
+			i,
+			market_balance.toString(),
+			vault_balance.toString(),
+			bet_count.toString(),
+			in_play_count.toString(),
+			getTotalInPlay.toString(),
+			getTotalExposure.toString()
+		]);
 	}
+
+	console.table(logs);
 }
 
 if (require.main === module) {

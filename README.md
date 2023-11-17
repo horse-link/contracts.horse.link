@@ -114,7 +114,7 @@ Carol's bet is now settled and the Vault has an exposure of 0 DAI and has made 1
 
 If the bet was a winning bet, the market pays out the winning proposition. The performance of the Vault would be low, as the bettor has won assets from the Market, which will now not be returned to the Vault.
 
-The perfomance of the Vault is the ratio of the shares to the assets. In the above example, the performance is: 3700 DAI / 1000 shares \* 100 = 370% (3.7 DAI per share).
+The performance of the Vault is the ratio of the shares to the assets. In the above example, the performance is: 3700 DAI / 1000 shares \* 100 = 370% (3.7 DAI per share).
 
 #### Analysing a donation attack
 
