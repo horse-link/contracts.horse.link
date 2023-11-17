@@ -263,7 +263,7 @@ Deployments for each network are defined in the `package.json` file. To deploy t
 eg: 
 
 ```bash
-yarn deploy:prod_arbitrum"
+yarn deploy:prod_arbitrum
 ```
 
 ### Deployment to Goerli
