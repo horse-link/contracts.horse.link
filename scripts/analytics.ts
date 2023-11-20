@@ -44,14 +44,23 @@ export async function main() {
 	);
 
 	// first usdt deposit @ 90089343
-	const start_block = 90089340 + 1000;
-	const length = 10;
+	const start_block = 90095300;
+	const length = 500000;
 
 	const logs = [];
 
-	for (let i = start_block; i < start_block + length; i++) {
-		console.info(`Processing Block ${i}`);
+	// ${i},${market_balance.toString()},${vault_balance.toNumber()},${bet_count},${in_play_count},${getTotalInPlay},${getTotalExposure}
+	fs.appendFileSync(
+		"market.csv",
+		`index,market balance,vault balance,bet count,in play count, total in play, total exposure\n`
+	);
 
+	// const current = await marketContract.getCount();
+	// console.info(`Current bet count ${current}`);
+
+	// First bet was placed at block https://arbiscan.io/tx/0x732433bda2dc613d667274c4e6d029b19855a3b159fb2c3a12cec068c03339a5
+	// 90095323
+	for (let i = start_block; i < start_block + length; i += 500) {
 		const market_balance = await usdt.balanceOf(
 			"0x47563a2fA82200c0f652fd4688c71f10a2c8DAF3",
 			{
@@ -74,6 +83,8 @@ export async function main() {
 				await marketContract.getTotalExposure({ blockTag: i })
 			]);
 
+		console.info(`Processing Block ${i} with bet count ${bet_count}`);
+
 		logs.push([
 			i,
 			market_balance.toString(),
@@ -83,6 +94,11 @@ export async function main() {
 			getTotalInPlay.toString(),
 			getTotalExposure.toString()
 		]);
+
+		fs.appendFileSync(
+			"market.csv",
+			`${i},${market_balance.toString()},${vault_balance.toNumber()},${bet_count},${in_play_count},${getTotalInPlay},${getTotalExposure}\n`
+		);
 	}
 
 	console.table(logs);
