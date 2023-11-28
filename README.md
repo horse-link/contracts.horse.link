@@ -14,7 +14,7 @@ Runs the deployment script with the network set in `process.env.NETWORK`.
 
 ### hh:node
 
-Starts a local hardhat node with the `localhost` network.
+Starts a local Hardhat node with the `localhost` network.
 
 ## Contracts
 
@@ -114,7 +114,7 @@ Carol's bet is now settled and the Vault has an exposure of 0 DAI and has made 1
 
 If the bet was a winning bet, the market pays out the winning proposition. The performance of the Vault would be low, as the bettor has won assets from the Market, which will now not be returned to the Vault.
 
-The perfomance of the Vault is the ratio of the shares to the assets. In the above example, the performance is: 3700 DAI / 1000 shares \* 100 = 370% (3.7 DAI per share).
+The performance of the Vault is the ratio of the shares to the assets. In the above example, the performance is: 3700 DAI / 1000 shares \* 100 = 370% (3.7 DAI per share).
 
 #### Analysing a donation attack
 
@@ -137,7 +137,7 @@ In our use case, we discuss the possibility that an attacker could attempt to pl
 | Bob                          | Deposit | 1000 DAI | 1000   | 2000 DAI     | 2000         |
 | Vault (on attacker's behalf) | Lend    | 1800 DAI | 0      | 200 DAI      | 2000         |
 
-Vault lends 1800 DAI to the market (to cover the exposure for the attackers's bet) leaving 200 DAI of total assets. Given the Vault now has 200 DAI in total assets but still 2000 shares, the performance of the Vault is 200 / 2000 = 0.1 devaluing each share making them comparitively cheap for the attacker to acquire.
+Vault lends 1800 DAI to the market (to cover the exposure for the attackers's bet) leaving 200 DAI of total assets. Given the Vault now has 200 DAI in total assets but still 2000 shares, the performance of the Vault is 200 / 2000 = 0.1 devaluing each share making them comparatively cheap for the attacker to acquire.
 
 3. Attacker deposits 10,000 DAI and receives 100,000 shares
 
@@ -268,7 +268,7 @@ The `MarketOracle.sol` contract allows authorised accounts to set results based 
 
 ## Configuration
 
-See `/hardhat.config.ts` for hardhat configuration. Some values are fetched from environment variables, see `.env.development` for local development environment variables and copy it into `.env` before changing the values.
+See `/hardhat.config.ts` for Hardhat configuration. Some values are fetched from environment variables, see `.env.development` for local development environment variables and copy it into `.env` before changing the values.
 
 ## Deployment
 
@@ -277,7 +277,7 @@ Deployments for each network are defined in the `package.json` file. To deploy t
 eg: 
 
 ```bash
-yarn deploy:prod_arbitrum"
+yarn deploy:prod_arbitrum
 ```
 
 ### Deployment to Goerli
@@ -297,7 +297,7 @@ Deployed addresses are saved in `/contracts.json` for each network. This file sh
 ## Hardhat Tasks
 
 Tasks are located in the `/scripts/tasks` folder.
-A hardhat task allows for easy contract interaction from the command line. To run a contract task, run a command with the following structure:
+A Hardhat task allows for easy contract interaction from the command line. To run a contract task, run a command with the following structure:
 
 ```bash
 npx hardhat <taskName>
@@ -348,7 +348,7 @@ npx hardhat read-balance --address 0xA39560b08FAF6d8Cd2aAC286479D25E0ea70f510 --
 
 Output:
 
-```
+```text
 network is localhost
 token address is 0x47A78de7a881CCa1a0f510efA2E520b447F707Bb
 balance is 1 wei for address 0xA39560b08FAF6d8Cd2aAC286479D25E0ea70f510
@@ -367,7 +367,7 @@ If you need to make changes to the scripts you can copy them across with scp to 
 To deploy changes, pull the latest changes on the server: `ssh root@170.64.176.240 'cd contracts.horse.link; git pull'` (it shouldn't make a difference if you do it in a single command like this or log in and then pull or even use the console in the DigitalOcean dashboard).  Use  `git pull -f` if you want to clear out any changes that have been made on the server or copied across.
 
 The scripts are usually run with crontab. You can check the current settings with `crontab -l` on the droplet:
-```
+```text
 0,10,20,30,40,50 * * * * cd /root/contracts.horse.link && npx ts-node scripts/settle.ts >> $HOME/logs/settle.log 2>&1
 5,15,25,35,45,55 * * * * cd /root/contracts.horse.link && npx ts-node scripts/scratch.ts >> $HOME/logs/scratch.log 2>&1
 ```
