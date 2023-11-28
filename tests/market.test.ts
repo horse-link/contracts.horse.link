@@ -431,6 +431,108 @@ describe("Market", () => {
 		);
 	});
 
+	it.only("Should simulate heaps of bets", async () => {
+		let balance = await underlying.balanceOf(bob.address);
+		expect(balance, "Should have $1,000 USDT").to.equal(
+			ethers.utils.parseUnits("1000", USDT_DECIMALS)
+		);
+
+		await underlying
+			.connect(carol)
+			.approve(market.address, ethers.utils.parseUnits("1000", tokenDecimals));
+
+		for (let i = 0; i < 1; i++) {
+			const wager = ethers.utils.parseUnits("10", USDT_DECIMALS);
+			const odds = ethers.utils.parseUnits("2", ODDS_DECIMALS);
+			const currentTime = await time.latest();
+
+			// Assume race closes in 1 hour from now
+			const close = currentTime + 3600;
+			const end = 1000000000000;
+
+			// check vault balance
+			const vaultBalance = await underlying.balanceOf(vault.address);
+			expect(vaultBalance, "Should have $1,000 USDT in vault").to.equal(
+				ethers.utils.parseUnits("1000", USDT_DECIMALS)
+			);
+
+			const totalAssets = await vault.totalAssets();
+			expect(totalAssets, "Should have $1,000 USDT total assets").to.equal(
+				ethers.utils.parseUnits("1000", USDT_DECIMALS)
+			);
+
+			// Runner 2 for a Win
+			const marketId = makeMarketId(new Date(), "ABC", "1");
+			const propositionId = makePropositionId(marketId, 2);
+			const nonce = "1";
+
+			const signature = await signBackMessage(
+				nonce,
+				marketId,
+				propositionId,
+				odds,
+				close,
+				end,
+				owner
+			);
+
+			await market
+				.connect(carol)
+				.back(
+					constructBet(
+						formatBytes16String(nonce),
+						formatBytes16String(propositionId),
+						formatBytes16String(marketId),
+						wager,
+						odds,
+						close,
+						end,
+						signature
+					)
+				);
+
+			balance = await underlying.balanceOf(carol.address);
+			expect(balance, "Carol should have $990 USDT after a $10 bet").to.equal(
+				ethers.utils.parseUnits("990", USDT_DECIMALS)
+			);
+
+			const inPlay = await market.getTotalInPlay();
+			expect(inPlay).to.equal(ethers.utils.parseUnits("10", USDT_DECIMALS));
+
+			const vaultBalanceAfter = await underlying.balanceOf(vault.address);
+			expect(vaultBalanceAfter).to.equal(
+				ethers.utils.parseUnits("9800", USDT_DECIMALS)
+			);
+
+			// now settle
+			const index = 0;
+			const winningPropositionId = makePropositionId(marketId, 2);
+			const winningSignature = await signSetResultMessage(
+				marketId,
+				winningPropositionId,
+				oracleSigner
+			);
+
+			await oracle.setResult(
+				formatBytes16String(marketId),
+				formatBytes16String(winningPropositionId),
+				winningSignature
+			);
+
+			await hre.network.provider.request({
+				method: "evm_setNextBlockTimestamp",
+				params: [end + 7200]
+			});
+
+			await market.connect(carol).settle(index);
+
+			const newBalance = await underlying.balanceOf(carol.address);
+			expect(newBalance).to.equal(
+				ethers.utils.parseUnits("1000", USDT_DECIMALS)
+			);
+		}
+	});
+
 	it("Should not allow Carol a $200 punt at 2:1 after the race close time", async () => {
 		const balance = await underlying.balanceOf(bob.address);
 		expect(balance).to.equal(

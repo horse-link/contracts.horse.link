@@ -252,6 +252,20 @@ The `MarketOracle.sol` contract allows authorised accounts to set results based 
 | ------- | ------- |
 | Arbitrum  | 0x8D54e1319A50B715a13E1E1a86297fC039B7C949 |
 
+### Vaults
+
+| Network | Address | Token |
+| ------- | ------- | ----- |
+| Arbitrum  | 0x38A25f9eCF0DE857d6E4404ED0ecBd42705414fA | USDC |
+| Arbitrum  | 0xE37ae0A43d0f0e01a4AdB8605da2D2CD915E3906 | USDT |
+
+### Markets
+
+| Network | Address | Token |
+| ------- | ------- | ----- |
+| Arbitrum  | 0x48B3cD888C901d01d04a270205aA17028943A9D2 | USDC |
+| Arbitrum  | 0x47563a2fA82200c0f652fd4688c71f10a2c8DAF3 | USDT |
+
 ## Configuration
 
 See `/hardhat.config.ts` for hardhat configuration. Some values are fetched from environment variables, see `.env.development` for local development environment variables and copy it into `.env` before changing the values.
