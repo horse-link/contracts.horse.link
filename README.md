@@ -30,6 +30,7 @@ There are 5 main types of contracts along with supporting solidity libraries, wh
 
 Horse Link issues 100 million standard ERC20 tokens HL / Horse Link for its members to be used in the future as a DAO governance token, distribution of protocol fees and other member perks.
 
+
 ### Vaults
 
 The Vault contracts are ERC4626 contracts used to manage the underlying ERC20 assets of the LP Providers. They are used to store the assets of the users and to allow them to deposit and withdraw assets that get lent to Market contracts for a fee which is agreed upon in the `setMarket` function. The users are minted a ERC20 share that represents their share of the underlying assets in the Vault.
@@ -185,6 +186,9 @@ The total assets in the Vault is now 235.49 DAI giving a performance of: 235.49 
 
 Market contracts define the logic in which they calculate the odds per event or market. Our protocol offers two types of market contracts, where the odds slippage calculation is either on a linear decay or a non-linear decay. The linear decay market `Market.sol` is a simple market that calculates the odds based on the total assets in the Vault and the total exposure of the Vault. The non-linear decay market `MarketCurved.sol` is more complex and is more expensive to calculate the odds, but offers smoother odds to its caller.
 
+#### MarketIds
+
+
 
 Non collateralised markets draw 100% of the lay collateral from the Vault.
 ```text
@@ -246,7 +250,45 @@ The registry contract is a mapping of Vaults and Markets used by the protocol. T
 
 ### Oracle
 
-The `MarketOracle.sol` contract allows authorised accounts to set results based on the Market ID and the Proposition ID. The results are either set from a python script `settle.py` in the event of a losing Proposition or by the front end should the user win and claim their profits. The market owner is responsible for providing a signed result after the event.
+The `MarketOracle.sol` contract allows authorised accounts to set results based on the Market ID and the Proposition ID. The results are either set from a python script `settle.py` or TypeScript script in the event of a losing Proposition or by the front end should the user win and claim their profits. The market owner is responsible for providing a signed result after the event.
+
+`MarketId` is an arbitrary byte16 string which partitions the bets into a specific market.  For our purposes, we use the following syntax for Racing markets.  For example, a Race 1 at Brisbane (BNE) on the 1st of January 2021 would be represented as `20210101BNE01`.
+
+The contract uses bytes16, so the following functions are used to convert between bytes16 and strings.  These can be found in `utils.ts`.
+
+```javascript
+export function hydrateMarketId(
+	marketId: string | DataHexString
+): MarketDetails {
+	const id = isHexString(marketId) ? bytes16HexToString(marketId) : marketId;
+	const daysSinceEpoch = parseInt(id.slice(0, 6));
+	const location = id.slice(6, 9);
+	const race = parseInt(id.slice(9, 11));
+	return {
+		id,
+		date: daysSinceEpoch,
+		location,
+		race
+	};
+}
+
+export function hydratePropositionId(propositionId: string): RaceDetails {
+	const id = propositionId.slice(0, 13);
+	const market = hydrateMarketId(propositionId.slice(0, 11));
+	const number = propositionId.slice(12, 14);
+	return {
+		id,
+		market,
+		number
+	};
+}
+```
+
+
+The Oracle contract is a mapping of Market and Proposition IDs to results. 
+
+Version 2 of the Oracle 
+
 
 | Network | Address |
 | ------- | ------- |

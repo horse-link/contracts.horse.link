@@ -47,6 +47,7 @@
     "hardhat-contract-sizer": "^2.0.3",
     "hardhat-deploy-tenderly": "^0.2.0",
     "hardhat-upgrades": "^0.0.0",
+    "horselink-sdk": "^1.0.36",
     "keccak": "^3.0.3",
     "papaparse": "^5.3.2",
     "rlp": "^2.2.6",

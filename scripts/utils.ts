@@ -4,7 +4,7 @@ import axios from "axios";
 import { AxiosInstance } from "axios";
 import rlp from "rlp";
 import keccak from "keccak";
-import { ethers, Wallet } from "ethers";
+import { ethers } from "ethers";
 import { concat, hexlify, isHexString, toUtf8Bytes } from "ethers/lib/utils";
 import { LedgerSigner } from "@ethersproject/hardware-wallets";
 import * as dotenv from "dotenv";
@@ -29,12 +29,6 @@ export type MarketDetails = {
 	date: number;
 	location: string;
 	race: number;
-};
-
-export type RaceDetails = {
-	id: string;
-	market: MarketDetails;
-	number: string;
 };
 
 export type BetId = string;
