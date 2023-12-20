@@ -18,7 +18,7 @@ import {
 	signBackMessage,
 	signSetResultMessage
 } from "./utils";
-import { formatBytes16String } from "../scripts/utils";
+import { general, formatting } from "horselink-sdk";
 
 chai.use(solidity);
 
@@ -158,7 +158,7 @@ describe("Market", () => {
 			// Runner 2 for a Win
 			const nonce = "2";
 			const marketId = makeMarketId(new Date(), "ABC", "2");
-			const propositionId = makePropositionId(marketId, 2);
+			const propositionId = general.makePropositionId(marketId, 2);
 
 			const betSignature = await signBackMessage(
 				nonce,
@@ -178,9 +178,9 @@ describe("Market", () => {
 					.connect(bob)
 					.back(
 						constructBet(
-							formatBytes16String(nonce),
-							formatBytes16String(propositionId),
-							formatBytes16String(marketId),
+							formatting.formatBytes16String(nonce),
+							formatting.formatBytes16String(propositionId),
+							formatting.formatBytes16String(marketId),
 							wager,
 							odds,
 							close,
@@ -207,7 +207,7 @@ describe("Market", () => {
 				ethers.utils.parseUnits("600", tokenDecimals)
 			);
 
-			const winningPropositionId = makePropositionId("ABC", 1);
+			const winningPropositionId = general.makePropositionId("ABC", 1);
 			const signature = await signSetResultMessage(
 				marketId,
 				winningPropositionId,
@@ -215,8 +215,8 @@ describe("Market", () => {
 			);
 
 			await oracle.setResult(
-				formatBytes16String(marketId),
-				formatBytes16String(winningPropositionId),
+				formatting.formatBytes16String(marketId),
+				formatting.formatBytes16String(winningPropositionId),
 				signature
 			);
 
@@ -267,7 +267,7 @@ describe("Market", () => {
 			// Runner 2 for a Win
 			const nonce = "2";
 			const marketId = makeMarketId(new Date(), "ABC", "2");
-			const propositionId = makePropositionId(marketId, 2);
+			const propositionId = general.makePropositionId(marketId, 2);
 
 			const betSignature = await signBackMessage(
 				nonce,
@@ -287,9 +287,9 @@ describe("Market", () => {
 					.connect(bob)
 					.back(
 						constructBet(
-							formatBytes16String(nonce),
-							formatBytes16String(propositionId),
-							formatBytes16String(marketId),
+							formatting.formatBytes16String(nonce),
+							formatting.formatBytes16String(propositionId),
+							formatting.formatBytes16String(marketId),
 							wager,
 							odds,
 							close,
@@ -318,7 +318,7 @@ describe("Market", () => {
 				ethers.utils.parseUnits("999", tokenDecimals)
 			);
 
-			const winningPropositionId = makePropositionId("ABC", 1);
+			const winningPropositionId = general.makePropositionId("ABC", 1);
 			const signature = await signSetResultMessage(
 				marketId,
 				winningPropositionId,
@@ -326,8 +326,8 @@ describe("Market", () => {
 			);
 
 			await oracle.setResult(
-				formatBytes16String(marketId),
-				formatBytes16String(winningPropositionId),
+				formatting.formatBytes16String(marketId),
+				formatting.formatBytes16String(winningPropositionId),
 				signature
 			);
 
@@ -374,7 +374,7 @@ describe("Market", () => {
 
 			// Runner 2 for a Win
 			const nonce = "2";
-			const propositionId = makePropositionId("ABC", 2);
+			const propositionId = general.makePropositionId("ABC", 2);
 			const marketId = makeMarketId(new Date(), "ABC", "2");
 
 			const betSignature = await signBackMessage(
@@ -395,9 +395,9 @@ describe("Market", () => {
 					.connect(bob)
 					.back(
 						constructBet(
-							formatBytes16String(nonce),
-							formatBytes16String(propositionId),
-							formatBytes16String(marketId),
+							formatting.formatBytes16String(nonce),
+							formatting.formatBytes16String(propositionId),
+							formatting.formatBytes16String(marketId),
 							wager,
 							odds,
 							close,
@@ -424,7 +424,7 @@ describe("Market", () => {
 				ethers.utils.parseUnits("981", tokenDecimals)
 			);
 
-			const winningPropositionId = makePropositionId("ABC", 1);
+			const winningPropositionId = general.makePropositionId("ABC", 1);
 			const signature = await signSetResultMessage(
 				marketId,
 				winningPropositionId,
@@ -432,8 +432,8 @@ describe("Market", () => {
 			);
 
 			await oracle.setResult(
-				formatBytes16String(marketId),
-				formatBytes16String(winningPropositionId),
+				formatting.formatBytes16String(marketId),
+				formatting.formatBytes16String(winningPropositionId),
 				signature
 			);
 

@@ -20,17 +20,9 @@ interface IOracleV2 {
 
     function setResult(
         bytes16 marketId,
-        bytes16 propositionId,
+        uint64 prediction,
         SignatureLib.Signature calldata signature
     ) external;
 
-	function setScratchedResult(
-		bytes16 marketId,
-		bytes16 propositionId,
-        uint256 odds,
-		SignatureLib.Signature calldata signature
-	) external;
-
-    event ResultSet(bytes16 indexed marketId, bytes16 indexed propositionId);
-    event ScratchedSet(bytes16 indexed marketId, bytes16 indexed propositionId);
+    event ResultSet(bytes16 indexed marketId, uint64 indexed prediction);
 }

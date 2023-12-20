@@ -14,12 +14,12 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {
 	constructBet,
 	makeMarketId,
-	makePropositionId,
 	signBackMessage,
 	signSetResultMessage,
 	signSetScratchedMessage
 } from "./utils";
 import { formatBytes16String } from "../scripts/utils";
+import { general } from "horselink-sdk";
 
 chai.use(solidity);
 
@@ -248,7 +248,7 @@ describe("Market", () => {
 
 		// Runner 1 for a Win
 		const nonce = "1";
-		const propositionId = makePropositionId("ABC", 1);
+		const propositionId = general.makePropositionId("ABC", 1);
 		const marketId = makeMarketId(new Date(), "ABC", "1");
 		const betSignature = await signBackMessage(
 			nonce,
@@ -310,7 +310,7 @@ describe("Market", () => {
 			.approve(market.address, ethers.utils.parseUnits("100", tokenDecimals));
 
 		const marketId = makeMarketId(new Date(), "ABC", "1");
-		const propositionId = makePropositionId(marketId, 1);
+		const propositionId = general.makePropositionId(marketId, 1);
 		const nonce = "1";
 
 		const signature = await signBackMessage(
@@ -397,7 +397,7 @@ describe("Market", () => {
 			.approve(market.address, ethers.utils.parseUnits("200", tokenDecimals));
 		// Runner 2 for a Win
 		const marketId = makeMarketId(new Date(), "ABC", "1");
-		const propositionId = makePropositionId(marketId, 2);
+		const propositionId = general.makePropositionId(marketId, 2);
 		const nonce = "1";
 
 		const signature = await signBackMessage(
@@ -431,7 +431,7 @@ describe("Market", () => {
 		);
 	});
 
-	it.only("Should simulate heaps of bets", async () => {
+	it("Should simulate heaps of bets", async () => {
 		let balance = await underlying.balanceOf(bob.address);
 		expect(balance, "Should have $1,000 USDT").to.equal(
 			ethers.utils.parseUnits("1000", USDT_DECIMALS)
@@ -463,7 +463,7 @@ describe("Market", () => {
 
 			// Runner 2 for a Win
 			const marketId = makeMarketId(new Date(), "ABC", "1");
-			const propositionId = makePropositionId(marketId, 2);
+			const propositionId = general.makePropositionId(marketId, 2);
 			const nonce = "1";
 
 			const signature = await signBackMessage(
@@ -506,7 +506,7 @@ describe("Market", () => {
 
 			// now settle
 			const index = 0;
-			const winningPropositionId = makePropositionId(marketId, 2);
+			const winningPropositionId = general.makePropositionId(marketId, 2);
 			const winningSignature = await signSetResultMessage(
 				marketId,
 				winningPropositionId,
@@ -565,7 +565,7 @@ describe("Market", () => {
 			.approve(market.address, ethers.utils.parseUnits("200", tokenDecimals));
 		// Runner 2 for a Win
 		const marketId = makeMarketId(new Date(), "ABC", "1");
-		const propositionId = makePropositionId(marketId, 2);
+		const propositionId = general.makePropositionId(marketId, 2);
 		const nonce = "1";
 
 		const signature = await signBackMessage(
@@ -620,8 +620,8 @@ describe("Market", () => {
 		const latestBlockNumber = await ethers.provider.getBlockNumber();
 		const latestBlock = await ethers.provider.getBlock(latestBlockNumber);
 		const end = latestBlock.timestamp + 10000;
-		const propositionId = makePropositionId("ABC", 1);
-		const winningPropositionId = makePropositionId("ABC", 2);
+		const propositionId = general.makePropositionId("ABC", 1);
+		const winningPropositionId = general.makePropositionId("ABC", 2);
 		const marketId = makeMarketId(new Date(), "ABC", "1");
 
 		const nonce = "1";
@@ -718,7 +718,7 @@ describe("Market", () => {
 
 			// Runner 1 for a Win
 			const marketId = makeMarketId(new Date(), "ABC", "1");
-			const propositionId = makePropositionId(marketId, 1);
+			const propositionId = general.makePropositionId(marketId, 1);
 			const nonce = "1";
 
 			const betSignature = await signBackMessage(
@@ -778,7 +778,7 @@ describe("Market", () => {
 
 			// Runner 1 for a Win
 			const nonce = "1";
-			const propositionId = makePropositionId("ABC", 1);
+			const propositionId = general.makePropositionId("ABC", 1);
 			const marketId = makeMarketId(new Date(), "ABC", "1");
 
 			const betSignature = await signBackMessage(
@@ -895,7 +895,7 @@ describe("Market", () => {
 
 			// Runner 1 for a Win
 			const nonce = "1";
-			const propositionId = makePropositionId("ABC", 1);
+			const propositionId = general.makePropositionId("ABC", 1);
 			const marketId = makeMarketId(new Date(), "ABC", "1");
 
 			const betSignature = await signBackMessage(
@@ -1014,7 +1014,7 @@ describe("Market", () => {
 
 			// Runner 1 for a Win
 			const nonce = "1";
-			const propositionId = makePropositionId("ABC", 1);
+			const propositionId = general.makePropositionId("ABC", 1);
 			const marketId = makeMarketId(new Date(), "ABC", "1");
 
 			const betSignature = await signBackMessage(
@@ -1129,7 +1129,7 @@ describe("Market", () => {
 
 			// Runner 1 for a Win
 			const marketId = makeMarketId(new Date(), "ABC", "1");
-			const propositionId = makePropositionId(marketId, 1);
+			const propositionId = general.makePropositionId(marketId, 1);
 			const nonce = "1";
 
 			const betSignature = await signBackMessage(
@@ -1201,7 +1201,7 @@ describe("Market", () => {
 
 			// Runner 1 for a Win
 			const marketId = makeMarketId(new Date(), "ABC", "1");
-			const propositionId = makePropositionId(marketId, 1);
+			const propositionId = general.makePropositionId(marketId, 1);
 			const nonce = "1";
 
 			const betSignature = await signBackMessage(
@@ -1247,7 +1247,7 @@ describe("Market", () => {
 			expect(await market.getTotalExposure()).to.equal(172727300);
 
 			// add a loser result
-			const winningPropositionId = makePropositionId(marketId, 2);
+			const winningPropositionId = general.makePropositionId(marketId, 2);
 			const signature = await signSetResultMessage(
 				marketId,
 				winningPropositionId,
@@ -1290,7 +1290,7 @@ describe("Market", () => {
 
 			for (let i = 0; i < max; i++) {
 				const nonce = i.toString();
-				const propositionId = makePropositionId(marketId, i + 1);
+				const propositionId = general.makePropositionId(marketId, i + 1);
 				const betSignature = await signBackMessage(
 					nonce,
 					marketId,
@@ -1329,7 +1329,7 @@ describe("Market", () => {
 			expect(inPlayCount, "In play count should be 5").to.equal(max);
 
 			// add a result
-			const winningPropositionId = makePropositionId(marketId, 1);
+			const winningPropositionId = general.makePropositionId(marketId, 1);
 			const signature = await signSetResultMessage(
 				marketId,
 				winningPropositionId,
@@ -1379,7 +1379,7 @@ describe("Market", () => {
 			const backDataList = [];
 			for (let i = 0; i < max; i++) {
 				const nonce = i.toString();
-				const propositionId = makePropositionId("ABC", i + 1);
+				const propositionId = general.makePropositionId("ABC", i + 1);
 				const betSignature = await signBackMessage(
 					nonce,
 					marketId,
@@ -1426,7 +1426,7 @@ describe("Market", () => {
 			expect(inPlayCount, "In play count should be 10").to.equal(max);
 
 			// add a result
-			const propositionId = makePropositionId("ABC", 1);
+			const propositionId = general.makePropositionId("ABC", 1);
 			const signature = await signSetResultMessage(
 				marketId,
 				propositionId,
@@ -1477,7 +1477,7 @@ describe("Market", () => {
 				.approve(market.address, ethers.utils.parseUnits("100", tokenDecimals));
 
 			const marketId = makeMarketId(new Date(), "ABC", "1");
-			const propositionId = makePropositionId(marketId, 1);
+			const propositionId = general.makePropositionId(marketId, 1);
 			const nonce = "1";
 
 			const signature = await signBackMessage(
@@ -1572,7 +1572,7 @@ describe("Market", () => {
 				.approve(market.address, ethers.utils.parseUnits("100", tokenDecimals));
 
 			const marketId = makeMarketId(new Date(), "ABC", "1");
-			const propositionId = makePropositionId(marketId, 1);
+			const propositionId = general.makePropositionId(marketId, 1);
 			const nonce = "1";
 
 			const backSignature = await signBackMessage(
@@ -1689,7 +1689,7 @@ describe("Market", () => {
 		it("Should account for market risk coefficient", async () => {
 			const wager = ethers.utils.parseUnits("50", USDT_DECIMALS);
 			const targetOdds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
-			const propositionId = makePropositionId("ABC", 1);
+			const propositionId = general.makePropositionId("ABC", 1);
 			const marketId = makeMarketId(new Date(), "ABC", "1");
 
 			const calculatedOdds = await market.getOdds(

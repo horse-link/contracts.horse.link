@@ -1,8 +1,6 @@
 import hre, { ethers, deployments } from "hardhat";
-import { BigNumber } from "ethers";
 import chai, { expect } from "chai";
 import {
-	Market,
 	MarketCollateralisedWithoutProtection,
 	MarketOracle,
 	Token,
@@ -16,12 +14,11 @@ import {
 	getMarketStats,
 	makeBet,
 	makeMarketId,
-	makePropositionId,
 	TestBet,
 	TestMarket
 } from "./utils";
-import { formatBytes16String } from "../scripts/utils";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
+import { general } from "horselink-sdk";
 
 chai.use(solidity);
 
@@ -55,29 +52,29 @@ describe.skip("Collateralised Market: catch 505", function () {
 		{
 			runnerNumber: 1,
 			name: "Red 1",
-			propositionId: makePropositionId(Markets.RedRacetrack.marketId, 1)
+			propositionId: general.makePropositionId(Markets.RedRacetrack.marketId, 1)
 		},
 		{
 			runnerNumber: 2,
 			name: "Red 2",
-			propositionId: makePropositionId(Markets.RedRacetrack.marketId, 2)
+			propositionId: general.makePropositionId(Markets.RedRacetrack.marketId, 2)
 		},
 		{
 			runnerNumber: 3,
 			name: "Red 3",
-			propositionId: makePropositionId(Markets.RedRacetrack.marketId, 3)
+			propositionId: general.makePropositionId(Markets.RedRacetrack.marketId, 3)
 		}
 	];
 	Markets.BlueDogs.runners = [
 		{
 			runnerNumber: 1,
 			name: "Blue 1",
-			propositionId: makePropositionId(Markets.BlueDogs.marketId, 1)
+			propositionId: general.makePropositionId(Markets.BlueDogs.marketId, 1)
 		},
 		{
 			runnerNumber: 2,
 			name: "Blue 2",
-			propositionId: makePropositionId(Markets.BlueDogs.marketId, 2)
+			propositionId: general.makePropositionId(Markets.BlueDogs.marketId, 2)
 		}
 	];
 
@@ -147,7 +144,7 @@ describe.skip("Collateralised Market: catch 505", function () {
 			...args
 		)) as MarketCollateralisedWithoutProtection;
 
-		await vault.setMarket(market.address, ethers.constants.MaxUint256);
+		await vault.setMarket(market.address, 1, ethers.constants.MaxUint256);
 		await underlying
 			.connect(alice)
 			.approve(vault.address, ethers.constants.MaxUint256);
@@ -193,7 +190,7 @@ describe.skip("Collateralised Market: catch 505", function () {
 		};
 
 		const bets = [shouldBeLoser1, shouldBeWinner2];
-		let stats: MarketStats;
+		let stats; //: MarketStats;
 		console.log("=== Making bets ===");
 		for (const bet of bets) {
 			stats = await makeBet(underlying, market, vault, bet, owner);
@@ -264,7 +261,7 @@ describe.skip("Collateralised Market: catch 505", function () {
 	});
 });
 
-function showStats(stats: MarketStats) {
+function showStats(stats: any) {
 	console.log("Market stats:");
 	console.log("Market total: ", stats.marketTotal.toString());
 	console.log("Exposure: ", stats.exposure.toString());
