@@ -291,11 +291,18 @@ export function hydratePropositionId(propositionId: string): RaceDetails {
 }
 ```
 
-#### Oracle v2
+#### Oracle V2
 
 In Version 2 of the oracle, we change the arguments to be predictionId of type uint64.  By using a modulus, this will enable us to have place bets.
 
 Place bets are defined as more than 1 winning proposition on a single market.  For example, a bet on a horse to win and place would be 2 winning propositions.  A bet on a horse to win, place and show would be 3 winning propositions.
+
+
+_Truth Table_
+
+| PredictionId | Win | Place | Result | Modulus |
+| ----------- | --- | ----- | ------ | ------- |
+| 1 | 1 | 0 | 64 | 1 |
 
 
 | Network | Address |
