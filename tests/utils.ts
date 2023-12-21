@@ -2,11 +2,9 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import * as dotenv from "dotenv";
 import type { BigNumber } from "ethers";
-
-import { formatBytes16String } from "../scripts/utils";
 import type { Signature } from "../scripts/utils";
 import { Market, Token, Vault } from "../build/typechain";
-import { general } from "horselink-sdk";
+import { general, formatting } from "horselink-sdk";
 
 // load .env into process.env
 dotenv.config();
@@ -56,9 +54,9 @@ export const signBackMessage = async (
 			"uint256" // end
 		],
 		[
-			formatBytes16String(nonce),
-			formatBytes16String(propositionId),
-			formatBytes16String(marketId),
+			formatting.formatBytes16String(nonce),
+			formatting.formatBytes16String(propositionId),
+			formatting.formatBytes16String(marketId),
 			odds,
 			close,
 			end
@@ -89,8 +87,8 @@ export const makeSetResultMessage = (
 	marketId: string,
 	propositionId: string
 ): string => {
-	const b16MarketId = formatBytes16String(marketId);
-	const b16PropositionId = formatBytes16String(propositionId);
+	const b16MarketId = formatting.formatBytes16String(marketId);
+	const b16PropositionId = formatting.formatBytes16String(propositionId);
 	const message = ethers.utils.solidityKeccak256(
 		["bytes16", "bytes16"],
 		[b16MarketId, b16PropositionId]
@@ -102,7 +100,7 @@ export const makeRefundMessage = (
 	marketAddress: string,
 	betIndex: BigNumberish
 ): string => {
-	const b16Refund = formatBytes16String("refund");
+	const b16Refund = formatting.formatBytes16String("refund");
 	const message = ethers.utils.solidityKeccak256(
 		["bytes16", "address", "uint64"],
 		[b16Refund, marketAddress, betIndex]
@@ -139,9 +137,9 @@ export const signBackMessageWithRisk = async (
 			"uint256" // risk
 		],
 		[
-			formatBytes16String(nonce),
-			formatBytes16String(propositionId),
-			formatBytes16String(marketId),
+			formatting.formatBytes16String(nonce),
+			formatting.formatBytes16String(propositionId),
+			formatting.formatBytes16String(marketId),
 			odds,
 			close,
 			end,
@@ -156,8 +154,8 @@ export const makeSetScratchMessage = (
 	propositionId: string,
 	odds: BigNumber
 ): string => {
-	const b16MarketId = formatBytes16String(marketId);
-	const b16PropositionId = formatBytes16String(propositionId);
+	const b16MarketId = formatting.formatBytes16String(marketId);
+	const b16PropositionId = formatting.formatBytes16String(propositionId);
 	const message = ethers.utils.solidityKeccak256(
 		["bytes16", "bytes16", "uint256"],
 		[b16MarketId, b16PropositionId, odds]
@@ -189,7 +187,7 @@ export async function getMarketStats(
 	vault: Vault
 ): Promise<MarketStats> {
 	const marketTotal = await market.getMarketTotal(
-		formatBytes16String(marketId)
+		formatting.formatBytes16String(marketId)
 	);
 	const exposure = await market.getTotalExposure();
 	const inPlay = await market.getTotalInPlay();
@@ -245,9 +243,11 @@ export async function makeBet(
 	const end = (now ?? 0) + END;
 	const wager = ethers.utils.parseUnits(bet.amount.toString(), tokenDecimals);
 	const odds = ethers.utils.parseUnits(bet.odds.toString(), 6);
-	const b16Nonce = formatBytes16String(nonce);
-	const b16PropositionId = formatBytes16String(bet.runner.propositionId);
-	const b16MarketId = formatBytes16String(bet.market.marketId);
+	const b16Nonce = formatting.formatBytes16String(nonce);
+	const b16PropositionId = formatting.formatBytes16String(
+		bet.runner.propositionId
+	);
+	const b16MarketId = formatting.formatBytes16String(bet.market.marketId);
 
 	const signature = await signBackMessage(
 		nonce,

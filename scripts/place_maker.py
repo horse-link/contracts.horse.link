@@ -6,8 +6,6 @@ def did_place(n, results):
 
     # Extract individual result bits
     win = bool(int(runners[0]))
-    # write_owner = bool(int(runner[1]))
-    # execute_owner = bool(int(runner[2]))
 
     return win
 

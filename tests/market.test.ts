@@ -18,8 +18,7 @@ import {
 	signSetResultMessage,
 	signSetScratchedMessage
 } from "./utils";
-import { formatBytes16String } from "../scripts/utils";
-import { general } from "horselink-sdk";
+import { general, formatting } from "horselink-sdk";
 
 chai.use(solidity);
 
@@ -156,8 +155,8 @@ describe("Market", () => {
 		// Should get 0 odds if vault has ZERO assets
 		const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
 		const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
-		const propositionId = formatBytes16String("1");
-		const marketId = formatBytes16String("1");
+		const propositionId = formatting.formatBytes16String("1");
+		const marketId = formatting.formatBytes16String("1");
 		expect(await market.getOdds(wager, odds, propositionId, marketId)).to.equal(
 			1
 		);
@@ -211,8 +210,8 @@ describe("Market", () => {
 		const targetOdds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
 
 		// Runner 1 for a Win
-		const propositionId = formatBytes16String("1");
-		const marketId = formatBytes16String("1");
+		const propositionId = formatting.formatBytes16String("1");
+		const marketId = formatting.formatBytes16String("1");
 
 		// there still needs to be slippage in the odds
 		const trueOdds = await market.getOdds(
@@ -265,9 +264,9 @@ describe("Market", () => {
 				.connect(bob)
 				.back(
 					constructBet(
-						formatBytes16String(nonce),
-						formatBytes16String(propositionId),
-						formatBytes16String(marketId),
+						formatting.formatBytes16String(nonce),
+						formatting.formatBytes16String(propositionId),
+						formatting.formatBytes16String(marketId),
 						wager,
 						odds,
 						close,
@@ -327,9 +326,9 @@ describe("Market", () => {
 			.connect(bob)
 			.back(
 				constructBet(
-					formatBytes16String(nonce),
-					formatBytes16String(propositionId),
-					formatBytes16String(marketId),
+					formatting.formatBytes16String(nonce),
+					formatting.formatBytes16String(propositionId),
+					formatting.formatBytes16String(marketId),
 					wager,
 					odds,
 					close,
@@ -338,9 +337,9 @@ describe("Market", () => {
 				)
 			);
 
-		expect(await market.getMarketTotal(formatBytes16String(marketId))).to.equal(
-			ethers.utils.parseUnits("100", USDT_DECIMALS)
-		);
+		expect(
+			await market.getMarketTotal(formatting.formatBytes16String(marketId))
+		).to.equal(ethers.utils.parseUnits("100", USDT_DECIMALS));
 
 		balance = await underlying.balanceOf(bob.address);
 		expect(balance).to.equal(
@@ -414,9 +413,9 @@ describe("Market", () => {
 			.connect(carol)
 			.back(
 				constructBet(
-					formatBytes16String(nonce),
-					formatBytes16String(propositionId),
-					formatBytes16String(marketId),
+					formatting.formatBytes16String(nonce),
+					formatting.formatBytes16String(propositionId),
+					formatting.formatBytes16String(marketId),
 					wager,
 					odds,
 					close,
@@ -480,9 +479,9 @@ describe("Market", () => {
 				.connect(carol)
 				.back(
 					constructBet(
-						formatBytes16String(nonce),
-						formatBytes16String(propositionId),
-						formatBytes16String(marketId),
+						formatting.formatBytes16String(nonce),
+						formatting.formatBytes16String(propositionId),
+						formatting.formatBytes16String(marketId),
 						wager,
 						odds,
 						close,
@@ -514,8 +513,8 @@ describe("Market", () => {
 			);
 
 			await oracle.setResult(
-				formatBytes16String(marketId),
-				formatBytes16String(winningPropositionId),
+				formatting.formatBytes16String(marketId),
+				formatting.formatBytes16String(winningPropositionId),
 				winningSignature
 			);
 
@@ -586,9 +585,9 @@ describe("Market", () => {
 				.connect(carol)
 				.back(
 					constructBet(
-						formatBytes16String(nonce),
-						formatBytes16String(propositionId),
-						formatBytes16String(marketId),
+						formatting.formatBytes16String(nonce),
+						formatting.formatBytes16String(propositionId),
+						formatting.formatBytes16String(marketId),
 						wager,
 						odds,
 						close,
@@ -641,9 +640,9 @@ describe("Market", () => {
 			.connect(whale)
 			.back(
 				constructBet(
-					formatBytes16String(nonce),
-					formatBytes16String(propositionId),
-					formatBytes16String(marketId),
+					formatting.formatBytes16String(nonce),
+					formatting.formatBytes16String(propositionId),
+					formatting.formatBytes16String(marketId),
 					wager,
 					odds,
 					close,
@@ -669,8 +668,8 @@ describe("Market", () => {
 			oracleSigner
 		);
 		await oracle.setResult(
-			formatBytes16String(marketId),
-			formatBytes16String(winningPropositionId),
+			formatting.formatBytes16String(marketId),
+			formatting.formatBytes16String(winningPropositionId),
 			signature
 		);
 		const vaultBalanceBeforeSettlement = await underlying.balanceOf(
@@ -736,9 +735,9 @@ describe("Market", () => {
 					.connect(bob)
 					.back(
 						constructBet(
-							formatBytes16String(nonce),
-							formatBytes16String(propositionId),
-							formatBytes16String(marketId),
+							formatting.formatBytes16String(nonce),
+							formatting.formatBytes16String(propositionId),
+							formatting.formatBytes16String(marketId),
 							wager,
 							odds,
 							close,
@@ -799,9 +798,9 @@ describe("Market", () => {
 					.connect(bob)
 					.back(
 						constructBet(
-							formatBytes16String(nonce),
-							formatBytes16String(propositionId),
-							formatBytes16String(marketId),
+							formatting.formatBytes16String(nonce),
+							formatting.formatBytes16String(propositionId),
+							formatting.formatBytes16String(marketId),
 							wager,
 							odds,
 							close,
@@ -846,8 +845,8 @@ describe("Market", () => {
 			const oracleOwner = await oracle.getOwner();
 			expect(oracleOwner).to.equal(oracleSigner.address);
 			await oracle.setResult(
-				formatBytes16String(marketId),
-				formatBytes16String(propositionId),
+				formatting.formatBytes16String(marketId),
+				formatting.formatBytes16String(propositionId),
 				signature
 			);
 			const index = 0;
@@ -916,9 +915,9 @@ describe("Market", () => {
 					.connect(bob)
 					.back(
 						constructBet(
-							formatBytes16String(nonce),
-							formatBytes16String(propositionId),
-							formatBytes16String(marketId),
+							formatting.formatBytes16String(nonce),
+							formatting.formatBytes16String(propositionId),
+							formatting.formatBytes16String(marketId),
 							wager,
 							odds,
 							close,
@@ -964,8 +963,8 @@ describe("Market", () => {
 			expect(oracleOwner).to.equal(oracleSigner.address);
 			expect(
 				await oracle.setScratchedResult(
-					formatBytes16String(marketId),
-					formatBytes16String(propositionId),
+					formatting.formatBytes16String(marketId),
+					formatting.formatBytes16String(propositionId),
 					odds,
 					signature
 				)
@@ -1035,9 +1034,9 @@ describe("Market", () => {
 					.connect(bob)
 					.back(
 						constructBet(
-							formatBytes16String(nonce),
-							formatBytes16String(propositionId),
-							formatBytes16String(marketId),
+							formatting.formatBytes16String(nonce),
+							formatting.formatBytes16String(propositionId),
+							formatting.formatBytes16String(marketId),
 							wager,
 							odds,
 							close,
@@ -1080,8 +1079,8 @@ describe("Market", () => {
 			const oracleOwner = await oracle.getOwner();
 			expect(oracleOwner).to.equal(oracleSigner.address);
 			await oracle.setResult(
-				formatBytes16String(marketId),
-				formatBytes16String(propositionId),
+				formatting.formatBytes16String(marketId),
+				formatting.formatBytes16String(propositionId),
 				signature
 			);
 			const index = 0;
@@ -1148,9 +1147,9 @@ describe("Market", () => {
 					.connect(bob)
 					.back(
 						constructBet(
-							formatBytes16String(nonce),
-							formatBytes16String(propositionId),
-							formatBytes16String(marketId),
+							formatting.formatBytes16String(nonce),
+							formatting.formatBytes16String(propositionId),
+							formatting.formatBytes16String(marketId),
 							wager,
 							odds,
 							close,
@@ -1163,8 +1162,8 @@ describe("Market", () => {
 				.to.emit(market, "Placed")
 				.withArgs(
 					index,
-					formatBytes16String(propositionId),
-					formatBytes16String(marketId),
+					formatting.formatBytes16String(propositionId),
+					formatting.formatBytes16String(marketId),
 					wager,
 					272727300,
 					bob.address
@@ -1220,9 +1219,9 @@ describe("Market", () => {
 					.connect(bob)
 					.back(
 						constructBet(
-							formatBytes16String(nonce),
-							formatBytes16String(propositionId),
-							formatBytes16String(marketId),
+							formatting.formatBytes16String(nonce),
+							formatting.formatBytes16String(propositionId),
+							formatting.formatBytes16String(marketId),
 							wager,
 							odds,
 							close,
@@ -1235,8 +1234,8 @@ describe("Market", () => {
 				.to.emit(market, "Placed")
 				.withArgs(
 					index,
-					formatBytes16String(propositionId),
-					formatBytes16String(marketId),
+					formatting.formatBytes16String(propositionId),
+					formatting.formatBytes16String(marketId),
 					wager,
 					272727300,
 					bob.address
@@ -1255,8 +1254,8 @@ describe("Market", () => {
 			);
 
 			await oracle.setResult(
-				formatBytes16String(marketId),
-				formatBytes16String(winningPropositionId),
+				formatting.formatBytes16String(marketId),
+				formatting.formatBytes16String(winningPropositionId),
 				signature
 			);
 
@@ -1306,9 +1305,9 @@ describe("Market", () => {
 						.connect(bob)
 						.back(
 							constructBet(
-								formatBytes16String(nonce),
-								formatBytes16String(propositionId),
-								formatBytes16String(marketId),
+								formatting.formatBytes16String(nonce),
+								formatting.formatBytes16String(propositionId),
+								formatting.formatBytes16String(marketId),
 								wager,
 								odds,
 								close,
@@ -1340,16 +1339,18 @@ describe("Market", () => {
 			expect(oracleOwner).to.equal(oracleSigner.address);
 			expect(
 				await oracle.setResult(
-					formatBytes16String(marketId),
-					formatBytes16String(winningPropositionId),
+					formatting.formatBytes16String(marketId),
+					formatting.formatBytes16String(winningPropositionId),
 					signature
 				)
 			).to.emit(oracle, "ResultSet");
 
 			// Check result
-			const result = await oracle.getResult(formatBytes16String(marketId));
+			const result = await oracle.getResult(
+				formatting.formatBytes16String(marketId)
+			);
 			expect(result.winningPropositionId).to.equal(
-				formatBytes16String(winningPropositionId)
+				formatting.formatBytes16String(winningPropositionId)
 			);
 
 			await hre.network.provider.request({
@@ -1357,7 +1358,7 @@ describe("Market", () => {
 				params: [end + 7200]
 			});
 
-			await market.settleMarket(formatBytes16String(marketId));
+			await market.settleMarket(formatting.formatBytes16String(marketId));
 
 			inPlayCount = await market.getInPlayCount();
 			expect(inPlayCount).to.equal(0);
@@ -1395,9 +1396,9 @@ describe("Market", () => {
 				);
 
 				const backData = {
-					nonce: formatBytes16String(nonce),
-					propositionId: formatBytes16String(propositionId),
-					marketId: formatBytes16String(marketId),
+					nonce: formatting.formatBytes16String(nonce),
+					propositionId: formatting.formatBytes16String(propositionId),
+					marketId: formatting.formatBytes16String(marketId),
 					wager,
 					odds,
 					close,
@@ -1436,8 +1437,8 @@ describe("Market", () => {
 			const oracleOwner = await oracle.getOwner();
 			expect(oracleOwner).to.equal(oracleSigner.address);
 			await oracle.setResult(
-				formatBytes16String(marketId),
-				formatBytes16String(propositionId),
+				formatting.formatBytes16String(marketId),
+				formatting.formatBytes16String(propositionId),
 				signature
 			);
 
@@ -1446,7 +1447,7 @@ describe("Market", () => {
 				params: [end + 7200]
 			});
 
-			await market.settleMarket(formatBytes16String(marketId));
+			await market.settleMarket(formatting.formatBytes16String(marketId));
 
 			inPlayCount = await market.getInPlayCount();
 			expect(inPlayCount).to.equal(0);
@@ -1494,9 +1495,9 @@ describe("Market", () => {
 				.connect(bob)
 				.back(
 					constructBet(
-						formatBytes16String(nonce),
-						formatBytes16String(propositionId),
-						formatBytes16String(marketId),
+						formatting.formatBytes16String(nonce),
+						formatting.formatBytes16String(propositionId),
+						formatting.formatBytes16String(marketId),
 						wager,
 						odds,
 						close,
@@ -1526,8 +1527,8 @@ describe("Market", () => {
 					.connect(bob)
 					.scratchAndRefund(
 						betIndex,
-						formatBytes16String(marketId),
-						formatBytes16String(propositionId),
+						formatting.formatBytes16String(marketId),
+						formatting.formatBytes16String(propositionId),
 						odds,
 						scratchSignature
 					)
@@ -1589,9 +1590,9 @@ describe("Market", () => {
 				.connect(bob)
 				.back(
 					constructBet(
-						formatBytes16String(nonce),
-						formatBytes16String(propositionId),
-						formatBytes16String(marketId),
+						formatting.formatBytes16String(nonce),
+						formatting.formatBytes16String(propositionId),
+						formatting.formatBytes16String(marketId),
 						wager,
 						odds,
 						close,
@@ -1618,8 +1619,8 @@ describe("Market", () => {
 			const oracleOwner = await oracle.getOwner();
 			expect(oracleOwner).to.equal(oracleSigner.address);
 			await oracle.setScratchedResult(
-				formatBytes16String(marketId),
-				formatBytes16String(propositionId),
+				formatting.formatBytes16String(marketId),
+				formatting.formatBytes16String(propositionId),
 				odds,
 				scratchSignature
 			);
@@ -1695,8 +1696,8 @@ describe("Market", () => {
 			const calculatedOdds = await market.getOdds(
 				wager,
 				targetOdds,
-				formatBytes16String(propositionId),
-				formatBytes16String(marketId)
+				formatting.formatBytes16String(propositionId),
+				formatting.formatBytes16String(marketId)
 			);
 
 			expect(calculatedOdds).to.be.closeTo(BigNumber.from(3809524), 1);

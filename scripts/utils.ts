@@ -113,18 +113,18 @@ export function bytes16HexToString(hex: DataHexString): string {
 	return s.slice(0, s.indexOf("\0"));
 }
 
-export function formatBytes16String(text: string): string {
-	// Get the bytes
-	const bytes = toUtf8Bytes(text);
+// export function formatBytes16String(text: string): string {
+// 	// Get the bytes
+// 	const bytes = toUtf8Bytes(text);
 
-	// Check we have room for null-termination
-	if (bytes.length > 15) {
-		throw new Error("bytes16 string must be less than 16 bytes");
-	}
+// 	// Check we have room for null-termination
+// 	if (bytes.length > 15) {
+// 		throw new Error("bytes16 string must be less than 16 bytes");
+// 	}
 
-	// Zero-pad (implicitly null-terminates)
-	return hexlify(concat([bytes, ethers.constants.HashZero]).slice(0, 16));
-}
+// 	// Zero-pad (implicitly null-terminates)
+// 	return hexlify(concat([bytes, ethers.constants.HashZero]).slice(0, 16));
+// }
 
 export type Seconds = number;
 

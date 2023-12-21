@@ -18,7 +18,7 @@ import {
 	signSetResultMessage,
 	TestBet
 } from "./utils";
-import { formatBytes16String } from "../scripts/utils";
+import { formatting } from "horselink-sdk";
 import * as timeHelper from "@nomicfoundation/hardhat-network-helpers/dist/src/helpers/time";
 
 chai.use(solidity);
