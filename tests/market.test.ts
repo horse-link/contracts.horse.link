@@ -1116,7 +1116,7 @@ describe("Market", () => {
 			expect(balance).to.equal(carolBalance.add(betPayout));
 		});
 
-		it.only("Should payout loser wage after timeout / expiry has been reached", async () => {
+		it("Should payout loser wage after timeout / expiry has been reached and no result set", async () => {
 			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
 			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
 			const currentTime = await time.latest();

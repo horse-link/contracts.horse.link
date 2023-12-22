@@ -358,36 +358,34 @@ contract Market is IMarketWithScratchings, IMarket, Ownable, ERC721 {
 	}
 
 	function settle(uint64 index) external {
-		Bet memory bet = _bets[index];
-		require(bet.settled == false, "settle: Bet has already settled");
-		_settle(index);
-	}
-
-	function _settle(uint64 index) internal {
 		// Cache the bet
 		Bet memory bet = _bets[index];
+		require(bet.settled == false, "settle: Bet has already settled");
+		_settle(index, bet.marketId, bet.propositionId, bet.amount, bet.payout);
+	}
 
+	function _settle(uint64 index, bytes16 marketId, bytes16 propositionId, uint256 amount, uint256 payout) internal {
 		uint8 result = IOracle(_oracle).checkResult(
-			bet.marketId,
-			bet.propositionId
+			marketId,
+			propositionId
 		);
 
 		if (block.timestamp > _getExpiry(index) && result == NULL) {
 			address recipient = ownerOf(index);
 			_payout(index, WINNER);
 
-			emit Settled(index, bet.payout, result, recipient);
+			emit Settled(index, payout, result, recipient);
 			_burn(uint256(index));
-			decrement(index, bet.amount);
+			decrement(index, amount);
 		}
 
 		if (result != NULL) {
 			address recipient = result != LOSER ? ownerOf(index) : _vault;
 			_payout(index, result);
 
-			emit Settled(index, bet.payout, result, recipient);
+			emit Settled(index, payout, result, recipient);
 			_burn(uint256(index));
-			decrement(index, bet.amount);
+			decrement(index, amount);
 		}
 	}
 
@@ -541,7 +539,6 @@ contract Market is IMarketWithScratchings, IMarket, Ownable, ERC721 {
 			assert(rate > 100_000);
 
 			// Transfer the bet amount plus interest to the vault
-
 			uint256 repayment = (loan * rate) / 100_000;
 
 			if (payout > repayment) {
@@ -581,7 +578,7 @@ contract Market is IMarketWithScratchings, IMarket, Ownable, ERC721 {
 
 			Bet memory bet = _bets[index];
 			if (bet.settled == false) {
-				_settle(index);
+				_settle(index, bet.marketId, bet.propositionId, bet.amount, bet.payout);
 			}
 		}
 	}
