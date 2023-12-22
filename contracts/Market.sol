@@ -387,7 +387,7 @@ contract Market is IMarketWithScratchings, IMarket, Ownable, ERC721 {
 			_payout(index, result);
 
 			emit Settled(index, bet.payout, result, recipient);
-			// _burn(uint256(index));
+			_burn(uint256(index));
 			decrement(index, bet.amount);
 		}
 	}

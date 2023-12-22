@@ -1128,9 +1128,9 @@ describe("Market", () => {
 
 			const end = latestBlock.timestamp + 10000;
 
-			// Runner 1 for a Win
-			const marketId = makeMarketId(new Date(), "ABC", "1");
-			const propositionId = makePropositionId(marketId, 1);
+			// Runner 2 , Race 1 for a Win
+			const marketId = makeMarketId(new Date(), "DEF", "1");
+			const propositionId = makePropositionId(marketId, 2);
 			const nonce = "1";
 
 			const betSignature = await signBackMessage(
@@ -1176,6 +1176,11 @@ describe("Market", () => {
 			const bet = await market.getBetByIndex(0);
 
 			console.log("Bet", bet);
+
+			// should not have a result in the oracle
+			const result = await oracle.getResult(formatBytes16String(marketId));
+			console.log("Result", result);
+			expect(result[0]).to.equal("0x00000000000000000000000000000000");
 
 			// try settle early with out oracle result
 			await market.settle(index);
