@@ -147,7 +147,7 @@ contract Market is IMarketWithScratchings, IMarket, Ownable, ERC721 {
 		external
 		view
 		returns (
-			uint256,
+			uint256, // amount
 			uint256, // payout
 			uint256, // payoutDate
 			uint256, // created
@@ -341,6 +341,7 @@ contract Market is IMarketWithScratchings, IMarket, Ownable, ERC721 {
 				false
 			)
 		);
+
 		_marketBets[marketId].push(index);
 		_mint(_msgSender(), uint256(index));
 
@@ -357,42 +358,44 @@ contract Market is IMarketWithScratchings, IMarket, Ownable, ERC721 {
 	}
 
 	function settle(uint64 index) external {
+		// Cache the bet
 		Bet memory bet = _bets[index];
 		require(bet.settled == false, "settle: Bet has already settled");
-		_settle(index);
+		_settle(index, bet.marketId, bet.propositionId, bet.amount, bet.payout);
 	}
 
-	function _settle(uint64 index) internal {
-		Bet memory bet = _bets[index];
-
-		// Update all state vars
-		_bets[index].settled = true;
-		_totalInPlay -= _bets[index].amount;
-		_inplayCount--;
-
+	function _settle(uint64 index, bytes16 marketId, bytes16 propositionId, uint256 amount, uint256 payout) internal {
 		uint8 result = IOracle(_oracle).checkResult(
-			bet.marketId,
-			bet.propositionId
+			marketId,
+			propositionId
 		);
 
-		address recipient;
-
 		if (block.timestamp > _getExpiry(index) && result == NULL) {
-			result = WINNER;
-			recipient = ownerOf(index);
+			address recipient = ownerOf(index);
 			_payout(index, WINNER);
 
-			emit Settled(index, _bets[index].payout, result, recipient);
+			emit Settled(index, payout, result, recipient);
 			_burn(uint256(index));
+			decrement(index, amount);
 		}
 
 		if (result != NULL) {
-			recipient = result != LOSER ? ownerOf(index) : _vault;
+			address recipient = result != LOSER ? ownerOf(index) : _vault;
 			_payout(index, result);
 
-			emit Settled(index, _bets[index].payout, result, recipient);
+			emit Settled(index, payout, result, recipient);
 			_burn(uint256(index));
+			decrement(index, amount);
 		}
+	}
+
+	// Decrement the inplay count and total in play
+	function decrement(uint256 index, uint256 amount) private {
+		_inplayCount--;
+		_bets[index].settled = true;
+
+		if (amount > 0)
+			_totalInPlay -= amount;
 	}
 
 	function scratchAndRefund(
@@ -501,7 +504,7 @@ contract Market is IMarketWithScratchings, IMarket, Ownable, ERC721 {
 		return _bets[index].payout;
 	}
 
-	function _payout(uint256 index, uint8 result) internal virtual {
+	function _payout(uint256 index, uint8 resultType) internal virtual {
 		uint256 payout = _bets[index].payout;
 		uint256 amount = _bets[index].amount;
 		uint256 loan = payout - amount;
@@ -509,7 +512,7 @@ contract Market is IMarketWithScratchings, IMarket, Ownable, ERC721 {
 		// Deduct from total exposure first
 		_totalExposure -= loan;
 
-		if (result == SCRATCHED) {
+		if (resultType == SCRATCHED) {
 			// Transfer the bet amount to the owner of the NFT
 			_underlying.transfer(ownerOf(index), amount);
 
@@ -526,17 +529,16 @@ contract Market is IMarketWithScratchings, IMarket, Ownable, ERC721 {
 			"_payout: Payout date not reached"
 		);
 
-		if (result == WINNER) {
+		if (resultType == WINNER) {
 			// Transfer the payout to the owner of the NFT
 			_underlying.transfer(ownerOf(index), payout);
 		}
 
-		if (result == LOSER) {
+		if (resultType == LOSER) {
 			uint256 rate = IVault(_vault).getRate();
 			assert(rate > 100_000);
 
 			// Transfer the bet amount plus interest to the vault
-
 			uint256 repayment = (loan * rate) / 100_000;
 
 			if (payout > repayment) {
@@ -576,7 +578,7 @@ contract Market is IMarketWithScratchings, IMarket, Ownable, ERC721 {
 
 			Bet memory bet = _bets[index];
 			if (bet.settled == false) {
-				_settle(index);
+				_settle(index, bet.marketId, bet.propositionId, bet.amount, bet.payout);
 			}
 		}
 	}
