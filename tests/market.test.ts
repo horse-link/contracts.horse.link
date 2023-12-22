@@ -1174,12 +1174,8 @@ describe("Market", () => {
 			// Should have one bet in the contract
 			expect(await market.getInPlayCount()).to.equal(1);
 
-			const bet = await market.getBetByIndex(0);
-			console.log("Bet", bet);
-
 			// should not have a result in the oracle
 			const result = await oracle.getResult(formatBytes16String(marketId));
-			console.log("Result", result);
 			expect(result[0]).to.equal("0x00000000000000000000000000000000");
 
 			// try settle early with out oracle result
