@@ -132,12 +132,12 @@ contract AllInMarket is IMarket, Ownable, ERC721 {
 		return _getExpiry(index);
 	}
 
-	function getMarketTotal(bytes16 marketId) external view returns (uint256) {
-		return _marketTotal[marketId];
-	}
-
 	function _getExpiry(uint64 index) internal view returns (uint256) {
 		return _bets[index].payoutDate + timeout;
+	}
+
+	function getMarketTotal(bytes16 marketId) external view returns (uint256) {
+		return _marketTotal[marketId];
 	}
 
 	function getBetByIndex(
