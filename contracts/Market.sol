@@ -364,36 +364,41 @@ contract Market is IMarketWithScratchings, IMarket, Ownable, ERC721 {
 	}
 
 	function _settle(uint64 index) internal {
+		// Cache the bet
 		Bet memory bet = _bets[index];
-
-		// Update all state vars
-		_bets[index].settled = true;
-		_totalInPlay -= _bets[index].amount;
-		_inplayCount--;
 
 		uint8 result = IOracle(_oracle).checkResult(
 			bet.marketId,
 			bet.propositionId
 		);
 
-		address recipient;
-
 		if (block.timestamp > _getExpiry(index) && result == NULL) {
 			result = WINNER;
-			recipient = ownerOf(index);
+			address recipient = ownerOf(index);
 			_payout(index, WINNER);
 
-			emit Settled(index, _bets[index].payout, result, recipient);
-			//_burn(uint256(index));
+			emit Settled(index, bet.payout, result, recipient);
+			// _burn(uint256(index));
+			decrement(index, bet.amount);
 		}
 
 		if (result != NULL) {
-			recipient = result != LOSER ? ownerOf(index) : _vault;
+			address recipient = result != LOSER ? ownerOf(index) : _vault;
 			_payout(index, result);
 
-			emit Settled(index, _bets[index].payout, result, recipient);
-			//_burn(uint256(index));
+			emit Settled(index, bet.payout, result, recipient);
+			// _burn(uint256(index));
+			decrement(index, bet.amount);
 		}
+	}
+
+	// Decrement the inplay count and total in play
+	function decrement(uint256 index, uint256 amount) private {
+		_inplayCount--;
+		_bets[index].settled = true;
+
+		if (amount > 0)
+			_totalInPlay -= amount;
 	}
 
 	function scratchAndRefund(
