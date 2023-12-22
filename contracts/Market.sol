@@ -147,7 +147,7 @@ contract Market is IMarketWithScratchings, IMarket, Ownable, ERC721 {
 		external
 		view
 		returns (
-			uint256,
+			uint256, // amount
 			uint256, // payout
 			uint256, // payoutDate
 			uint256, // created
@@ -341,6 +341,7 @@ contract Market is IMarketWithScratchings, IMarket, Ownable, ERC721 {
 				false
 			)
 		);
+
 		_marketBets[marketId].push(index);
 		_mint(_msgSender(), uint256(index));
 
@@ -383,7 +384,7 @@ contract Market is IMarketWithScratchings, IMarket, Ownable, ERC721 {
 			_payout(index, WINNER);
 
 			emit Settled(index, _bets[index].payout, result, recipient);
-			_burn(uint256(index));
+			//_burn(uint256(index));
 		}
 
 		if (result != NULL) {
@@ -391,7 +392,7 @@ contract Market is IMarketWithScratchings, IMarket, Ownable, ERC721 {
 			_payout(index, result);
 
 			emit Settled(index, _bets[index].payout, result, recipient);
-			_burn(uint256(index));
+			//_burn(uint256(index));
 		}
 	}
 
