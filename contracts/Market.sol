@@ -373,12 +373,11 @@ contract Market is IMarketWithScratchings, IMarket, Ownable, ERC721 {
 		);
 
 		if (block.timestamp > _getExpiry(index) && result == NULL) {
-			result = WINNER;
 			address recipient = ownerOf(index);
 			_payout(index, WINNER);
 
 			emit Settled(index, bet.payout, result, recipient);
-			// _burn(uint256(index));
+			_burn(uint256(index));
 			decrement(index, bet.amount);
 		}
 
@@ -507,7 +506,7 @@ contract Market is IMarketWithScratchings, IMarket, Ownable, ERC721 {
 		return _bets[index].payout;
 	}
 
-	function _payout(uint256 index, uint8 result) internal virtual {
+	function _payout(uint256 index, uint8 resultType) internal virtual {
 		uint256 payout = _bets[index].payout;
 		uint256 amount = _bets[index].amount;
 		uint256 loan = payout - amount;
@@ -515,7 +514,7 @@ contract Market is IMarketWithScratchings, IMarket, Ownable, ERC721 {
 		// Deduct from total exposure first
 		_totalExposure -= loan;
 
-		if (result == SCRATCHED) {
+		if (resultType == SCRATCHED) {
 			// Transfer the bet amount to the owner of the NFT
 			_underlying.transfer(ownerOf(index), amount);
 
@@ -532,12 +531,12 @@ contract Market is IMarketWithScratchings, IMarket, Ownable, ERC721 {
 			"_payout: Payout date not reached"
 		);
 
-		if (result == WINNER) {
+		if (resultType == WINNER) {
 			// Transfer the payout to the owner of the NFT
 			_underlying.transfer(ownerOf(index), payout);
 		}
 
-		if (result == LOSER) {
+		if (resultType == LOSER) {
 			uint256 rate = IVault(_vault).getRate();
 			assert(rate > 100_000);
 

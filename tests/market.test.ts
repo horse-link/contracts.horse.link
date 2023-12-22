@@ -1173,8 +1173,8 @@ describe("Market", () => {
 
 			// Should have one bet in the contract
 			expect(await market.getInPlayCount()).to.equal(1);
-			const bet = await market.getBetByIndex(0);
 
+			const bet = await market.getBetByIndex(0);
 			console.log("Bet", bet);
 
 			// should not have a result in the oracle
@@ -1187,18 +1187,19 @@ describe("Market", () => {
 
 			expect(await market.getInPlayCount()).to.equal(1);
 
-			// await hre.network.provider.request({
-			// 	method: "evm_setNextBlockTimestamp",
-			// 	params: [end + 31 * 24 * 60 * 60]
-			// });
+			// Fast forward past expiry
+			await hre.network.provider.request({
+				method: "evm_setNextBlockTimestamp",
+				params: [end + 31 * 24 * 60 * 60]
+			});
 
-			// expect(await market.settle(index), "Should emit a Settled event")
-			// 	.to.emit(market, "Settled")
-			// 	.withArgs(index, 272727300, WINNER, bob.address);
+			expect(await market.settle(index), "Should emit a Settled event")
+				.to.emit(market, "Settled")
+				.withArgs(index, 272727300, 0, bob.address);
 
-			// expect(await market.getInPlayCount()).to.equal(0);
-			// expect(await market.getTotalInPlay()).to.equal(0);
-			// expect(await market.getTotalExposure()).to.equal(0);
+			expect(await market.getInPlayCount()).to.equal(0);
+			expect(await market.getTotalInPlay()).to.equal(0);
+			expect(await market.getTotalExposure()).to.equal(0);
 		});
 
 		it("Should not payout wager after timeout / expiry has been reached if a result has been added to the oracle", async () => {
