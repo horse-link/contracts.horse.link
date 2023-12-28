@@ -26,8 +26,7 @@
     "lint": "eslint --ext .ts --fix scripts && yarn format",
     "lint-staged": "lint-staged",
     "scratch": "ts-node scripts/scratch.ts",
-    "settle:prod_goerli": "ts-node scripts/settle.ts prod_goerli",
-    "settle:dev_goerli": "ts-node scripts/settle.ts dev_goerli",
+    "settle:sepolia": "ts-node scripts/settle.ts sepolia",
     "settle:prod_arbitrum": "ts-node scripts/settle.ts prod_arbitrum",
     "settle:dev_arbitrum": "ts-node scripts/settle.ts dev_arbitrum",
     "force": "ts-node scripts/force_settle.ts prod_arbitrum"

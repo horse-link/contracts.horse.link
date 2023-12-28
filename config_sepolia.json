@@ -1,0 +1,7 @@
+{
+    "chainId": "11155111",
+    "baseApiUrl": "https://dev2.horse.link/api",
+    "subgraphUrl": "https://api.thegraph.com/subgraphs/name/horse-link/hl-protocol-sepolia",
+    "privateKeyEnvVar": "SEPOLIA_DEPLOYER",
+    "providerUrlEnvVar": "SEPOLIA_URL"
+}

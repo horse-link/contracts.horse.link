@@ -49,12 +49,6 @@ export default {
 		},
 
 		// Production
-		prod_goerli: {
-			url: process.env.GOERLI_URL || defaultRpcUrl,
-			accounts: [process.env.GOERLI_DEPLOYER || defaultKey],
-			saveDeployment: true,
-			tags: ["production"]
-		},
 		prod_arbitrum: {
 			url: process.env.ARBITRUM_URL || defaultRpcUrl,
 			accounts: [process.env.ARBITRUM_DEPLOYER || defaultKey],
@@ -71,9 +65,9 @@ export default {
 			gasMultiplier: 1,
 			tags: ["uat"]
 		},
-		dev_goerli: {
-			url: process.env.GOERLI_URL || defaultRpcUrl,
-			accounts: [process.env.GOERLI_DEPLOYER || defaultKey],
+		sepolia: {
+			url: process.env.SEPOLIA_URL || defaultRpcUrl,
+			accounts: [process.env.SEPOLIA_DEPLOYER || defaultKey],
 			saveDeployment: true,
 			tags: ["uat"]
 		}
@@ -86,11 +80,9 @@ export default {
 	etherscan: {
 		apiKey: {
 			arbitrumOne: process.env.ARBISCAN_API_KEY,
-			goerli: process.env.ETHERSCAN_API_KEY,
+			sepolia: process.env.ETHERSCAN_API_KEY,
 			dev_arbitrum: process.env.ARBISCAN_API_KEY,
-			prod_arbitrum: process.env.ARBISCAN_API_KEY,
-			prod_goerli: process.env.ETHERSCAN_API_KEY,
-			dev_goerli: process.env.ETHERSCAN_API_KEY
+			prod_arbitrum: process.env.ARBISCAN_API_KEY
 		}
 	},
 	solidity: {

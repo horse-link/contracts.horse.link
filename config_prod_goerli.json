@@ -1,7 +1,0 @@
-{
-    "chainId": "5",
-    "baseApiUrl": "https://alpha.horse.link/api",
-    "subgraphUrl": "https://api.thegraph.com/subgraphs/name/horse-link/hl-protocol-goerli",
-    "privateKeyEnvVar": "GOERLI_DEPLOYER",
-    "providerUrlEnvVar": "GOERLI_URL"
-}
