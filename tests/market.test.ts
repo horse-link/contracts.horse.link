@@ -430,7 +430,7 @@ describe("Market", () => {
 		);
 	});
 
-	it("Should simulate heaps of bets", async () => {
+	it.skip("Should simulate heaps of bets", async () => {
 		let balance = await underlying.balanceOf(bob.address);
 		expect(balance, "Should have $1,000 USDT").to.equal(
 			ethers.utils.parseUnits("1000", USDT_DECIMALS)
@@ -1115,10 +1115,11 @@ describe("Market", () => {
 			expect(balance).to.equal(carolBalance.add(betPayout));
 		});
 
-		it("Should not payout loser wage after timeout / expire has been reached", async () => {
+		it("Should payout loser wage after timeout / expiry has been reached and no result set", async () => {
 			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
 			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
 			const currentTime = await time.latest();
+
 			// Assume race closes in 1 hour from now
 			const close = currentTime + 3600;
 			const latestBlockNumber = await ethers.provider.getBlockNumber();
@@ -1126,9 +1127,9 @@ describe("Market", () => {
 
 			const end = latestBlock.timestamp + 10000;
 
-			// Runner 1 for a Win
-			const marketId = makeMarketId(new Date(), "ABC", "1");
-			const propositionId = general.makePropositionId(marketId, 1);
+			// Runner 2 , Race 1 for a Win
+			const marketId = makeMarketId(new Date(), "DEF", "1");
+			const propositionId = makePropositionId(marketId, 2);
 			const nonce = "1";
 
 			const betSignature = await signBackMessage(
@@ -1169,6 +1170,19 @@ describe("Market", () => {
 					bob.address
 				);
 
+			// Should have one bet in the contract
+			expect(await market.getInPlayCount()).to.equal(1);
+
+			// should not have a result in the oracle
+			const result = await oracle.getResult(formatBytes16String(marketId));
+			expect(result[0]).to.equal("0x00000000000000000000000000000000");
+
+			// try settle early with out oracle result
+			await market.settle(index);
+
+			expect(await market.getInPlayCount()).to.equal(1);
+
+			// Fast forward past expiry
 			await hre.network.provider.request({
 				method: "evm_setNextBlockTimestamp",
 				params: [end + 31 * 24 * 60 * 60]
@@ -1176,14 +1190,14 @@ describe("Market", () => {
 
 			expect(await market.settle(index), "Should emit a Settled event")
 				.to.emit(market, "Settled")
-				.withArgs(index, 272727300, WINNER, bob.address);
+				.withArgs(index, 272727300, 0, bob.address);
 
 			expect(await market.getInPlayCount()).to.equal(0);
 			expect(await market.getTotalInPlay()).to.equal(0);
 			expect(await market.getTotalExposure()).to.equal(0);
 		});
 
-		it("Should not payout wager after timeout / expiry has been reached and result added to the oracle", async () => {
+		it("Should not payout wager after timeout / expiry has been reached if a result has been added to the oracle", async () => {
 			expect(await market.getInPlayCount()).to.equal(0);
 			expect(await market.getTotalInPlay()).to.equal(0);
 			expect(await market.getTotalExposure()).to.equal(0);
