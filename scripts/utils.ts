@@ -4,7 +4,7 @@ import axios from "axios";
 import { AxiosInstance } from "axios";
 import rlp from "rlp";
 import keccak from "keccak";
-import { ethers, Wallet } from "ethers";
+import { ethers } from "ethers";
 import { concat, hexlify, isHexString, toUtf8Bytes } from "ethers/lib/utils";
 import { LedgerSigner } from "@ethersproject/hardware-wallets";
 import * as dotenv from "dotenv";
@@ -29,12 +29,6 @@ export type MarketDetails = {
 	date: number;
 	location: string;
 	race: number;
-};
-
-export type RaceDetails = {
-	id: string;
-	market: MarketDetails;
-	number: string;
 };
 
 export type BetId = string;
@@ -119,18 +113,18 @@ export function bytes16HexToString(hex: DataHexString): string {
 	return s.slice(0, s.indexOf("\0"));
 }
 
-export function formatBytes16String(text: string): string {
-	// Get the bytes
-	const bytes = toUtf8Bytes(text);
+// export function formatBytes16String(text: string): string {
+// 	// Get the bytes
+// 	const bytes = toUtf8Bytes(text);
 
-	// Check we have room for null-termination
-	if (bytes.length > 15) {
-		throw new Error("bytes16 string must be less than 16 bytes");
-	}
+// 	// Check we have room for null-termination
+// 	if (bytes.length > 15) {
+// 		throw new Error("bytes16 string must be less than 16 bytes");
+// 	}
 
-	// Zero-pad (implicitly null-terminates)
-	return hexlify(concat([bytes, ethers.constants.HashZero]).slice(0, 16));
-}
+// 	// Zero-pad (implicitly null-terminates)
+// 	return hexlify(concat([bytes, ethers.constants.HashZero]).slice(0, 16));
+// }
 
 export type Seconds = number;
 

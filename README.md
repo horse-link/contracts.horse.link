@@ -30,6 +30,7 @@ There are 5 main types of contracts along with supporting solidity libraries, wh
 
 Horse Link issues 100 million standard ERC20 tokens HL / Horse Link for its members to be used in the future as a DAO governance token, distribution of protocol fees and other member perks.
 
+
 ### Vaults
 
 The Vault contracts are ERC4626 contracts used to manage the underlying ERC20 assets of the LP Providers. They are used to store the assets of the users and to allow them to deposit and withdraw assets that get lent to Market contracts for a fee which is agreed upon in the `setMarket` function. The users are minted a ERC20 share that represents their share of the underlying assets in the Vault.
@@ -185,6 +186,9 @@ The total assets in the Vault is now 235.49 DAI giving a performance of: 235.49 
 
 Market contracts define the logic in which they calculate the odds per event or market. Our protocol offers two types of market contracts, where the odds slippage calculation is either on a linear decay or a non-linear decay. The linear decay market `Market.sol` is a simple market that calculates the odds based on the total assets in the Vault and the total exposure of the Vault. The non-linear decay market `MarketCurved.sol` is more complex and is more expensive to calculate the odds, but offers smoother odds to its caller.
 
+#### MarketIds
+
+
 
 Non collateralised markets draw 100% of the lay collateral from the Vault.
 ```text
@@ -246,7 +250,60 @@ The registry contract is a mapping of Vaults and Markets used by the protocol. T
 
 ### Oracle
 
-The `MarketOracle.sol` contract allows authorised accounts to set results based on the Market ID and the Proposition ID. The results are either set from a python script `settle.py` in the event of a losing Proposition or by the front end should the user win and claim their profits. The market owner is responsible for providing a signed result after the event.
+The `MarketOracle.sol` contract allows authorised accounts to set results based on the Market ID and the Proposition ID. The results are either set from a python script `settle.py` or TypeScript script in the event of a losing Proposition or by the front end should the user win and claim their profits. The market owner is responsible for providing a signed result after the event.
+
+`MarketId` is an arbitrary byte16 string which partitions the bets into a specific market.  For our purposes, we use the following syntax for Racing markets.  For example, a Race 1 at Brisbane (BNE) on the 1st of January 2024 would be represented as `20240101BNE01W`.
+
+* Date 202401 first 6 chars
+* Location mnemonic BNE next 3 chars
+* Race number 1 with leading 0 as the last 2 chars
+* W for Win, P for Place, Q for Quinella, E for Exacta, T for Trifecta, F for First Four, M for Multi
+
+Note:  The api returns in the string format `YYYY-MM-DD_{code}_{raceNumber}_W{number}` for readability.
+
+The contract uses bytes16, so the following functions are used to convert between bytes16 and strings.  These can be found in `utils.ts`.
+
+```javascript
+export function hydrateMarketId(
+	marketId: string | DataHexString
+): MarketDetails {
+	const id = isHexString(marketId) ? bytes16HexToString(marketId) : marketId;
+	const daysSinceEpoch = parseInt(id.slice(0, 6));
+	const location = id.slice(6, 9);
+	const race = parseInt(id.slice(9, 11));
+	return {
+		id,
+		date: daysSinceEpoch,
+		location,
+		race
+	};
+}
+
+export function hydratePropositionId(propositionId: string): RaceDetails {
+	const id = propositionId.slice(0, 13);
+	const market = hydrateMarketId(propositionId.slice(0, 11));
+	const number = propositionId.slice(12, 14);
+	return {
+		id,
+		market,
+		number
+	};
+}
+```
+
+#### Oracle V2
+
+In Version 2 of the oracle, we change the arguments to be predictionId of type uint64.  By using a modulus, this will enable us to have place bets.
+
+Place bets are defined as more than 1 winning proposition on a single market.  For example, a bet on a horse to win and place would be 2 winning propositions.  A bet on a horse to win, place and show would be 3 winning propositions.
+
+
+_Truth Table_
+
+| PredictionId | Win | Place | Result | Modulus |
+| ----------- | --- | ----- | ------ | ------- |
+| 1 | 1 | 0 | 64 | 1 |
+
 
 | Network | Address |
 | ------- | ------- |
@@ -331,7 +388,7 @@ npx hardhat mint --amount 1 --address 0xA39560b08FAF6d8Cd2aAC286479D25E0ea70f510
 
 Output:
 
-```
+```bash
 network is localhost
 token address is 0x47A78de7a881CCa1a0f510efA2E520b447F707Bb
 waiting for confirmation...
@@ -348,7 +405,7 @@ npx hardhat read-balance --address 0xA39560b08FAF6d8Cd2aAC286479D25E0ea70f510 --
 
 Output:
 
-```text
+```bash
 network is localhost
 token address is 0x47A78de7a881CCa1a0f510efA2E520b447F707Bb
 balance is 1 wei for address 0xA39560b08FAF6d8Cd2aAC286479D25E0ea70f510
@@ -367,7 +424,7 @@ If you need to make changes to the scripts you can copy them across with scp to 
 To deploy changes, pull the latest changes on the server: `ssh root@170.64.176.240 'cd contracts.horse.link; git pull'` (it shouldn't make a difference if you do it in a single command like this or log in and then pull or even use the console in the DigitalOcean dashboard).  Use  `git pull -f` if you want to clear out any changes that have been made on the server or copied across.
 
 The scripts are usually run with crontab. You can check the current settings with `crontab -l` on the droplet:
-```text
+```bash
 0,10,20,30,40,50 * * * * cd /root/contracts.horse.link && npx ts-node scripts/settle.ts >> $HOME/logs/settle.log 2>&1
 5,15,25,35,45,55 * * * * cd /root/contracts.horse.link && npx ts-node scripts/scratch.ts >> $HOME/logs/scratch.log 2>&1
 ```
