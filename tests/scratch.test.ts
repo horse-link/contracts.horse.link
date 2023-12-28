@@ -17,7 +17,7 @@ import {
 	signSetScratchedMessage,
 	TestBet
 } from "./utils";
-import { formatBytes16String } from "../scripts/utils";
+import { formatting } from "horselink-sdk";
 
 chai.use(solidity);
 
@@ -160,8 +160,8 @@ describe("Late scratched", () => {
 		);
 		expect(
 			await oracle.setScratchedResult(
-				formatBytes16String(marketId),
-				formatBytes16String(scratchedPropositionId),
+				formatting.formatBytes16String(marketId),
+				formatting.formatBytes16String(scratchedPropositionId),
 				scratchedOdds,
 				scratchedSig
 			)
@@ -174,8 +174,8 @@ describe("Late scratched", () => {
 			oracleSigner
 		);
 		await oracle.setResult(
-			formatBytes16String(marketId),
-			formatBytes16String(bet.runner.propositionId),
+			formatting.formatBytes16String(marketId),
+			formatting.formatBytes16String(bet.runner.propositionId),
 			resultSig
 		);
 
