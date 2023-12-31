@@ -11,9 +11,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 	const namedAccounts = await getNamedAccounts();
 	const deployer = namedAccounts.deployer;
-	const registryTokenAddress = hre.network.live
-		? namedAccounts.HorseLink ?? namedAccounts.MockHorseLink
-		: (await hre.deployments.get("MockHorseLink")).address;
+	const registryTokenAddress = "0xB84C7f03cad664dA6762A4a6b0E8bDc829Cb8622"; // hre.network.live
+	// ? namedAccounts.HorseLink ?? namedAccounts.MockHorseLink
+	// : (await hre.deployments.get("MockHorseLink")).address;
 
 	console.log(`Deployer: ${deployer}`);
 
@@ -24,6 +24,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 		autoMine: true,
 		skipIfAlreadyDeployed: false
 	});
+
 	if (hre.network.live) {
 		// Verify
 		// Wait 20 seconds

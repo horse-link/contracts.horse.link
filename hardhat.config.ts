@@ -56,7 +56,6 @@ export default {
 			gasMultiplier: 1,
 			tags: ["production"]
 		},
-
 		// Staging / Development
 		dev_arbitrum: {
 			url: process.env.ARBITRUM_URL || defaultRpcUrl,

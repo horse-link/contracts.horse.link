@@ -31,13 +31,7 @@ export const mockTokens: TokenDeployDetails[] = [
 		marketType: MarketType.Simple,
 		owner: "deployer",
 		mock: true,
-		networks: [
-			"hardhat",
-			"localhost",
-			"dev_goerli",
-			"prod_goerli",
-			"dev_arbitrum"
-		]
+		networks: ["hardhat", "localhost", "sepolia", "dev_arbitrum"]
 	},
 	{
 		name: "Mock USDT",
@@ -51,7 +45,7 @@ export const mockTokens: TokenDeployDetails[] = [
 		marketType: MarketType.Simple,
 		owner: "deployer",
 		mock: true,
-		networks: ["hardhat", "localhost", "dev_goerli", "prod_goerli"]
+		networks: ["hardhat", "localhost", "sepolia"]
 	},
 	{
 		name: "Mock USDC",

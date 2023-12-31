@@ -5,5 +5,8 @@
     "marketOracle": "0x592a44ebad029EBFff3Ee4950f1E74538a19a2ea",
     "vault": "0x7e8Aa9bC57CA64Bf3F91fcE3B0A5F740239F8f59",
     "market": "0xA0f8A6eD9Df461541159Fa5f083082A6f6E0f795"
+  },
+  "sepolia": {
+    
   }
 }
