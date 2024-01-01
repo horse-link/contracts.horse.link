@@ -49,7 +49,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 			skipIfAlreadyDeployed: true
 		});
 
-		//Mint some tokens if not production network
+		// Mint some tokens if not production network
 		if (underlying.newlyDeployed && tokenDetails.mock) {
 			console.log(`${tokenDetails.symbol} deployed at ${underlying.address}`);
 			await execute(
@@ -96,5 +96,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 		}
 	}
 };
+
 export default func;
 func.tags = ["underlying"];
