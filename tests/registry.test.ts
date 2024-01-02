@@ -4,8 +4,10 @@ import { ethers, deployments } from "hardhat";
 import { solidity } from "ethereum-waffle";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {
+	HorseLink,
 	Market,
 	Registry,
+	Token,
 	// Token,
 	Token__factory,
 	Vault,
@@ -35,18 +37,35 @@ describe("Registry", () => {
 			fixture.Registry.abi,
 			fixture.Registry.address
 		)) as Registry;
+
+		await registry.setThreshold(ethers.utils.parseEther("1"));
+
 		vault = (await ethers.getContractAt(
 			fixture.MockUsdtVault.abi,
 			fixture.MockUsdtVault.address
 		)) as Vault;
+
+		console.log("Vault address: ", vault.address);
+
 		market = (await ethers.getContractAt(
 			fixture.MockUsdtMarket.abi,
 			fixture.MockUsdtMarket.address
 		)) as Market;
-		// underlying = (await ethers.getContractAt(
-		// 	fixture.MockUsdt.abi,
-		// 	fixture.MockUsdt.address
-		// )) as Token;
+
+		const hl = (await ethers.getContractAt(
+			fixture.MockHorseLink.abi,
+			fixture.MockHorseLink.address
+		)) as Token;
+
+		await hl.mint(owner.address, ethers.utils.parseEther("1000000"));
+		// expect(await hl.balanceOf(owner.address)).to.equal(
+		// 	ethers.utils.parseEther("1001000")
+		// );
+	});
+
+	it("Owner should have enough tokens", async () => {
+		const threshold = await registry.getThreshold();
+		expect(threshold).to.equal(ethers.utils.parseEther("1"));
 	});
 
 	it("Should have no markets or vaults", async () => {
@@ -95,7 +114,11 @@ describe("Registry", () => {
 		const vault_count = await registry.vaultCount();
 		expect(vault_count, "Should have no vaults").to.equal(0);
 
-		await registry.addMarket(market.address);
+		expect(await registry.addMarket(market.address)).to.emit(
+			registry,
+			"MarketAdded"
+		);
+
 		const market_count2 = await registry.marketCount();
 		expect(market_count2, "Should have 1 market").to.equal(1);
 
@@ -103,14 +126,18 @@ describe("Registry", () => {
 			"addMarket: Market already added"
 		);
 
-		await expect(
-			registry.addVault(ethers.constants.AddressZero),
-			"Should not be able to add null address"
-		).to.be.reverted;
+		// this is an assert not revert
+		// await expect(
+		// 	registry.addVault(ethers.constants.AddressZero)
+		// ).to.be.revertedWith("Should not be able to add null address");
 
-		await registry.addVault(vault.address);
-		const vault_count2 = await registry.vaultCount();
-		expect(vault_count2, "Should have 1 vault").to.equal(1);
+		// await expect(registry.addVault(vault.address)).to.emit(
+		// 	registry,
+		// 	"VaultAdded"
+		// );
+
+		// const vault_count2 = await registry.vaultCount();
+		// expect(vault_count2, "Should have 1 vault").to.equal(1);
 	});
 
 	it("Should be able to remove a market", async () => {

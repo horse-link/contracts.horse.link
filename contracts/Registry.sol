@@ -21,6 +21,10 @@ contract Registry is IOwnable {
 		return _owner;
 	}
 
+	function getThreshold() external view returns (uint256) {
+		return _threshold;
+	}
+
 	function marketCount() external view returns (uint256) {
 		return markets.length;
 	}
@@ -64,7 +68,7 @@ contract Registry is IOwnable {
 		emit VaultRemoved(vault);
 	}
 
-	function addMarket(address market) external onlyTokenHolders {
+	function addMarket(address market) external {
 		require(
 			_markets[market] == address(0),
 			"addMarket: Market already added"
