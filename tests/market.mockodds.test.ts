@@ -14,11 +14,10 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {
 	constructBet,
 	makeMarketId,
-	makePropositionId,
 	signBackMessage,
 	signSetResultMessage
 } from "./utils";
-import { general, formatting } from "horselink-sdk";
+import { formatting, markets } from "horselink-sdk";
 
 chai.use(solidity);
 
@@ -158,7 +157,7 @@ describe("Market", () => {
 			// Runner 2 for a Win
 			const nonce = "2";
 			const marketId = makeMarketId(new Date(), "ABC", "2");
-			const propositionId = general.makePropositionId(marketId, 2);
+			const propositionId = markets.makePropositionId(marketId, 2);
 
 			const betSignature = await signBackMessage(
 				nonce,
@@ -207,7 +206,7 @@ describe("Market", () => {
 				ethers.utils.parseUnits("600", tokenDecimals)
 			);
 
-			const winningPropositionId = general.makePropositionId("ABC", 1);
+			const winningPropositionId = markets.makePropositionId("ABC", 1);
 			const signature = await signSetResultMessage(
 				marketId,
 				winningPropositionId,
@@ -267,7 +266,7 @@ describe("Market", () => {
 			// Runner 2 for a Win
 			const nonce = "2";
 			const marketId = makeMarketId(new Date(), "ABC", "2");
-			const propositionId = general.makePropositionId(marketId, 2);
+			const propositionId = markets.makePropositionId(marketId, 2);
 
 			const betSignature = await signBackMessage(
 				nonce,
@@ -318,7 +317,7 @@ describe("Market", () => {
 				ethers.utils.parseUnits("999", tokenDecimals)
 			);
 
-			const winningPropositionId = general.makePropositionId("ABC", 1);
+			const winningPropositionId = markets.makePropositionId("ABC", 1);
 			const signature = await signSetResultMessage(
 				marketId,
 				winningPropositionId,
@@ -374,7 +373,7 @@ describe("Market", () => {
 
 			// Runner 2 for a Win
 			const nonce = "2";
-			const propositionId = general.makePropositionId("ABC", 2);
+			const propositionId = markets.makePropositionId("ABC", 2);
 			const marketId = makeMarketId(new Date(), "ABC", "2");
 
 			const betSignature = await signBackMessage(
@@ -424,7 +423,7 @@ describe("Market", () => {
 				ethers.utils.parseUnits("981", tokenDecimals)
 			);
 
-			const winningPropositionId = general.makePropositionId("ABC", 1);
+			const winningPropositionId = markets.makePropositionId("ABC", 1);
 			const signature = await signSetResultMessage(
 				marketId,
 				winningPropositionId,

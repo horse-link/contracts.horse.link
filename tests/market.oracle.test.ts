@@ -13,11 +13,11 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {
 	constructBet,
 	makeMarketId,
-	makePropositionId,
 	signBackMessage,
 	signSetResultMessage
 } from "./utils";
-import { bytes16HexToString, formatBytes16String } from "../scripts/utils";
+import { bytes16HexToString } from "../scripts/utils";
+import { formatting, markets } from "horselink-sdk";
 
 chai.use(solidity);
 
@@ -138,7 +138,7 @@ describe("Market Oracle", () => {
 
 		it("should add set and get proposition to oracle", async () => {
 			const marketId = makeMarketId(new Date(), "RED", "1");
-			const propositionId = makePropositionId(marketId, 1);
+			const propositionId = markets.makePropositionId(marketId, 1);
 
 			const signature = await signSetResultMessage(
 				marketId,
@@ -147,12 +147,14 @@ describe("Market Oracle", () => {
 			);
 
 			await oracle.setResult(
-				formatBytes16String(marketId),
-				formatBytes16String(propositionId),
+				formatting.formatBytes16String(marketId),
+				formatting.formatBytes16String(propositionId),
 				signature
 			);
 
-			const actual = await oracle.getResult(formatBytes16String(marketId));
+			const actual = await oracle.getResult(
+				formatting.formatBytes16String(marketId)
+			);
 			expect(bytes16HexToString(actual.winningPropositionId)).to.equal(
 				propositionId
 			);
@@ -160,8 +162,8 @@ describe("Market Oracle", () => {
 
 		it("should not settle market if proposition is not set", async () => {
 			const marketId = makeMarketId(new Date(), "ABC", "1");
-			const propositionId1 = makePropositionId(marketId, 1);
-			const propositionId2 = makePropositionId(marketId, 2);
+			const propositionId1 = markets.makePropositionId(marketId, 1);
+			const propositionId2 = markets.makePropositionId(marketId, 2);
 
 			const nonce = "1";
 			const currentTime = await time.latest();

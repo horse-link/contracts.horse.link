@@ -1,4 +1,4 @@
-import hre, { ethers, deployments } from "hardhat";
+import { ethers, deployments } from "hardhat";
 import chai, { expect } from "chai";
 import {
 	MarketCollateralisedWithoutProtection,
@@ -10,7 +10,6 @@ import {
 import { solidity } from "ethereum-waffle";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {
-	END,
 	getMarketStats,
 	makeBet,
 	makeMarketId,
@@ -18,7 +17,7 @@ import {
 	TestMarket
 } from "./utils";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
-import { general } from "horselink-sdk";
+import { general, markets } from "horselink-sdk";
 
 chai.use(solidity);
 
@@ -52,29 +51,29 @@ describe.skip("Collateralised Market: catch 505", function () {
 		{
 			runnerNumber: 1,
 			name: "Red 1",
-			propositionId: general.makePropositionId(Markets.RedRacetrack.marketId, 1)
+			propositionId: markets.makePropositionId(Markets.RedRacetrack.marketId, 1)
 		},
 		{
 			runnerNumber: 2,
 			name: "Red 2",
-			propositionId: general.makePropositionId(Markets.RedRacetrack.marketId, 2)
+			propositionId: markets.makePropositionId(Markets.RedRacetrack.marketId, 2)
 		},
 		{
 			runnerNumber: 3,
 			name: "Red 3",
-			propositionId: general.makePropositionId(Markets.RedRacetrack.marketId, 3)
+			propositionId: markets.makePropositionId(Markets.RedRacetrack.marketId, 3)
 		}
 	];
 	Markets.BlueDogs.runners = [
 		{
 			runnerNumber: 1,
 			name: "Blue 1",
-			propositionId: general.makePropositionId(Markets.BlueDogs.marketId, 1)
+			propositionId: markets.makePropositionId(Markets.BlueDogs.marketId, 1)
 		},
 		{
 			runnerNumber: 2,
 			name: "Blue 2",
-			propositionId: general.makePropositionId(Markets.BlueDogs.marketId, 2)
+			propositionId: markets.makePropositionId(Markets.BlueDogs.marketId, 2)
 		}
 	];
 
