@@ -5,7 +5,6 @@ import * as dotenv from "dotenv";
 import {
 	getSubgraphBetsSince,
 	bytes16HexToString,
-	formatBytes16String,
 	loadOracle,
 	hydrateMarketId,
 	hydratePropositionId

@@ -231,7 +231,7 @@ describe.skip("Collateralised Market: play through", function () {
 		);
 
 		const marketCollateral = await market.getMarketCollateral(
-			formatBytes16String(bet.market.marketId)
+			formatting.formatBytes16String(bet.market.marketId)
 		);
 		console.log(
 			`End of Bet 1: Market collateral: ${ethers.utils.formatUnits(
@@ -705,8 +705,8 @@ describe.skip("Collateralised Market: play through", function () {
 			oracleSigner
 		);
 		await oracle.setResult(
-			formatBytes16String(bet.market.marketId),
-			formatBytes16String(bet.runner.propositionId),
+			formatting.formatBytes16String(bet.market.marketId),
+			formatting.formatBytes16String(bet.runner.propositionId),
 			signature
 		);
 

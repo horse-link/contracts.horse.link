@@ -5,7 +5,6 @@ import { AxiosInstance } from "axios";
 import rlp from "rlp";
 import keccak from "keccak";
 import { ethers } from "ethers";
-import { concat, hexlify, isHexString, toUtf8Bytes } from "ethers/lib/utils";
 import { LedgerSigner } from "@ethersproject/hardware-wallets";
 import * as dotenv from "dotenv";
 import type { BigNumberish } from "ethers";
@@ -256,30 +255,4 @@ export async function getSubgraphBetsSince(
 		})
 	});
 	return response.data.data.bets;
-}
-
-export function hydrateMarketId(
-	marketId: string | DataHexString
-): MarketDetails {
-	const id = isHexString(marketId) ? bytes16HexToString(marketId) : marketId;
-	const daysSinceEpoch = parseInt(id.slice(0, 6));
-	const location = id.slice(6, 9);
-	const race = parseInt(id.slice(9, 11));
-	return {
-		id,
-		date: daysSinceEpoch,
-		location,
-		race
-	};
-}
-
-export function hydratePropositionId(propositionId: string): RaceDetails {
-	const id = propositionId.slice(0, 13);
-	const market = hydrateMarketId(propositionId.slice(0, 11));
-	const number = propositionId.slice(12, 14);
-	return {
-		id,
-		market,
-		number
-	};
 }

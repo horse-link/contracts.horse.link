@@ -29,12 +29,6 @@ export function makeMarketId(date: Date, location: string, raceNumber: string) {
 		.padStart(2, "0")}`;
 }
 
-// RaceId 15 chars
-// MMMMMMMMMMMPPP
-// export function makePropositionId(marketId: string, prediction: number) {
-// 	return `${marketId}W${prediction.toString().padStart(2, "0")}`;
-// }
-
 export const signBackMessage = async (
 	nonce: string,
 	marketId: string,

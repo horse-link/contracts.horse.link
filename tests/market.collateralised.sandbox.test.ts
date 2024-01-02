@@ -17,7 +17,7 @@ import {
 	TestMarket
 } from "./utils";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
-import { general, markets } from "horselink-sdk";
+import { markets } from "horselink-sdk";
 
 chai.use(solidity);
 
