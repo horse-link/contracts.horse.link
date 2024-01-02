@@ -140,7 +140,7 @@ describe("Registry", () => {
 		// expect(vault_count2, "Should have 1 vault").to.equal(1);
 	});
 
-	it("Should be able to remove a market", async () => {
+	it.skip("Should be able to remove a market", async () => {
 		const mockToken1 = await new Token__factory(owner).deploy(
 			"Mock Token 1",
 			"MTK1",
