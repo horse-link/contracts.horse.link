@@ -4,7 +4,7 @@ import * as dotenv from "dotenv";
 import type { BigNumber } from "ethers";
 import type { Signature } from "../scripts/utils";
 import { Market, Token, Vault } from "../build/typechain";
-import { general, formatting } from "horselink-sdk";
+import { general, formatting, markets } from "horselink-sdk";
 
 // load .env into process.env
 dotenv.config();
@@ -17,17 +17,6 @@ export type MarketDetails = {
 };
 
 export type DataHexString = string;
-
-export function makeMarketId(date: Date, location: string, raceNumber: string) {
-	//Turn Date object into number of days since 1/1/1970, padded to 6 digits
-	const MILLIS_IN_DAY = 1000 * 60 * 60 * 24;
-	const daysSinceEpoch = Math.floor(date.getTime() / MILLIS_IN_DAY)
-		.toString()
-		.padStart(6, "0");
-	return `${daysSinceEpoch}${location}${raceNumber
-		.toString()
-		.padStart(2, "0")}`;
-}
 
 export const signBackMessage = async (
 	nonce: string,
@@ -289,20 +278,21 @@ const MS_DELAY = 7200 * 1000;
 export const Markets: { [key: string]: TestMarket } = {
 	RedRacetrack: {
 		name: "Red Racetrack",
-		marketId: makeMarketId(new Date(), "RED", "1"),
+		marketId: markets.makeMarketId(new Date(), "RED", "1", "W"),
 		runners: []
 	},
 	BlueDogs: {
 		name: "Blue Dogs",
-		marketId: makeMarketId(new Date(), "BLU", "1"),
+		marketId: markets.makeMarketId(new Date(), "BLU", "1", "W"),
 		runners: []
 	},
 	GreenRace: {
 		name: "Green Race",
-		marketId: makeMarketId(
+		marketId: markets.makeMarketId(
 			new Date(new Date().getTime() + MS_DELAY),
 			"GRN",
-			"1"
+			"1",
+			"W"
 		),
 		runners: []
 	}
@@ -311,44 +301,45 @@ Markets.RedRacetrack.runners = [
 	{
 		runnerNumber: 1,
 		name: "Red 1",
-		propositionId: general.makePropositionId(Markets.RedRacetrack.marketId, 1)
+		propositionId: markets.makePropositionId(Markets.RedRacetrack.marketId, 1)
 	},
 	{
 		runnerNumber: 2,
 		name: "Red 2",
-		propositionId: general.makePropositionId(Markets.RedRacetrack.marketId, 2)
+		propositionId: markets.makePropositionId(Markets.RedRacetrack.marketId, 2)
 	},
 	{
 		runnerNumber: 3,
 		name: "Red 3",
-		propositionId: general.makePropositionId(Markets.RedRacetrack.marketId, 3)
+		propositionId: markets.makePropositionId(Markets.RedRacetrack.marketId, 3)
 	}
 ];
 Markets.BlueDogs.runners = [
 	{
 		runnerNumber: 1,
 		name: "Blue 1",
-		propositionId: general.makePropositionId(Markets.BlueDogs.marketId, 1)
+		propositionId: markets.makePropositionId(Markets.BlueDogs.marketId, 1)
 	},
 	{
 		runnerNumber: 2,
 		name: "Blue 2",
-		propositionId: general.makePropositionId(Markets.BlueDogs.marketId, 2)
+		propositionId: markets.makePropositionId(Markets.BlueDogs.marketId, 2)
 	}
 ];
 Markets.GreenRace.runners = [
 	{
 		runnerNumber: 1,
 		name: "Green 1",
-		propositionId: general.makePropositionId(Markets.GreenRace.marketId, 1)
+		propositionId: markets.makePropositionId(Markets.GreenRace.marketId, 1)
 	},
 	{
 		runnerNumber: 2,
 		name: "Green 2",
-		propositionId: general.makePropositionId(Markets.GreenRace.marketId, 2)
+		propositionId: markets.makePropositionId(Markets.GreenRace.marketId, 2)
 	}
 ];
 
+// this looks like a back type
 export function constructBet(
 	b16Nonce: string,
 	b16PropositionId: string,

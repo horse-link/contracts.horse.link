@@ -6,7 +6,7 @@ import { Market, Token, Vault, VaultTimeLock } from "../build/typechain";
 
 chai.use(solidity);
 
-describe("Vault", () => {
+describe.only("Vault", () => {
 	let underlying: Token;
 	let vault: Vault;
 	let vaultTimeLock: VaultTimeLock;

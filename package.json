@@ -38,7 +38,7 @@
     "@typechain/ethers-v5": "^8.0.5",
     "@typechain/hardhat": "^3.1.0",
     "chai": "^4.3.7",
-    "dotenv": "^16.0.3",
+    "dotenv": "^16.3.1",
     "ethereum-waffle": "^4.0.10",
     "ethers": "^5.7.2",
     "hardhat": "^2.13.0",
@@ -86,6 +86,9 @@
     "prettier-plugin-solidity": "^1.0.0-beta.18",
     "pretty-quick": "^3.1.1",
     "solidity-coverage": "^0.8.2"
+  },
+  "engines": {
+    "node": ">=16.0.0"
   },
   "lint-staged": {
     "*.ts": [

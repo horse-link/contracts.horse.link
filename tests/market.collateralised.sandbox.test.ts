@@ -9,13 +9,7 @@ import {
 } from "../build/typechain";
 import { solidity } from "ethereum-waffle";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import {
-	getMarketStats,
-	makeBet,
-	makeMarketId,
-	TestBet,
-	TestMarket
-} from "./utils";
+import { getMarketStats, makeBet, TestBet, TestMarket } from "./utils";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
 import { markets } from "horselink-sdk";
 
@@ -38,12 +32,12 @@ describe.skip("Collateralised Market: catch 505", function () {
 	const Markets: { [key: string]: TestMarket } = {
 		RedRacetrack: {
 			name: "Red Racetrack",
-			marketId: makeMarketId(new Date(), "RED", "1"),
+			marketId: "20240101RED1W", // 2024 Jan 1st, RED, 1, WIN
 			runners: []
 		},
 		BlueDogs: {
 			name: "Blue Dogs",
-			marketId: makeMarketId(new Date(), "BLUE", "1"),
+			marketId: "20240101BNE1W", // 2024 Jan 1st, RED, 1, WIN
 			runners: []
 		}
 	};
