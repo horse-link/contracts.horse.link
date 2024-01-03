@@ -11,8 +11,8 @@ import {
 } from "../build/typechain";
 import { solidity } from "ethereum-waffle";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { constructBet, signBackMessage, signSetResultMessage } from "./utils";
-import { formatting, markets } from "horselink-sdk";
+import { constructBet, signSetResultMessage } from "./utils";
+import { formatting, markets, signature } from "horselink-sdk";
 
 chai.use(solidity);
 
@@ -154,7 +154,7 @@ describe("Market", () => {
 			const marketId = "20240101ABC2W";
 			const propositionId = markets.makePropositionId(marketId, 2);
 
-			const betSignature = await signBackMessage(
+			const betSignature = await signature.signBackMessage(
 				nonce,
 				marketId,
 				propositionId,
@@ -263,7 +263,7 @@ describe("Market", () => {
 			const marketId = "20240101ABC2W";
 			const propositionId = markets.makePropositionId(marketId, 2);
 
-			const betSignature = await signBackMessage(
+			const betSignature = await signature.signBackMessage(
 				nonce,
 				marketId,
 				propositionId,
@@ -313,7 +313,7 @@ describe("Market", () => {
 			);
 
 			const winningPropositionId = markets.makePropositionId("ABC", 1);
-			const signature = await signSetResultMessage(
+			const _signature = await signSetResultMessage(
 				marketId,
 				winningPropositionId,
 				oracleSigner
@@ -322,7 +322,7 @@ describe("Market", () => {
 			await oracle.setResult(
 				formatting.formatBytes16String(marketId),
 				formatting.formatBytes16String(winningPropositionId),
-				signature
+				_signature
 			);
 
 			await hre.network.provider.request({
@@ -371,7 +371,7 @@ describe("Market", () => {
 			const propositionId = markets.makePropositionId("ABC", 2);
 			const marketId = "20240101ABC2W";
 
-			const betSignature = await signBackMessage(
+			const betSignature = await signature.signBackMessage(
 				nonce,
 				marketId,
 				propositionId,
@@ -419,7 +419,7 @@ describe("Market", () => {
 			);
 
 			const winningPropositionId = markets.makePropositionId("ABC", 1);
-			const signature = await signSetResultMessage(
+			const _signature = await signSetResultMessage(
 				marketId,
 				winningPropositionId,
 				oracleSigner
@@ -428,7 +428,7 @@ describe("Market", () => {
 			await oracle.setResult(
 				formatting.formatBytes16String(marketId),
 				formatting.formatBytes16String(winningPropositionId),
-				signature
+				_signature
 			);
 
 			await hre.network.provider.request({

@@ -4599,10 +4599,10 @@ hmac-drbg@^1.0.1:
     minimalistic-assert "^1.0.0"
     minimalistic-crypto-utils "^1.0.1"
 
-horselink-sdk@^1.0.48:
-  version "1.0.48"
-  resolved "https://registry.yarnpkg.com/horselink-sdk/-/horselink-sdk-1.0.48.tgz#466c29f0d99254202041c5b73781f04827818fcb"
-  integrity sha512-qUlEphG4UJrTqHnmbqJAWxRO6euJHpuLtGwGsaHZVj3DhS51sLyjvmgqvpuIesGk1FHUpyfD3lvVNQ9MeJY9HQ==
+horselink-sdk@^1.0.49:
+  version "1.0.49"
+  resolved "https://registry.yarnpkg.com/horselink-sdk/-/horselink-sdk-1.0.49.tgz#638406c7549b5ef2f540c912e61a623727c3f236"
+  integrity sha512-SMrXbherHOZF3ZAI9JKG3sA8q+SDgxifoexttWsWH1bJzXvXx+25pWrSiZP0ThPE+r+8vwP5Q/63WqIRZOLk1Q==
   dependencies:
     dayjs "^1.11.8"
     ethers "^5.7.2"

@@ -4,49 +4,50 @@ import * as dotenv from "dotenv";
 import type { BigNumber } from "ethers";
 import type { Signature } from "../scripts/utils";
 import { Market, Token, Vault } from "../build/typechain";
-import { formatting, markets } from "horselink-sdk";
+import { formatting, markets, signature } from "horselink-sdk";
+import { BackStruct } from "../build/typechain/IMarket";
 
 // load .env into process.env
 dotenv.config();
 
-export const signBackMessage = async (
-	nonce: string,
-	marketId: string,
-	propositionId: string,
-	odds: BigNumber,
-	close: number,
-	end: number,
-	signer: SignerWithAddress
-): Promise<Signature> => {
-	const message = ethers.utils.solidityKeccak256(
-		[
-			"bytes16", // nonce
-			"bytes16", // propositionId
-			"bytes16", // marketId
-			"uint256", // odds
-			"uint256", // close
-			"uint256" // end
-		],
-		[
-			formatting.formatBytes16String(nonce),
-			formatting.formatBytes16String(propositionId),
-			formatting.formatBytes16String(marketId),
-			odds,
-			close,
-			end
-		]
-	);
-	return await signMessage(message, signer);
-};
+// export const signBackMessage = async (
+// 	nonce: string,
+// 	marketId: string,
+// 	propositionId: string,
+// 	odds: BigNumber,
+// 	close: number,
+// 	end: number,
+// 	signer: SignerWithAddress
+// ): Promise<Signature> => {
+// 	const message = ethers.utils.solidityKeccak256(
+// 		[
+// 			"bytes16", // nonce
+// 			"bytes16", // propositionId
+// 			"bytes16", // marketId
+// 			"uint256", // odds
+// 			"uint256", // close
+// 			"uint256" // end
+// 		],
+// 		[
+// 			formatting.formatBytes16String(nonce),
+// 			formatting.formatBytes16String(propositionId),
+// 			formatting.formatBytes16String(marketId),
+// 			odds,
+// 			close,
+// 			end
+// 		]
+// 	);
+// 	return await signMessage(message, signer);
+// };
 
-export const signMessage = async (
-	message: string,
-	signer: SignerWithAddress
-): Promise<Signature> => {
-	const sig = await signer.signMessage(ethers.utils.arrayify(message));
-	const { v, r, s } = ethers.utils.splitSignature(sig);
-	return { v, r, s };
-};
+// export const signMessage = async (
+// 	message: string,
+// 	signer: SignerWithAddress
+// ): Promise<Signature> => {
+// 	const sig = await signer.signMessage(ethers.utils.arrayify(message));
+// 	const { v, r, s } = ethers.utils.splitSignature(sig);
+// 	return { v, r, s };
+// };
 
 export const signSetResultMessage = async (
 	marketId: string,
@@ -54,7 +55,7 @@ export const signSetResultMessage = async (
 	signer: SignerWithAddress
 ): Promise<Signature> => {
 	const settleMessage = makeSetResultMessage(marketId, propositionId);
-	return await signMessage(settleMessage, signer);
+	return await signature.signMessage(settleMessage, signer);
 };
 
 export const makeSetResultMessage = (
@@ -120,7 +121,7 @@ export const signBackMessageWithRisk = async (
 			risk
 		]
 	);
-	return await signMessage(message, signer);
+	return await signature.signMessage(message, signer);
 };
 
 export const makeSetScratchMessage = (
@@ -144,7 +145,7 @@ export const signSetScratchedMessage = async (
 	signer: SignerWithAddress
 ): Promise<Signature> => {
 	const scratchedMessage = makeSetScratchMessage(marketId, propositionId, odds);
-	return await signMessage(scratchedMessage, signer);
+	return await signature.signMessage(scratchedMessage, signer);
 };
 
 type MarketStats = {
@@ -173,6 +174,17 @@ export async function getMarketStats(
 		vaultBalance
 	};
 }
+
+// type BackStruct = {
+// 	nonce: string;
+// 	propositionId: string;
+// 	marketId: string;
+// 	wager: BigNumberish;
+// 	odds: BigNumberish;
+// 	close: BigNumberish;
+// 	end: BigNumberish;
+// 	betSignature: Signature;
+// };
 
 export type TestRunner = {
 	runnerNumber: number;
@@ -223,7 +235,7 @@ export async function makeBet(
 	);
 	const b16MarketId = formatting.formatBytes16String(bet.market.marketId);
 
-	const signature = await signBackMessage(
+	const betSignature = await signature.signBackMessage(
 		nonce,
 		bet.market.marketId,
 		bet.runner.propositionId,
@@ -241,7 +253,7 @@ export async function makeBet(
 	);
 	console.log("awardedOdds", awardedOdds.toString());
 
-	const betStruct = {
+	const betStruct: BackStruct = {
 		nonce: b16Nonce,
 		propositionId: b16PropositionId,
 		marketId: b16MarketId,
@@ -249,7 +261,7 @@ export async function makeBet(
 		odds,
 		close,
 		end,
-		signature
+		signature: betSignature
 	};
 
 	await marketContract.connect(bet.bettor).back(betStruct);
@@ -330,8 +342,9 @@ Markets.GreenRace.runners = [
 	}
 ];
 
-// this looks like a back type
-export function constructBet(
+// REMOVE?
+// what the contract needs
+export const constructBet = (
 	b16Nonce: string,
 	b16PropositionId: string,
 	b16MarketId: string,
@@ -340,7 +353,7 @@ export function constructBet(
 	close: BigNumberish,
 	end: BigNumberish,
 	signature: Signature
-) {
+): BackStruct => {
 	return {
 		nonce: b16Nonce,
 		propositionId: b16PropositionId,
@@ -351,4 +364,4 @@ export function constructBet(
 		end,
 		signature
 	};
-}
+};

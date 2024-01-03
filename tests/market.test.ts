@@ -13,11 +13,10 @@ import { solidity } from "ethereum-waffle";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {
 	constructBet,
-	signBackMessage,
 	signSetResultMessage,
 	signSetScratchedMessage
 } from "./utils";
-import { formatting, markets } from "horselink-sdk";
+import { formatting, markets, signature } from "horselink-sdk";
 
 chai.use(solidity);
 
@@ -248,7 +247,7 @@ describe("Market", () => {
 		const nonce = "1";
 		const propositionId = markets.makePropositionId("ABC", 1);
 		const marketId = "20240101ABC1W"; //
-		const betSignature = await signBackMessage(
+		const betSignature = await signature.signBackMessage(
 			nonce,
 			marketId,
 			propositionId,
@@ -311,7 +310,7 @@ describe("Market", () => {
 		const propositionId = markets.makePropositionId(marketId, 1);
 		const nonce = "1";
 
-		const signature = await signBackMessage(
+		const _signature = await signature.signBackMessage(
 			nonce,
 			marketId,
 			propositionId,
@@ -332,7 +331,7 @@ describe("Market", () => {
 					odds,
 					close,
 					end,
-					signature
+					_signature
 				)
 			);
 
@@ -398,7 +397,7 @@ describe("Market", () => {
 		const propositionId = markets.makePropositionId(marketId, 2);
 		const nonce = "1";
 
-		const signature = await signBackMessage(
+		const _signature = await signature.signBackMessage(
 			nonce,
 			marketId,
 			propositionId,
@@ -419,7 +418,7 @@ describe("Market", () => {
 					odds,
 					close,
 					end,
-					signature
+					_signature
 				)
 			);
 
@@ -464,7 +463,7 @@ describe("Market", () => {
 			const propositionId = markets.makePropositionId(marketId, 2);
 			const nonce = "1";
 
-			const signature = await signBackMessage(
+			const _signature = await signature.signBackMessage(
 				nonce,
 				marketId,
 				propositionId,
@@ -485,7 +484,7 @@ describe("Market", () => {
 						odds,
 						close,
 						end,
-						signature
+						_signature
 					)
 				);
 
@@ -566,7 +565,7 @@ describe("Market", () => {
 		const propositionId = markets.makePropositionId(marketId, 2);
 		const nonce = "1";
 
-		const signature = await signBackMessage(
+		const _signature = await signature.signBackMessage(
 			nonce,
 			marketId,
 			propositionId,
@@ -591,7 +590,7 @@ describe("Market", () => {
 						odds,
 						close,
 						end,
-						signature
+						_signature
 					)
 				)
 		).to.be.revertedWith("back: Invalid date");
@@ -624,7 +623,7 @@ describe("Market", () => {
 
 		const nonce = "1";
 
-		const betSignature = await signBackMessage(
+		const betSignature = await signature.signBackMessage(
 			nonce,
 			marketId,
 			propositionId,
@@ -661,7 +660,7 @@ describe("Market", () => {
 			params: [end + 7200]
 		});
 
-		const signature = await signSetResultMessage(
+		const _signature = await signSetResultMessage(
 			marketId,
 			winningPropositionId,
 			oracleSigner
@@ -669,7 +668,7 @@ describe("Market", () => {
 		await oracle.setResult(
 			formatting.formatBytes16String(marketId),
 			formatting.formatBytes16String(winningPropositionId),
-			signature
+			_signature
 		);
 		const vaultBalanceBeforeSettlement = await underlying.balanceOf(
 			vault.address
@@ -719,7 +718,7 @@ describe("Market", () => {
 			const propositionId = markets.makePropositionId(marketId, 1);
 			const nonce = "1";
 
-			const betSignature = await signBackMessage(
+			const betSignature = await signature.signBackMessage(
 				nonce,
 				marketId,
 				propositionId,
@@ -779,7 +778,7 @@ describe("Market", () => {
 			const propositionId = markets.makePropositionId("ABC", 1);
 			const marketId = "20240101ABC1W"; // makeMarketId(new Date(), "ABC", "1");
 
-			const betSignature = await signBackMessage(
+			const betSignature = await signature.signBackMessage(
 				nonce,
 				marketId,
 				propositionId,
@@ -896,7 +895,7 @@ describe("Market", () => {
 			const propositionId = markets.makePropositionId("ABC", 1);
 			const marketId = "20240101ABC1W"; // makeMarketId(new Date(), "ABC", "1");
 
-			const betSignature = await signBackMessage(
+			const betSignature = await signature.signBackMessage(
 				nonce,
 				marketId,
 				propositionId,
@@ -951,7 +950,7 @@ describe("Market", () => {
 			expect(nftBalance).to.equal(1, "Bob should have 1 NFT");
 
 			// This signature is for a scratched result/propositionId
-			const signature = await signSetScratchedMessage(
+			const _signature = await signSetScratchedMessage(
 				marketId,
 				propositionId,
 				odds,
@@ -965,7 +964,7 @@ describe("Market", () => {
 					formatting.formatBytes16String(marketId),
 					formatting.formatBytes16String(propositionId),
 					odds,
-					signature
+					_signature
 				)
 			).to.emit(oracle, "ScratchedSet");
 
@@ -1015,7 +1014,7 @@ describe("Market", () => {
 			const propositionId = markets.makePropositionId("ABC", 1);
 			const marketId = "20240101ABC1W"; // makeMarketId(new Date(), "ABC", "1");
 
-			const betSignature = await signBackMessage(
+			const betSignature = await signature.signBackMessage(
 				nonce,
 				marketId,
 				propositionId,
@@ -1070,7 +1069,7 @@ describe("Market", () => {
 			const nftBalance = await market.balanceOf(bob.address);
 			expect(nftBalance).to.equal(1, "Bob should have 1 NFT");
 
-			const signature = await signSetResultMessage(
+			const _signature = await signSetResultMessage(
 				marketId,
 				propositionId,
 				oracleSigner
@@ -1080,7 +1079,7 @@ describe("Market", () => {
 			await oracle.setResult(
 				formatting.formatBytes16String(marketId),
 				formatting.formatBytes16String(propositionId),
-				signature
+				_signature
 			);
 			const index = 0;
 
@@ -1131,7 +1130,7 @@ describe("Market", () => {
 			const propositionId = markets.makePropositionId(marketId, 2);
 			const nonce = "1";
 
-			const betSignature = await signBackMessage(
+			const betSignature = await signature.signBackMessage(
 				nonce,
 				marketId,
 				propositionId,
@@ -1218,7 +1217,7 @@ describe("Market", () => {
 			const propositionId = markets.makePropositionId(marketId, 1);
 			const nonce = "1";
 
-			const betSignature = await signBackMessage(
+			const betSignature = await signature.signBackMessage(
 				nonce,
 				marketId,
 				propositionId,
@@ -1305,7 +1304,7 @@ describe("Market", () => {
 			for (let i = 0; i < max; i++) {
 				const nonce = i.toString();
 				const propositionId = markets.makePropositionId(marketId, i + 1);
-				const betSignature = await signBackMessage(
+				const betSignature = await signature.signBackMessage(
 					nonce,
 					marketId,
 					propositionId,
@@ -1344,7 +1343,7 @@ describe("Market", () => {
 
 			// add a result
 			const winningPropositionId = markets.makePropositionId(marketId, 1);
-			const signature = await signSetResultMessage(
+			const _signature = await signSetResultMessage(
 				marketId,
 				winningPropositionId,
 				oracleSigner
@@ -1356,7 +1355,7 @@ describe("Market", () => {
 				await oracle.setResult(
 					formatting.formatBytes16String(marketId),
 					formatting.formatBytes16String(winningPropositionId),
-					signature
+					_signature
 				)
 			).to.emit(oracle, "ResultSet");
 
@@ -1396,7 +1395,7 @@ describe("Market", () => {
 			for (let i = 0; i < max; i++) {
 				const nonce = i.toString();
 				const propositionId = markets.makePropositionId("ABC", i + 1);
-				const betSignature = await signBackMessage(
+				const betSignature = await signature.signBackMessage(
 					nonce,
 					marketId,
 					propositionId,
@@ -1443,7 +1442,7 @@ describe("Market", () => {
 
 			// add a result
 			const propositionId = markets.makePropositionId("ABC", 1);
-			const signature = await signSetResultMessage(
+			const _signature = await signSetResultMessage(
 				marketId,
 				propositionId,
 				oracleSigner
@@ -1454,7 +1453,7 @@ describe("Market", () => {
 			await oracle.setResult(
 				formatting.formatBytes16String(marketId),
 				formatting.formatBytes16String(propositionId),
-				signature
+				_signature
 			);
 
 			await hre.network.provider.request({
@@ -1587,7 +1586,7 @@ describe("Market", () => {
 				.connect(bob)
 				.approve(market.address, ethers.utils.parseUnits("100", tokenDecimals));
 
-			const marketId = "20240101ABC1W"; // makeMarketId(new Date(), "ABC", "1");
+			const marketId = "20240101ABC1W";
 			const propositionId = markets.makePropositionId(marketId, 1);
 			const nonce = "1";
 

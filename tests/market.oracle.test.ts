@@ -10,9 +10,8 @@ import {
 } from "../build/typechain";
 import { solidity } from "ethereum-waffle";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { constructBet, signBackMessage, signSetResultMessage } from "./utils";
-import { bytes16HexToString } from "../scripts/utils";
-import { formatting, markets } from "horselink-sdk";
+import { constructBet, signSetResultMessage } from "./utils";
+import { formatting, markets, signature } from "horselink-sdk";
 
 chai.use(solidity);
 
@@ -150,9 +149,9 @@ describe("Market Oracle", () => {
 			const actual = await oracle.getResult(
 				formatting.formatBytes16String(marketId)
 			);
-			expect(bytes16HexToString(actual.winningPropositionId)).to.equal(
-				propositionId
-			);
+			expect(
+				formatting.bytes16HexToString(actual.winningPropositionId)
+			).to.equal(propositionId);
 		});
 
 		it("should not settle market if proposition is not set", async () => {
@@ -170,7 +169,7 @@ describe("Market Oracle", () => {
 			const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
 			const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
 
-			const signature1 = await signBackMessage(
+			const signature1 = await signature.signBackMessage(
 				nonce,
 				marketId,
 				propositionId1,
@@ -195,7 +194,7 @@ describe("Market Oracle", () => {
 					)
 				);
 
-			const signature2 = await signBackMessage(
+			const signature2 = await signature.signBackMessage(
 				nonce,
 				marketId,
 				propositionId2,
@@ -234,7 +233,7 @@ describe("Market Oracle", () => {
 			); // 1 the index of proposition 2
 
 			// Add proposition 2 to oracle as winner
-			const signature = await signSetResultMessage(
+			const _signature = await signSetResultMessage(
 				marketId,
 				propositionId2,
 				oracleSigner
@@ -243,7 +242,7 @@ describe("Market Oracle", () => {
 			await oracle.setResult(
 				formatting.formatBytes16String(marketId),
 				formatting.formatBytes16String(propositionId2),
-				signature
+				_signature
 			);
 
 			// Settle proposition 2
