@@ -15,45 +15,6 @@ import { BackStruct } from "../build/typechain/IMarket";
 // load .env into process.env
 dotenv.config();
 
-// export const signBackMessage = async (
-// 	nonce: string,
-// 	marketId: string,
-// 	propositionId: string,
-// 	odds: BigNumber,
-// 	close: number,
-// 	end: number,
-// 	signer: SignerWithAddress
-// ): Promise<Signature> => {
-// 	const message = ethers.utils.solidityKeccak256(
-// 		[
-// 			"bytes16", // nonce
-// 			"bytes16", // propositionId
-// 			"bytes16", // marketId
-// 			"uint256", // odds
-// 			"uint256", // close
-// 			"uint256" // end
-// 		],
-// 		[
-// 			formatting.formatBytes16String(nonce),
-// 			formatting.formatBytes16String(propositionId),
-// 			formatting.formatBytes16String(marketId),
-// 			odds,
-// 			close,
-// 			end
-// 		]
-// 	);
-// 	return await signMessage(message, signer);
-// };
-
-// export const signMessage = async (
-// 	message: string,
-// 	signer: SignerWithAddress
-// ): Promise<Signature> => {
-// 	const sig = await signer.signMessage(ethers.utils.arrayify(message));
-// 	const { v, r, s } = ethers.utils.splitSignature(sig);
-// 	return { v, r, s };
-// };
-
 export const signSetResultMessage = async (
 	marketId: string,
 	propositionId: string,
