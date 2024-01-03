@@ -10,12 +10,7 @@ import {
 } from "../build/typechain";
 import { solidity } from "ethereum-waffle";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import {
-	constructBet,
-	makeMarketId,
-	signBackMessage,
-	signSetResultMessage
-} from "./utils";
+import { constructBet, signBackMessage, signSetResultMessage } from "./utils";
 import { bytes16HexToString } from "../scripts/utils";
 import { formatting, markets } from "horselink-sdk";
 
@@ -137,7 +132,7 @@ describe("Market Oracle", () => {
 		});
 
 		it("should add set and get proposition to oracle", async () => {
-			const marketId = makeMarketId(new Date(), "RED", "1");
+			const marketId = "20240101RED1W";
 			const propositionId = markets.makePropositionId(marketId, 1);
 
 			const signature = await signSetResultMessage(
@@ -161,7 +156,7 @@ describe("Market Oracle", () => {
 		});
 
 		it("should not settle market if proposition is not set", async () => {
-			const marketId = makeMarketId(new Date(), "ABC", "1");
+			const marketId = "20240101ABC1W";
 			const propositionId1 = markets.makePropositionId(marketId, 1);
 			const propositionId2 = markets.makePropositionId(marketId, 2);
 
