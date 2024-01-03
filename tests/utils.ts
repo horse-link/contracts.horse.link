@@ -2,9 +2,14 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import * as dotenv from "dotenv";
 import type { BigNumber } from "ethers";
-import type { Signature } from "../scripts/utils";
 import { Market, Token, Vault } from "../build/typechain";
-import { formatting, markets, signature } from "horselink-sdk";
+import {
+	EcSignature,
+	Signature,
+	formatting,
+	markets,
+	signature
+} from "horselink-sdk";
 import { BackStruct } from "../build/typechain/IMarket";
 
 // load .env into process.env
@@ -53,7 +58,7 @@ export const signSetResultMessage = async (
 	marketId: string,
 	propositionId: string,
 	signer: SignerWithAddress
-): Promise<Signature> => {
+): Promise<EcSignature> => {
 	const settleMessage = makeSetResultMessage(marketId, propositionId);
 	return await signature.signMessage(settleMessage, signer);
 };
@@ -92,7 +97,7 @@ export const signBackMessageWithRisk = async (
 	end: number,
 	risk: number,
 	signer: SignerWithAddress
-): Promise<Signature> => {
+): Promise<EcSignature> => {
 	const message = ethers.utils.solidityKeccak256(
 		[
 			"bytes16", // nonce
@@ -135,7 +140,7 @@ export const signSetScratchedMessage = async (
 	propositionId: string,
 	odds: BigNumber,
 	signer: SignerWithAddress
-): Promise<Signature> => {
+): Promise<EcSignature> => {
 	const scratchedMessage = makeSetScratchMessage(marketId, propositionId, odds);
 	return await signature.signMessage(scratchedMessage, signer);
 };
@@ -344,7 +349,7 @@ export const constructBet = (
 	odds: BigNumberish,
 	close: BigNumberish,
 	end: BigNumberish,
-	signature: Signature
+	signature: EcSignature
 ): BackStruct => {
 	return {
 		nonce: b16Nonce,
