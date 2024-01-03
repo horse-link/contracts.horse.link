@@ -4,7 +4,7 @@ import { ethers, deployments } from "hardhat";
 import { solidity } from "ethereum-waffle";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {
-	HorseLink,
+	// HorseLink,
 	Market,
 	Registry,
 	Token,

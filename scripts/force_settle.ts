@@ -2,15 +2,14 @@ import dotenv from "dotenv";
 import fs from "fs";
 import {
 	loadOracle,
-	hydrateMarketId,
 	loadMarket,
 	bytes16HexToString,
 	setProvider,
 	setAxiosClient,
-	axiosClient,
-	formatBytes16String
+	axiosClient
 } from "./utils";
-import type { MarketDetails } from "./utils";
+
+import { formatting, MarketDetails } from "horselink-sdk";
 
 dotenv.config();
 
@@ -64,7 +63,7 @@ export async function main() {
 	if (result[0] === hexZero) {
 		const txOracleReceipt = await oracle.setResult(
 			bet[6],
-			formatBytes16String("999999999"),
+			formatting.formatBytes16String("999999999"),
 			marketResultResponse.data.signature
 		);
 

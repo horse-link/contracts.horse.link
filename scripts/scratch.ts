@@ -2,14 +2,9 @@ import { ethers } from "ethers";
 import axios from "axios";
 import * as fs from "fs";
 import * as dotenv from "dotenv";
-import {
-	getSubgraphBetsSince,
-	bytes16HexToString,
-	loadOracle,
-	hydrateMarketId,
-	hydratePropositionId
-} from "./utils";
+import { getSubgraphBetsSince, loadOracle } from "./utils";
 import type { Signature } from "./utils";
+import { MarketDetails, formatting, markets } from "horselink-sdk";
 
 // load .env into process.env
 dotenv.config();
@@ -28,8 +23,8 @@ async function setScratch(
 ): Promise<any> {
 	const bnOdds = ethers.utils.parseUnits(Number(odds).toFixed(6), 6);
 	const bnTotalOdds = ethers.utils.parseUnits(Number(totalOdds).toFixed(6));
-	const encodedProposition = formatBytes16String(propositionId);
-	const encodedMarket = formatBytes16String(marketId);
+	const encodedProposition = formatting.formatBytes16String(propositionId);
+	const encodedMarket = formatting.formatBytes16String(marketId);
 
 	try {
 		const receipt = await oracle.setScratchedResult(
@@ -64,7 +59,7 @@ async function main() {
 	console.log(`Found ${bets.length} new bets`);
 	let newMarketsCount = 0;
 	for (const bet of bets) {
-		const marketId = bytes16HexToString(bet.marketId);
+		const marketId = formatting.bytes16HexToString(bet.marketId);
 		if (!state.watch_list.includes(marketId)) {
 			state.watch_list.push(marketId);
 			newMarketsCount++;
@@ -76,7 +71,7 @@ async function main() {
 	const processedItems: string[] = [];
 	for (const marketId of state.watch_list) {
 		// hydrate market ID
-		const hydratedMarket = hydrateMarketId(marketId);
+		const hydratedMarket = formatting.hydrateMarketId(marketId);
 		const location = hydratedMarket.location;
 		const race = hydratedMarket.race;
 
@@ -100,8 +95,10 @@ async function main() {
 			console.log(`${runners.length} scratched runners`);
 			for (const runner of runners) {
 				try {
-					const propositionId = bytes16HexToString(runner.b16propositionId);
-					const proposition = hydratePropositionId(propositionId);
+					const propositionId = formatting.bytes16HexToString(
+						runner.b16propositionId
+					);
+					const proposition = markets.hydratePropositionId(propositionId);
 					console.log(`  - ${proposition.number}`);
 					// If not already processed,
 					if (!processedItems.includes(propositionId)) {

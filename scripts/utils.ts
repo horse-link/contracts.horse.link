@@ -23,13 +23,6 @@ export type Signature = {
 	s: string;
 };
 
-export type MarketDetails = {
-	id: string;
-	date: number;
-	location: string;
-	race: number;
-};
-
 export type BetId = string;
 
 export type BetDetails = {
@@ -106,23 +99,25 @@ export async function loadMarket(
 	);
 }
 
-export function bytes16HexToString(hex: DataHexString): string {
-	const s = Buffer.from(hex.slice(2), "hex").toString("utf8").toString();
-	// Chop off the trailing 0s
-	return s.slice(0, s.indexOf("\0"));
-}
+// export function hydrateMarketId(
+// 	marketId: string | DataHexString
+// ): MarketDetails {
+// 	const id = isHexString(marketId) ? bytes16HexToString(marketId) : marketId;
+// 	const daysSinceEpoch = parseInt(id.slice(0, 6));
+// 	const location = id.slice(6, 9);
+// 	const race = parseInt(id.slice(9, 11));
+// 	return {
+// 		id,
+// 		date: daysSinceEpoch,
+// 		location,
+// 		race
+// 	};
+// }
 
-// export function formatBytes16String(text: string): string {
-// 	// Get the bytes
-// 	const bytes = toUtf8Bytes(text);
-
-// 	// Check we have room for null-termination
-// 	if (bytes.length > 15) {
-// 		throw new Error("bytes16 string must be less than 16 bytes");
-// 	}
-
-// 	// Zero-pad (implicitly null-terminates)
-// 	return hexlify(concat([bytes, ethers.constants.HashZero]).slice(0, 16));
+// export function bytes16HexToString(hex: DataHexString): string {
+// 	const s = Buffer.from(hex.slice(2), "hex").toString("utf8").toString();
+// 	// Chop off the trailing 0s
+// 	return s.slice(0, s.indexOf("\0"));
 // }
 
 export type Seconds = number;

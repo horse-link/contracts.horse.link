@@ -4,19 +4,10 @@ import * as dotenv from "dotenv";
 import type { BigNumber } from "ethers";
 import type { Signature } from "../scripts/utils";
 import { Market, Token, Vault } from "../build/typechain";
-import { general, formatting, markets } from "horselink-sdk";
+import { formatting, markets } from "horselink-sdk";
 
 // load .env into process.env
 dotenv.config();
-
-export type MarketDetails = {
-	id: string;
-	date: number;
-	location: string;
-	race: number;
-};
-
-export type DataHexString = string;
 
 export const signBackMessage = async (
 	nonce: string,

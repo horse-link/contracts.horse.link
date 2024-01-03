@@ -3,17 +3,16 @@ import fs from "fs";
 import {
 	getSubgraphBetsSince,
 	loadOracle,
-	hydrateMarketId,
 	loadMarket,
 	Seconds,
-	bytes16HexToString,
 	setProvider,
 	setAxiosClient,
 	axiosClient
 } from "./utils";
-import type { MarketDetails } from "./utils";
+
 import type { AxiosResponse } from "axios";
 import { Contract } from "ethers";
+import { MarketDetails, markets } from "horselink-sdk";
 
 dotenv.config();
 const hexZero: Bytes16 = "0x00000000000000000000000000000000";
@@ -81,7 +80,7 @@ export async function main() {
 	const marketMap: Record<string, Contract> = {};
 
 	for (const bet of bets) {
-		const market = hydrateMarketId(bet.marketId);
+		const market = markets.hydrateMarketId(bet.marketId);
 		if (!marketMap[bet.marketAddress]) {
 			marketMap[bet.marketAddress] = await loadMarket(
 				deploymentName,
