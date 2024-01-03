@@ -17,7 +17,7 @@ import {
 	signSetResultMessage,
 	signSetScratchedMessage
 } from "./utils";
-import { general, formatting, markets } from "horselink-sdk";
+import { formatting, markets } from "horselink-sdk";
 
 chai.use(solidity);
 
@@ -155,7 +155,7 @@ describe("Market", () => {
 		const wager = ethers.utils.parseUnits("100", USDT_DECIMALS);
 		const odds = ethers.utils.parseUnits("5", ODDS_DECIMALS);
 		const propositionId = formatting.formatBytes16String("1");
-		const marketId = formatting.formatBytes16String("1");
+		const marketId = "20240101ABC1W"; // formatting.formatBytes16String("1");
 		expect(await market.getOdds(wager, odds, propositionId, marketId)).to.equal(
 			1
 		);
@@ -210,7 +210,7 @@ describe("Market", () => {
 
 		// Runner 1 for a Win
 		const propositionId = formatting.formatBytes16String("1");
-		const marketId = formatting.formatBytes16String("1");
+		const marketId = "20240101ABC21"; // const marketId = formatting.formatBytes16String("1");
 
 		// there still needs to be slippage in the odds
 		const trueOdds = await market.getOdds(
@@ -247,7 +247,7 @@ describe("Market", () => {
 		// Runner 1 for a Win
 		const nonce = "1";
 		const propositionId = markets.makePropositionId("ABC", 1);
-		const marketId = markets.makeMarketId(new Date(), "ABC", "1", "W");
+		const marketId = "20240101ABC1W"; //
 		const betSignature = await signBackMessage(
 			nonce,
 			marketId,

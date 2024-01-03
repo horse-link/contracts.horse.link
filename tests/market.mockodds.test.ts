@@ -11,12 +11,7 @@ import {
 } from "../build/typechain";
 import { solidity } from "ethereum-waffle";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import {
-	constructBet,
-	makeMarketId,
-	signBackMessage,
-	signSetResultMessage
-} from "./utils";
+import { constructBet, signBackMessage, signSetResultMessage } from "./utils";
 import { formatting, markets } from "horselink-sdk";
 
 chai.use(solidity);
@@ -156,7 +151,7 @@ describe("Market", () => {
 
 			// Runner 2 for a Win
 			const nonce = "2";
-			const marketId = makeMarketId(new Date(), "ABC", "2");
+			const marketId = "20240101ABC2W";
 			const propositionId = markets.makePropositionId(marketId, 2);
 
 			const betSignature = await signBackMessage(
@@ -265,7 +260,7 @@ describe("Market", () => {
 
 			// Runner 2 for a Win
 			const nonce = "2";
-			const marketId = makeMarketId(new Date(), "ABC", "2");
+			const marketId = "20240101ABC2W";
 			const propositionId = markets.makePropositionId(marketId, 2);
 
 			const betSignature = await signBackMessage(
@@ -374,7 +369,7 @@ describe("Market", () => {
 			// Runner 2 for a Win
 			const nonce = "2";
 			const propositionId = markets.makePropositionId("ABC", 2);
-			const marketId = makeMarketId(new Date(), "ABC", "2");
+			const marketId = "20240101ABC2W";
 
 			const betSignature = await signBackMessage(
 				nonce,
