@@ -83,14 +83,6 @@ export const makeRefundMessage = (
 	return message;
 };
 
-export const signMessageAsString = async (
-	message: string,
-	signer: SignerWithAddress
-) => {
-	const sig = await signer.signMessage(ethers.utils.arrayify(message));
-	return sig;
-};
-
 export const signBackMessageWithRisk = async (
 	nonce: string,
 	marketId: string,

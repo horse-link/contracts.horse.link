@@ -17,11 +17,12 @@ const configPath = path.resolve(__dirname, "../contracts.json");
 export let provider: Provider;
 export let axiosClient: AxiosInstance;
 
-export type Signature = {
-	v: BigNumberish;
-	r: string;
-	s: string;
-};
+// ecsign from sdk
+// export type Signature = {
+// 	v: BigNumberish;
+// 	r: string;
+// 	s: string;
+// };
 
 export type BetId = string;
 
@@ -98,27 +99,6 @@ export async function loadMarket(
 		new ethers.Wallet(process.env[privateKeyEnvVar], provider)
 	);
 }
-
-// export function hydrateMarketId(
-// 	marketId: string | DataHexString
-// ): MarketDetails {
-// 	const id = isHexString(marketId) ? bytes16HexToString(marketId) : marketId;
-// 	const daysSinceEpoch = parseInt(id.slice(0, 6));
-// 	const location = id.slice(6, 9);
-// 	const race = parseInt(id.slice(9, 11));
-// 	return {
-// 		id,
-// 		date: daysSinceEpoch,
-// 		location,
-// 		race
-// 	};
-// }
-
-// export function bytes16HexToString(hex: DataHexString): string {
-// 	const s = Buffer.from(hex.slice(2), "hex").toString("utf8").toString();
-// 	// Chop off the trailing 0s
-// 	return s.slice(0, s.indexOf("\0"));
-// }
 
 export type Seconds = number;
 

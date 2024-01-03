@@ -71,7 +71,7 @@ async function main() {
 	const processedItems: string[] = [];
 	for (const marketId of state.watch_list) {
 		// hydrate market ID
-		const hydratedMarket = formatting.hydrateMarketId(marketId);
+		const hydratedMarket = markets.rehydrateMarketId(marketId);
 		const location = hydratedMarket.location;
 		const race = hydratedMarket.race;
 

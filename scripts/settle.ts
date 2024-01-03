@@ -12,7 +12,7 @@ import {
 
 import type { AxiosResponse } from "axios";
 import { Contract } from "ethers";
-import { MarketDetails, markets } from "horselink-sdk";
+import { formatting, MarketDetails, markets } from "horselink-sdk";
 
 dotenv.config();
 const hexZero: Bytes16 = "0x00000000000000000000000000000000";
@@ -130,7 +130,7 @@ export async function main() {
 			console.log(
 				`no result from oracle.getResult() for marketId ${
 					bet.marketId
-				}(${bytes16HexToString(bet.marketId)})`
+				}(${formatting.bytes16HexToString(bet.marketId)})`
 			);
 			continue;
 		}
