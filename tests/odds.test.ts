@@ -154,6 +154,7 @@ describe("Odds", () => {
 			const numNewMargin = Number(ethers.utils.formatUnits(newMargin, 6));
 			expect(numNewMargin).to.be.closeTo(1.0, 0.001);
 		});
+
 		it("Add margin to one odd", async () => {
 			const odd = ethers.utils.parseUnits("4", 6);
 			const oddsWithMargin = await oddsLib.addMargin(

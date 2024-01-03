@@ -202,7 +202,7 @@ describe("Market", () => {
 			);
 
 			const winningPropositionId = markets.makePropositionId("ABC", 1);
-			const signature = await signSetResultMessage(
+			const _signature = await signSetResultMessage(
 				marketId,
 				winningPropositionId,
 				oracleSigner
@@ -211,7 +211,7 @@ describe("Market", () => {
 			await oracle.setResult(
 				formatting.formatBytes16String(marketId),
 				formatting.formatBytes16String(winningPropositionId),
-				signature
+				_signature
 			);
 
 			await hre.network.provider.request({
@@ -342,6 +342,7 @@ describe("Market", () => {
 				ethers.utils.parseUnits("900", USDT_DECIMALS)
 			);
 		});
+
 		it("Should settle a losing bet with a large loan and not send the market owner any reward", async () => {
 			// Add some extra collateral to the market so that we can test the market owner not receiving any reward
 			// Otherwise the transaction will simply fail with "ERC20: transfer amount exceeds balance"

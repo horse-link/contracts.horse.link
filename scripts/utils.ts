@@ -7,7 +7,6 @@ import keccak from "keccak";
 import { ethers } from "ethers";
 import { LedgerSigner } from "@ethersproject/hardware-wallets";
 import * as dotenv from "dotenv";
-import type { BigNumberish } from "ethers";
 import { JsonRpcProvider, Provider } from "@ethersproject/providers";
 
 // load .env into process.env

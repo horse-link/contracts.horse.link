@@ -1261,7 +1261,7 @@ describe("Market", () => {
 
 			// add a loser result
 			const winningPropositionId = markets.makePropositionId(marketId, 2);
-			const signature = await signSetResultMessage(
+			const _signature = await signSetResultMessage(
 				marketId,
 				winningPropositionId,
 				oracleSigner
@@ -1270,7 +1270,7 @@ describe("Market", () => {
 			await oracle.setResult(
 				formatting.formatBytes16String(marketId),
 				formatting.formatBytes16String(winningPropositionId),
-				signature
+				_signature
 			);
 
 			await hre.network.provider.request({
@@ -1491,11 +1491,11 @@ describe("Market", () => {
 				.connect(bob)
 				.approve(market.address, ethers.utils.parseUnits("100", tokenDecimals));
 
-			const marketId = "20240101ABC1W"; // makeMarketId(new Date(), "ABC", "1");
+			const marketId = "20240101ABC1W";
 			const propositionId = markets.makePropositionId(marketId, 1);
 			const nonce = "1";
 
-			const signature = await signBackMessage(
+			const _signature = await signature.signBackMessage(
 				nonce,
 				marketId,
 				propositionId,
@@ -1516,7 +1516,7 @@ describe("Market", () => {
 						odds,
 						close,
 						end,
-						signature
+						_signature
 					)
 				);
 
@@ -1590,7 +1590,7 @@ describe("Market", () => {
 			const propositionId = markets.makePropositionId(marketId, 1);
 			const nonce = "1";
 
-			const backSignature = await signBackMessage(
+			const backSignature = await signature.signBackMessage(
 				nonce,
 				marketId,
 				propositionId,
