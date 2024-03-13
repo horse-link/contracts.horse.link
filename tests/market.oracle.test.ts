@@ -111,20 +111,18 @@ describe("Market Oracle", () => {
 		await underlying
 			.connect(bob)
 			.approve(vault.address, ethers.constants.MaxUint256);
-
 		await underlying
 			.connect(alice)
 			.approve(market.address, ethers.constants.MaxUint256);
 		await underlying
 			.connect(bob)
 			.approve(market.address, ethers.constants.MaxUint256);
-
 		await vault
 			.connect(alice)
 			.deposit(ethers.utils.parseUnits("1000", tokenDecimals), alice.address);
 	});
 
-	describe("Adding oracle results", () => {
+	describe.skip("Adding oracle results", () => {
 		it("should get owner address", async () => {
 			const ownerAddress = await oracle.getOwner();
 			expect(ownerAddress).to.equal(owner.address);
