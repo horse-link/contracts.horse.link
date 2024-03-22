@@ -1011,8 +1011,7 @@
   resolved "https://registry.yarnpkg.com/@nomiclabs/hardhat-ethers/-/hardhat-ethers-2.2.2.tgz#812d48929c3bf8fe840ec29eab4b613693467679"
   integrity sha512-NLDlDFL2us07C0jB/9wzvR0kuLivChJWCXTKcj3yqjZqMoYp7g7wwS157F70VHx/+9gHIBGzak5pKDwG8gEefA==
 
-"@nomiclabs/hardhat-ethers@npm:hardhat-deploy-ethers", hardhat-deploy-ethers@^0.3.0-beta.13:
-  name "@nomiclabs/hardhat-ethers"
+"@nomiclabs/hardhat-ethers@npm:hardhat-deploy-ethers":
   version "0.3.0-beta.13"
   resolved "https://registry.yarnpkg.com/hardhat-deploy-ethers/-/hardhat-deploy-ethers-0.3.0-beta.13.tgz#b96086ff768ddf69928984d5eb0a8d78cfca9366"
   integrity sha512-PdWVcKB9coqWV1L7JTpfXRCI91Cgwsm7KLmBcwZ8f0COSm1xtABHZTyz3fvF6p42cTnz1VM0QnfDvMFlIRkSNw==
@@ -4352,6 +4351,11 @@ hardhat-contract-sizer@^2.0.3:
     chalk "^4.0.0"
     cli-table3 "^0.6.0"
 
+hardhat-deploy-ethers@^0.3.0-beta.13:
+  version "0.3.0-beta.13"
+  resolved "https://registry.yarnpkg.com/hardhat-deploy-ethers/-/hardhat-deploy-ethers-0.3.0-beta.13.tgz#b96086ff768ddf69928984d5eb0a8d78cfca9366"
+  integrity sha512-PdWVcKB9coqWV1L7JTpfXRCI91Cgwsm7KLmBcwZ8f0COSm1xtABHZTyz3fvF6p42cTnz1VM0QnfDvMFlIRkSNw==
+
 hardhat-deploy-tenderly@^0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/hardhat-deploy-tenderly/-/hardhat-deploy-tenderly-0.2.0.tgz#1fe87b322d6a3b240e40003de374b95b4e8617b5"
@@ -4599,10 +4603,10 @@ hmac-drbg@^1.0.1:
     minimalistic-assert "^1.0.0"
     minimalistic-crypto-utils "^1.0.1"
 
-horselink-sdk@^1.0.50:
-  version "1.0.50"
-  resolved "https://registry.yarnpkg.com/horselink-sdk/-/horselink-sdk-1.0.50.tgz#63bdb50555421bfceb68dc343536ca217c12de54"
-  integrity sha512-AwsP5uOP0VPjT8m5uzEqIqZDk7orv5jhTnEcL2ilUETs2lILBjjl1As0LGZ3F5b79EFK9fNsJo43fWsK5stv7g==
+horselink-sdk@^1.0.51:
+  version "1.0.51"
+  resolved "https://registry.yarnpkg.com/horselink-sdk/-/horselink-sdk-1.0.51.tgz#3667b523e87a7dd4f1af5b844fd4431219475b22"
+  integrity sha512-8axHiZj+MKUjETRNoSmayyqn0rE++wgPneJO43kVw8f0MBSSBMSbBLuRHsb5BKcBsXcpw8QwdB6Y/Xm6kIHSNg==
   dependencies:
     dayjs "^1.11.8"
     ethers "^5.7.2"
