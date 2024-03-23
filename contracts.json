@@ -7,6 +7,10 @@
     "market": "0xA0f8A6eD9Df461541159Fa5f083082A6f6E0f795"
   },
   "sepolia": {
-    
+    "erc20": "",
+    "registry": "",
+    "marketOracle": "",
+    "vault": "",
+    "market": ""
   }
 }

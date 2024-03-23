@@ -49,26 +49,19 @@ export default {
 		},
 
 		// Production
-		prod_arbitrum: {
+		arbitrum: {
 			url: process.env.ARBITRUM_URL || defaultRpcUrl,
 			accounts: [process.env.ARBITRUM_DEPLOYER || defaultKey],
 			saveDeployment: true,
 			gasMultiplier: 1,
 			tags: ["production"]
 		},
-		// Staging / Development
-		dev_arbitrum: {
-			url: process.env.ARBITRUM_URL || defaultRpcUrl,
-			accounts: [process.env.ARBITRUM_DEPLOYER || defaultKey],
-			saveDeployment: true,
-			gasMultiplier: 1,
-			tags: ["uat"]
-		},
 		sepolia: {
+			chainId: 11155111,
 			url: process.env.SEPOLIA_URL || defaultRpcUrl,
 			accounts: [process.env.SEPOLIA_DEPLOYER || defaultKey],
 			saveDeployment: true,
-			tags: ["uat"]
+			tags: ["uat", "development", "dev"]
 		}
 	},
 	tenderly: {
@@ -80,8 +73,8 @@ export default {
 		apiKey: {
 			arbitrumOne: process.env.ARBISCAN_API_KEY,
 			sepolia: process.env.ETHERSCAN_API_KEY,
-			dev_arbitrum: process.env.ARBISCAN_API_KEY,
-			prod_arbitrum: process.env.ARBISCAN_API_KEY
+			development: process.env.ETHERSCAN_API_KEY,
+			production: process.env.ARBISCAN_API_KEY
 		}
 	},
 	solidity: {
@@ -119,61 +112,57 @@ export default {
 		},
 		deployer: {
 			default: 0,
-			dev_goerli: `privatekey://${process.env.GOERLI_DEPLOYER}`,
-			prod_goerli: `privatekey://${process.env.GOERLI_DEPLOYER}`,
-			dev_arbitrum: `privatekey://${process.env.ARBITRUM_DEPLOYER}`,
-			prod_arbitrum: `privatekey://${process.env.ARBITRUM_DEPLOYER}`
+			development: `privatekey://${process.env.SEPOLIA_DEPLOYER}`,
+			production: `privatekey://${process.env.ARBITRUM_DEPLOYER}`
 		},
 		faucet: {
 			default: "0xF919eaF2E37aAC718Aa19668b9071ee42c02c081"
 		},
 		Usdc: {
 			mainnet: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-			prod_arbitrum: "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8",
-			dev_arbitrum: "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8"
+			production: "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8",
+			development: "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8"
 		},
 		Usdt: {
-			prod_arbitrum: "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
-			dev_arbitrum: "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9"
+			production: "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
+			development: "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9"
 		},
 		fxAud: {
-			prod_arbitrum: "0x7E141940932E3D13bfa54B224cb4a16510519308",
-			dev_arbitrum: "0x7E141940932E3D13bfa54B224cb4a16510519308"
+			production: "0x7E141940932E3D13bfa54B224cb4a16510519308",
+			development: "0x7E141940932E3D13bfa54B224cb4a16510519308"
 		},
 		fxUsd: {
-			prod_arbitrum: "0x8616E8EA83f048ab9A5eC513c9412Dd2993bcE3F",
-			dev_arbitrum: "0x8616E8EA83f048ab9A5eC513c9412Dd2993bcE3F"
+			production: "0x8616E8EA83f048ab9A5eC513c9412Dd2993bcE3F",
+			development: "0x8616E8EA83f048ab9A5eC513c9412Dd2993bcE3F"
 		},
 		HorseLink: {
-			prod_arbitrum: "0x06d0164b1bFb040D667a82C64De870dDeac38b86",
-			dev_arbitrum: "0x06d0164b1bFb040D667a82C64De870dDeac38b86"
+			production: "0x06d0164b1bFb040D667a82C64De870dDeac38b86",
+			development: "0x06d0164b1bFb040D667a82C64De870dDeac38b86"
 		},
 		MockHorseLink: {
 			prod_goerli: "0xb8ff864683c2Bc75558B3F38257Cd05eE1CDB8F7", //Mock
-			dev_goerli: "0xb8ff864683c2Bc75558B3F38257Cd05eE1CDB8F7" //Mock
+			development: "0xb8ff864683c2Bc75558B3F38257Cd05eE1CDB8F7" //Mock
 		},
 		MockDai: {
 			prod_goerli: "0x8D9A084b37E826d02040479911375Dc79C266684", //Mock
-			dev_goerli: "0x8D9A084b37E826d02040479911375Dc79C266684" //Mock
+			development: "0x8D9A084b37E826d02040479911375Dc79C266684" //Mock
 		},
 		MockUsdt: {
 			prod_goerli: "0xF9F36C66854010D61e8F46F9Cc46F9ed55996229", //Mock
-			dev_goerli: "0xF9F36C66854010D61e8F46F9Cc46F9ed55996229" //Mock
+			development: "0xF9F36C66854010D61e8F46F9Cc46F9ed55996229" //Mock
 		},
 		MarketSigner: {
 			default: 1,
 			prod_goerli: "0xF33b9A4efA380Df3B435f755DD2C2AF7fE53C2d1", // key in bitwarden
 			dev_goerli: "0xF33b9A4efA380Df3B435f755DD2C2AF7fE53C2d1", // key in bitwarden
-			prod_arbitrum: "0xF33b9A4efA380Df3B435f755DD2C2AF7fE53C2d1", // key in bitwarden,
+			production: "0xF33b9A4efA380Df3B435f755DD2C2AF7fE53C2d1", // key in bitwarden,
 			dev_arbitrum: "0xF33b9A4efA380Df3B435f755DD2C2AF7fE53C2d1" // key in bitwarden
 		}
 	},
 	namedSigners: {
 		deployer: {
-			prod_goerli: `${process.env.GOERLI_DEPLOYER}`,
-			dev_goerli: `${process.env.GOERLI_DEPLOYER}`,
-			prod_arbitrum: `${process.env.ARBITRUM_DEPLOYER}`,
-			dev_arbitrum: `${process.env.ARBITRUM_DEPLOYER}`
+			development: `${process.env.SEPOLIA_DEPLOYER}`,
+			production: `${process.env.ARBITRUM_DEPLOYER}`
 		}
 	}
 };
