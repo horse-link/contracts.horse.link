@@ -100,7 +100,7 @@ export const productionTokens: TokenDeployDetails[] = [
 		nftBaseUri: "https://horse.link/api/nft/",
 		marketType: MarketType.Simple,
 		owner: "horse_link",
-		networks: ["prod_arbitrum", "dev_arbitrum"]
+		networks: ["production", "arbitrum"]
 	},
 	{
 		name: "Usdt",
@@ -109,8 +109,8 @@ export const productionTokens: TokenDeployDetails[] = [
 		marketName: "USDT Market",
 		nftBaseUri: "https://horse.link/api/nft/",
 		marketType: MarketType.Simple,
-		owner: "lucas_cullen2",
-		networks: ["prod_arbitrum", "dev_arbitrum"]
+		owner: "lucas_cullen",
+		networks: ["production", "arbitrum"]
 	},
 	{
 		name: "fxUsd",
@@ -120,7 +120,7 @@ export const productionTokens: TokenDeployDetails[] = [
 		nftBaseUri: "https://horse.link/api/nft/",
 		marketType: MarketType.Simple,
 		owner: "horse_link",
-		networks: ["prod_arbitrum", "dev_arbitrum"]
+		networks: ["production", "arbitrum"]
 	}
 ];
 
